@@ -1,0 +1,62 @@
+/*
+    cujo _base css
+    (c) copyright 2009, unscriptable.com
+    author: john
+
+    LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
+    license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
+*/
+@import url(_UIBlocker.css);
+
+HTML {
+    /* this is vital for IE6 to behave properly */
+    overflow: hidden;
+    border: 0 none;
+}
+
+BODY {
+    /* this is vital for IE6 to behave properly */
+    overflow-y: scroll; /* anything but visible will prevent infinite loops on css expressions */
+    border: 0 none;
+}
+
+.cujo-hide {
+    /* makes a normally-visible element hidden */
+    display: none !important;
+}
+
+.cujo-show {
+    /* makes a normally-hidden element visible */
+    /* elements that require a different display value (table, inline, etc.) should override this */
+    display: block !important;
+}
+
+/* page and widget layout base classes */
+
+.cujo-block {
+    /* element stretches to fill container's width, but height is determined by contents */
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.cujo-stretch {
+    /* element stretches its content-box to fill container's content-box */
+    /* Note: use cujo-box-stretch if you plan to use border or padding */
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.cujo-box-stretch {
+    /* element stretches its border-box to fill container's border-box */
+    /* Note: if compatibility with IE6 is desired, use px for any padding. */
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}

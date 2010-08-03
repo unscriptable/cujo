@@ -1,0 +1,72 @@
+/*
+    cujo cssParserTests css
+    (c) copyright 2010, unscriptable.com
+    author: john
+
+    LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
+    license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
+*/
+@import url(_baseCssTest.css);
+
+/* TODO: IE6 fixes for child selector and box offset positioning (use dojo.query to find and fix) */
+
+/* overrides .cujo-block when used as a direct child of .cujo-headline */
+.cujo-headline > .cujo-block {
+    position: absolute;
+    left: 0;
+    width: 100%;
+}
+
+/* this next at-rule is invalid since it occurs after a block */
+@import url(_baseCssTest2.css);
+
+/* by definition, this should be invalid, too, but browsers honor it */
+@media all {
+
+    .cujo-headline > .cujo-header /* extends .cujo-headline > .cujo-block */ {
+        top: 0;
+        /* Override height as needed. Note: must be the same as main margin-top. */
+        height: 4em;
+    }
+
+.cujo-headline > .cujo-test {
+    font-family: 'Helvetica', sans-serif;
+    color: green;
+}
+
+}
+/* random comment delimiters should be ignored */
+<!--
+-->
+.cujo-headline > .cujo-footer /* extends .cujo-headline > .cujo-block */ {
+    bottom: 0;
+    /* Override height as needed. Note: must be the same as main margin-top. */
+    height: 1.5em;
+}
+
+/* overrides .cujo-stretch when used as a direct child of .cujo-headline */
+.cujo-headline > .cujo-stretch {
+    position: absolute;
+    width: auto;
+    height: auto;
+    /* Note: must be the same as .cujo-header and .cujo-footer. */
+    bottom: 1.5em;
+    top: 4em;
+}
+
+.cujo-headline > .cujo-leader /* .cujo-headline > .cujo-stretch */ {
+    width: 20em;
+    left: 0;
+}
+
+.cujo-headline > .cujo-trailer /* .cujo-headline > .cujo-stretch */ {
+    width: 20em;
+    right: 0;
+}
+
+.cujo-headline > .cujo-main /* .cujo-headline > .cujo-stretch */ {
+    /* Note: must be the same as .cujo-leader and .cujo-trailer. */
+    left: 20em;
+    right: 20em;
+}
+-->

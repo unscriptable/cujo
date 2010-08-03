@@ -1,0 +1,47 @@
+/*
+    cujo theme1 css
+    (c) copyright 2010, unscriptable.com
+    author: john
+
+    LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
+    license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
+*/
+
+/* some reset stuff */
+body {
+    font-size: 12px;
+    font-family: Helvetica, Arial;
+    line-height: 1.25;
+}
+
+.dj_ie body {
+    font-size: 75%;
+}
+
+a, table {
+    font: inherit;
+}
+
+.dj_ie a, .dj_ie table {
+    font: 100%;
+}
+
+img {
+    border: 0 none;
+}
+
+h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 0.25em 0;
+}
+
+/* other styles */
+
+.cujo-header {
+    text-align: center;
+}
+
+.cujo-footer {
+    text-align: center;
+}

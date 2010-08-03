@@ -1,0 +1,138 @@
+/*
+    cujo grid example css
+    (c) copyright 2010, unscriptable.com
+    author: john
+
+    LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
+    license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
+*/
+
+/* grid layout */
+
+.grid-listings {
+    position: absolute;
+    width: 100%;
+    top: 3.375em; /* height of H2 */
+    bottom: 3em; /* enough room for buttons */
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.grid-header-cont {
+    overflow: hidden;
+    height: 2em; /* same as top of .grid-body-cont */
+}
+
+.grid-body-cont {
+    position: absolute;
+    top: 2em; /* same as height of .grid-header-cont */
+    bottom: 2em; /* same as height of .grid-footer-cont */
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.grid-footer-cont {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2em; /* same as bottom of .grid-body-cont */
+    overflow: hidden;
+}
+
+.grid-listings TABLE {
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.grid-listings TD,
+.grid-listings TH {
+    padding: 2px;
+    text-align: left;
+    vertical-align: top;
+}
+
+/* grid styling */
+
+.grid-header-cont,
+.grid-footer-cont,
+.gridrow-even {
+    background-color: #eee;
+    border: 0 solid #ddd;
+}
+
+.grid-header-cont {
+    border-bottom-width: 1px;
+}
+
+.grid-footer-cont {
+    border-top-width: 1px;
+}
+
+.grid-listings TD,
+.grid-listings TH {
+    overflow: hidden;
+    border-left: 1px solid #eee;
+}
+
+.grid-listings TD:first-child,
+.grid-listings TH:first-child {
+    border-left: 0 none;
+}
+
+.grid-listings TH {
+    font-size: 1.25em;
+}
+
+/* column layouts */
+
+.grid-listings .col-id {
+    width: 5em;
+}
+
+.grid-listings .col-state {
+    width: 5em;
+}
+
+.grid-listings .cell-title {
+    width: auto;
+    white-space: nowrap;
+}
+
+.grid-listings .col-thumb {
+    width: 29px;
+}
+
+.grid-listings .cell-thumb a {
+    display: block;
+}
+
+.grid-listings .cell-thumb img {
+    vertical-align: middle;
+}
+
+.grid-listings .col-created {
+    width: 5em;
+}
+
+.grid-listings .col-user {
+    width: 8em;
+}
+
+.grid-listings .col-delete {
+    width: 2.25em;
+}
+
+.grid-listings .cell-span {
+    width: auto;
+}
+
+/* column styling */
+
+.grid-listings .cell-delete {
+    /*background-color: #f77;*/
+    border-right: 0 none;
+}
