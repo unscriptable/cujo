@@ -6,7 +6,6 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-//>>cujoBuild if (cujoBuild.isJquery) cujoBuild.replaceLines(2, 'window.cujo || cujo = {};');
 dojo.provide('cujo._base.cssProc');
 dojo.provide('cujo.cssProc');
 
@@ -70,7 +69,6 @@ cujo.cssProc = cujo._base.cssProc = (function () {
 
     function sniffProp (propName, testVariants) {
         if (!testNode) {
-            //>>cujoBuild if (cujoBuild.isJquery) cujoBuild.replaceLines(1, 'testNode = $("<div/>");');
             testNode = dojo.create('DIV');
         }
         return cujo.sniff.cssProp(propName, testVariants, testNode);
@@ -78,7 +76,6 @@ cujo.cssProc = cujo._base.cssProc = (function () {
 
     function sniffVal (propName, testVal, testVariants) {
         if (!testNode) {
-            //>>cujoBuild if (cujoBuild.isJquery) cujoBuild.replaceLines(1, 'testNode = $("<div/>");');
             testNode = dojo.create('DIV');
         }
         return cujo.sniff.cssValue(propName, testVal, testVariants, testNode);
@@ -86,7 +83,6 @@ cujo.cssProc = cujo._base.cssProc = (function () {
 
     function sniffGcs (propName, testVal, testVariants) {
         if (!testNode) {
-            //>>cujoBuild if (cujoBuild.isJquery) cujoBuild.replaceLines(1, 'testNode = $("<div/>");');
             testNode = dojo.create('DIV');
         }
         return cujo.sniff.gcsValue(propName, testVal, testVariants, document.body);
@@ -213,7 +209,6 @@ cujo.cssProc = cujo._base.cssProc = (function () {
         appendRule: function (/* String|Array */ selectors, /* String */ propsText) {
 //console.log('text appendRule', selectors, '{', propsText, '}');
             assertCallback('appendRule');
-            //>>cujoBuild if (cujoBuild.isJquery) cujoBuild.replaceLines(1, 'if ($.isArray(selectors)) {');
             if (dojo.isArray(selectors)) {
                 selectors = selectors.join(',');
             }
@@ -276,9 +271,7 @@ cujo.cssProc = cujo._base.cssProc = (function () {
 
     function _prepareProcs () {
         // prepare any pending processors
-        //>>cujoBuild if (cujoBuild.isJquery) cujoBuild.replaceLines(1, '$.each(procs, function (i, proc) {');
         dojo.forEach(procs, function (proc) {
-            //>>cujoBuild if (cujoBuild.isJquery) cujoBuild.replaceLines(1, 'if ($.isFunction(proc.activate) ? proc.activate() : proc.activate) {');
             if (dojo.isFunction(proc.activate) ? proc.activate() : proc.activate) {
                 var isDom = proc.type == 'dom',
                     cbColl = isDom ? domCb : textCb,

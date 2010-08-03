@@ -24,19 +24,6 @@ cujo.lang = cujo._base.lang = (function () {
 
     return {
 
-        //>>cujoBuild if (cujoBuild.isJquery) cujoBuild.replaceLines(1, 'forEach: function (a, l, c) { function l2 (o, i, a) { l.call(c, i, o, a); }; return $.each(a, l); },');
-        forEach: $.forEach,
-
-        map: $.map,
-
-        // TODO: this isn't right: should retun true or false depending upon whether the each hit the end
-        //>>cujoBuild if (cujoBuild.isJquery) cujoBuild.replaceLines(1, 'every: function (a, l, c) { function l2 (o, i, a) { return !!l.call(c, i, o, a); }; return $.each(a, l); },');
-        every: $.every,
-
-        // TODO: this isn't right: should retun true or false depending upon whether the each hit the end
-        //>>cujoBuild if (cujoBuild.isJquery) cujoBuild.replaceLines(1, 'some: function (a, l, c) { function l2 (o, i, a) { return !l.call(c, i, o, a); }; return $.each(a, l); },');
-        some: $.some,
-
         forIn: function (/* Object */ obj, /* Function */ lambda, /* Object? */ context) {
             for (var p in obj || {}) {
                 if (lambda.call(context, obj[p], p, obj) === false)
@@ -63,6 +50,7 @@ cujo.lang = cujo._base.lang = (function () {
         },
 
         guarantee: function (/* Function */ origFunc, /* Function */ finallyFunc, /* Object? */ context) {
+            // TODO: remove this now that dojo 1.5 has promises?
             // summary: returns a new function that guarantees that the function, finallyFunc, will be called.
             //   The function, origFunc, is called. If an exception is thrown, finallyFunc is still called.
             //   In short, a try/finally block is injected.  When using dojo.Deferred, you don't need
