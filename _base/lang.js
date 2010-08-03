@@ -1,5 +1,5 @@
 /*
-    unscriptable.com language extensions for dojo / cujo / javascript
+    language extensions / conveniences
     (c) copyright 2009, unscriptable.com
     author: john
 
