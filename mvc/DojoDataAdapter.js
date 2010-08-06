@@ -25,11 +25,14 @@ dojo.declare('cujo.mvc.DojoDataAdapter', [cujo._Watchable, cujo._Connectable], {
 
     constructor: function (store) {
         // wrapper or mixin
-        this.store = store || this;
+        this._store = store = store || this;
         this._initStore(store);
     },
 
-    // use get('store') to get a handle to the store
+    // store is not settable!
+    settableProps: function (name) { return name != 'store'; },
+
+    // use get('store') to get a handle to the store!
     _store: null,
 
     _initStore: function (store) {
@@ -37,10 +40,12 @@ dojo.declare('cujo.mvc.DojoDataAdapter', [cujo._Watchable, cujo._Connectable], {
         // only mixin methods that are needed and aren't already implemented!
         var features = store.getFeatures();
                 adapted = false;
-        if (features['dojo.data.api.Read']) {
+        if (features['dojo.data.api.Identity']) {
             if (!store.get) {
                 store.get = readMixin._get;
             }
+        }
+        if (features['dojo.data.api.Read']) {
             if (!store.query) {
                 store.query = readMixin._query;
             }
@@ -82,12 +87,30 @@ var eventsMap = {
  * The following functions are mixed-into the DojoDataAdapter objects so this = adapter
  */
 
-var readMixin = {
+var idMixin = {
+
+        // API adapter methods for dojo 1.5 (or earlier) data.stores
+        // They're here, rather than in the prototype, so they don't pollute any 1.6+ data stores
+        _get: function (id) {
+            // AFAIK, there is no way to cancel a fetchItemByIdentity, amIRight?
+            var promise = new dojo.Deferred(),
+                kwArgs = {
+                    identity: id,
+                    onItem: function (item) { promise.resolve(this._itemToObj(item)); },
+                    onError: function (error) { promise.reject(error); }
+                };
+            this.get('store').fetchItemByIdentity(kwArgs);
+            return promise;
+        }
+
+    },
+
+    readMixin = {
 
         _requestToResultSet: function (request) {
 
             var self = this,
-                store = this.store,
+                store = this.get('store'),
                 canceler = function () { request.abort(); return 'Fetch aborted.'; },
                 promise = new dojo.Deferred(canceler),
                 totalCount = new dojo.Deferred(),
@@ -145,7 +168,7 @@ var readMixin = {
 
         _itemToObj: function (item) {
             // TODO: hook more stuff here (like callbacks)
-            var store = this.store,
+            var store = this.get('store'),
                 obj = dojo.delegate(this._newObjSuper(item)); // ref back to item
             dojo.forEach(store.getAttributes(item), function (attr) {
                 obj[attr] = store.getValue(item, attr);
@@ -154,35 +177,11 @@ var readMixin = {
         },
 
         _newObjSuper: function (item) {
-            // TODO: add exceptions if a property was modified outside of the set (by caching values in set and detecting in get/set)
-            return {
-                _storeItem: item,
-                get: function () { return  },
-                set: function () {},
-                load: function () {},
-                save: function () {},
-                watch: function () {},
-                getId: function () {},
-                getMetaData: function () {}
-            };
+            return new cujo.mvc.DojoDataItemAdapter(item, this.get('store'));
         },
 
         _objToItem: function (obj) {
             return obj._storeItem;
-        },
-
-        // API adapter methods for dojo 1.5 (or earlier) data.stores
-        // They're here, rather than in the prototype, so they don't pollute any 1.6+ data stores
-        _get: function (id) {
-            // AFAIK, there is no way to cancel a fetchItemByIdentity, amIRight?
-            var promise = new dojo.Deferred(),
-                kwArgs = {
-                    identity: id,
-                    onItem: function (item) { promise.resolve(this._itemToObj(item)); },
-                    onError: function (error) { promise.reject(error); }
-                };
-            this.store.fetchItemByIdentity(kwArgs);
-            return promise;
         },
 
         _query: function (query, options) {
@@ -195,7 +194,7 @@ var readMixin = {
                     onComplete: onComplete,
                     onError: onError
                 }),
-                request = this.store.fetch(kwArgs);
+                request = this.get('store').fetch(kwArgs);
             return this._requestToResultSet(request);
         }
 
@@ -212,7 +211,7 @@ var readMixin = {
 
             // Note: put saves ALL items, but since our 1.6 API specifies that we save one item at a time, this should be ok?
             // TODO: verify with Kris Zyp
-            var store = this.store,
+            var store = this.get('store'),
                 item = this._objToItem(obj),
                 identity = store.getIdentity(item);
 
@@ -243,5 +242,25 @@ var readMixin = {
         }
 
     };
+
+dojo.declare('cujo.mvc.DojoDataItemAdapter', [cujo._Watchable, cujo._Connectable], {
+
+    settableXform: null, // get/set methods use same name as property members
+
+    constructor: function (item, store) {
+        this._getStoreItem = function () { return item; };
+        this._getStore = function () { return store; };
+        var attrs = store.getAttributes(item);
+        dojo.forEach(attrs, function (attr) {
+            this.set(attr, store.getValue(item, attr));
+        });
+    },
+
+    save: function () {},
+    watch: function () {},
+    getId: function () {},
+    getMetaData: function () {}
+
+});
 
 })(); // end of local scope
