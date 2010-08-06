@@ -43,6 +43,7 @@ dojo.declare('cujo.mvc.DojoDataAdapter', [cujo._Watchable, cujo._Connectable], {
             store.add = _add;
             adapted = true;
         }
+        // TODO: omit put? 1.5 stores don't have an equiv function
         if (!store.put) {
             store.put = _put;
             adapted = true;
@@ -189,7 +190,7 @@ function _add (item) {
 function _put (obj, options) {
 
     // Note: put saves ALL items, but since our 1.6 API specifies that we save one item at a time, this should be ok?
-    // TODO: verify with Kris Zyp
+    // TODO: verify this with Kris Zyp
     var store = this.store,
         item = this._objToItem(obj),
         identity = store.getIdentity(item);
@@ -217,7 +218,7 @@ function _put (obj, options) {
 }
 
 function _delete () {
-    
+    // TODO:
 }
 
 })(); // end of local scope
