@@ -12,10 +12,16 @@ dojo.provide('cujo.mvc.DojoDataAdapter');
 
 dojo.require("cujo._Watchable");
 dojo.require("cujo._Connectable");
+dojo.require("dojo.StateFul");
 
 (function () { // local scope
 
 dojo.declare('cujo.mvc.DojoDataAdapter', [cujo._Watchable, cujo._Connectable], {
+    //  summary:
+    //      Uses Adapter Pattern to allow older (1.5) data stores to work like dojo 1.6 stores.
+    //      This is important since the old stores won't do data binding easily.  The new
+    //      stores use native javascript object properties to represent data attributes, rather
+    //      than getter / setter methods on the store.
 
     constructor: function (store) {
         // wrapper or mixin
@@ -28,34 +34,29 @@ dojo.declare('cujo.mvc.DojoDataAdapter', [cujo._Watchable, cujo._Connectable], {
 
     _initStore: function (store) {
         // sniff for old (1.5) data store methods to adapt to 1.6-compat methods
-        // only mixin methods that are needed!
-        // TODO: since old data stores all use the API interfaces, sniff for those instead?
-        var adapted = false;
-        if (store.loadItem && !store.get) {
-            store.get = _get;
-            adapted = true;
+        // only mixin methods that are needed and aren't already implemented!
+        var features = store.getFeatures();
+                adapted = false;
+        if (features['dojo.data.api.Read']) {
+            if (!store.get) {
+                store.get = readMixin._get;
+            }
+            if (!store.query) {
+                store.query = readMixin._query;
+            }
+            store._itemToObj = readMixin._itemToObj;
+            store._itemsToPromise = readMixin._itemsToPromise;
         }
-        if (store.fetch && !store.query) {
-            store.query = _query;
-            adapted = true;
-        }
-        if (store.newItem && !store.add) {
-            store.add = _add;
-            adapted = true;
-        }
-        // TODO: omit put? 1.5 stores don't have an equiv function
-        if (!store.put) {
-            store.put = _put;
-            adapted = true;
-        }
-        if (store.deleteItem && !store['delete']) {
-            store['delete'] = _delete;
-            adapted = true;
-        }
-        // mixin common methods, if needed
-        if (adapted) {
-            store._itemToObj = _itemToObj;
-            store._itemsToPromise = _itemsToPromise;
+        if (features['dojo.data.api.Write']) {
+            if (!store.add) {
+                store.add = writeMixin._add;
+            }
+            if (!store.put) {
+                store.put = writeMixin._put;
+            }
+            if (!store['delete']) {
+                store['delete'] = writeMixin._delete;
+            }
         }
 // TODO: hook up result sets to object-wide events?        
 //        var self = this,
@@ -81,144 +82,166 @@ var eventsMap = {
  * The following functions are mixed-into the DojoDataAdapter objects so this = adapter
  */
 
-function _requestToResultSet (request) {
+var readMixin = {
 
-    var self = this,
-        store = this.store,
-        canceler = function () { request.abort(); return 'Fetch aborted.'; },
-        promise = new dojo.Deferred(canceler),
-        totalCount = new dojo.Deferred(),
-        objects = []; // dojo.map(items, this._itemToObj, this);
+        _requestToResultSet: function (request) {
 
-    // hook promise methods from store callbacks
+            var self = this,
+                store = this.store,
+                canceler = function () { request.abort(); return 'Fetch aborted.'; },
+                promise = new dojo.Deferred(canceler),
+                totalCount = new dojo.Deferred(),
+                objects = []; // dojo.map(items, this._itemToObj, this);
 
-    function complete (items) {
-        // grab the rest of the items
-        objects.concat(dojo.map(items, self._itemToObj, self));
-        // resolve the promise
-        promise.resolve(promise);
-        // resolve the totalCount promise
-        var count = objects.length;
-        totalCount.resolve(count);
-        totalCount = count;
-    }
+            // hook promise methods from store callbacks
 
-    this.connect(request, 'onComplete', complete);
-    this.connect(request, 'onItem', function (item) { var obj = self._itemToObj(item); objects.push(obj); promise.progress(obj); });
-    this.connect(request, 'onError', function (error) { promise.reject(error); });
-    
-    // totalCount, forEach, map, filter, reduce, subscribe, and close
+            function complete (items) {
+                // grab the rest of the items
+                objects.concat(dojo.map(items, self._itemToObj, self));
+                // resolve the promise
+                promise.resolve(promise);
+                // resolve the totalCount promise
+                var count = objects.length;
+                totalCount.resolve(count);
+                totalCount = count;
+            }
 
-    promise.totalCount = totalCount;
+            this.connect(request, 'onComplete', complete);
+            this.connect(request, 'onItem', function (item) { var obj = self._itemToObj(item); objects.push(obj); promise.progress(obj); });
+            this.connect(request, 'onError', function (error) { promise.reject(error); });
 
-    promise.forEach = function (lambda, context) {
-        return dojo.forEach(objects, lambda, context);
-    };
+            // totalCount, forEach, map, filter, reduce, subscribe, and close
 
-    promise.map = function (lambda, context) {
-        return dojo.map(objects, lambda, context);
-    };
+            promise.totalCount = totalCount;
 
-    promise.filter = function (lambda, context) {
-        return dojo.filter(objects, lambda, context);
-    };
+            promise.forEach = function (lambda, context) {
+                return dojo.forEach(objects, lambda, context);
+            };
 
-    //objects.reduce = function () {
-        // ????
-    //};
+            promise.map = function (lambda, context) {
+                return dojo.map(objects, lambda, context);
+            };
 
-    promise.subscribe = function (event, callback) {
-        this.connect(store, eventsMap[event], callback);
-        // TODO: how to unsubscribe????
-    };
+            promise.filter = function (lambda, context) {
+                return dojo.filter(objects, lambda, context);
+            };
 
-    promise.close = function () {
-        return request.close();
-    };
+            //objects.reduce = function () {
+                // TODO: reduce. what does this do exactly?
+            //};
 
-    return promise;
+            promise.subscribe = function (event, callback) {
+                this.connect(store, eventsMap[event], callback);
+                // TODO: how to unsubscribe????
+            };
 
-}
+            promise.close = function () {
+                return request.close();
+            };
 
-function _itemToObj (item) {
-    // TODO: hook more stuff here (like callbacks)
-    var store = this.store,
-        obj = dojo.delegate({_storeItem: item}); // ref back to item
-    dojo.forEach(store.getAttributes(item), function (attr) {
-        obj[attr] = store.getValue(item, attr);
-    });
-    return obj;
-}
+            return promise;
 
-function _objToItem (obj) {
-    return obj._storeItem;
-}
+        },
 
-// API adapter methods for dojo 1.5 (or earlier) data.stores
-// They're here, rather than in the prototype, so they don't pollute any 1.6+ data stores
-function _get (id) {
-    // AFAIK, there is no way to cancel a fetchItemByIdentity, amIRight?
-    var promise = new dojo.Deferred(),
-        kwArgs = {
-            identity: id,
-            onItem: function (item) { promise.resolve(this._itemToObj(item)); },
-            onError: function (error) { promise.reject(error); }
-        };
-    this.store.fetchItemByIdentity(kwArgs);
-    return promise;
-}
+        _itemToObj: function (item) {
+            // TODO: hook more stuff here (like callbacks)
+            var store = this.store,
+                obj = dojo.delegate(this._newObjSuper(item)); // ref back to item
+            dojo.forEach(store.getAttributes(item), function (attr) {
+                obj[attr] = store.getValue(item, attr);
+            });
+            return obj;
+        },
 
-function _query (query, options) {
-    // use fetch
-    // TODO: what to do with 1.5's kwArgs.abort? or any other custom kwArgs?
-    var onComplete = function () {  },
-        onError = function () {  },
-        kwArgs = dojo.mixin(options, {
-            query: query,
-            onComplete: onComplete,
-            onError: onError
-        }),
-        request = this.store.fetch(kwArgs);
-    return this._requestToResultSet(request);
-}
+        _newObjSuper: function (item) {
+            // TODO: add exceptions if a property was modified outside of the set (by caching values in set and detecting in get/set)
+            return {
+                _storeItem: item,
+                get: function () { return  },
+                set: function () {},
+                load: function () {},
+                save: function () {},
+                watch: function () {},
+                getId: function () {},
+                getMetaData: function () {}
+            };
+        },
 
-function _add (item) {
-    // use newItem
-    // detect if the item is hierarchical. if so, navigate and add each item hierarchically using newItem(item, parent)
-}
+        _objToItem: function (obj) {
+            return obj._storeItem;
+        },
 
-function _put (obj, options) {
+        // API adapter methods for dojo 1.5 (or earlier) data.stores
+        // They're here, rather than in the prototype, so they don't pollute any 1.6+ data stores
+        _get: function (id) {
+            // AFAIK, there is no way to cancel a fetchItemByIdentity, amIRight?
+            var promise = new dojo.Deferred(),
+                kwArgs = {
+                    identity: id,
+                    onItem: function (item) { promise.resolve(this._itemToObj(item)); },
+                    onError: function (error) { promise.reject(error); }
+                };
+            this.store.fetchItemByIdentity(kwArgs);
+            return promise;
+        },
 
-    // Note: put saves ALL items, but since our 1.6 API specifies that we save one item at a time, this should be ok?
-    // TODO: verify this with Kris Zyp
-    var store = this.store,
-        item = this._objToItem(obj),
-        identity = store.getIdentity(item);
-
-    if (options.id) {
-        obj[identity] = options.id;
-    }
-
-    for (var p in obj) {
-        if (obj.hasOwnProperty(p)) {
-            store.setValue(item, p, obj[p]);
+        _query: function (query, options) {
+            // use fetch
+            // TODO: what to do with 1.5's kwArgs.abort? or any other custom kwArgs?
+            var onComplete = function () {  },
+                onError = function () {  },
+                kwArgs = dojo.mixin(options, {
+                    query: query,
+                    onComplete: onComplete,
+                    onError: onError
+                }),
+                request = this.store.fetch(kwArgs);
+            return this._requestToResultSet(request);
         }
-    }
 
-    var promise = new dojo.Deferred(),
-        kwArgs = {
-            onComplete: function () { promise.resolve(); },
-            onError: function (error) { promise.reject(error); }
-        };
+    },
 
-    store.save(kwArgs);
+    writeMixin = {
 
-    return promise;
+        _add: function  (item) {
+            // use newItem
+            // detect if the item is hierarchical. if so, navigate and add each item hierarchically using newItem(item, parent)
+        },
 
-}
+        _put: function (obj, options) {
 
-function _delete () {
-    // TODO:
-}
+            // Note: put saves ALL items, but since our 1.6 API specifies that we save one item at a time, this should be ok?
+            // TODO: verify with Kris Zyp
+            var store = this.store,
+                item = this._objToItem(obj),
+                identity = store.getIdentity(item);
+
+            if (options.id) {
+                obj[identity] = options.id;
+            }
+
+            for (var p in obj) {
+                if (obj.hasOwnProperty(p)) {
+                    store.setValue(item, p, obj[p]);
+                }
+            }
+
+            var promise = new dojo.Deferred(),
+                kwArgs = {
+                    onComplete: function () { promise.resolve(); },
+                    onError: function (error) { promise.reject(error); }
+                };
+
+            store.save(kwArgs);
+
+            return promise;
+
+        },
+
+        _delete: function () {
+            // TODO
+        }
+
+    };
 
 })(); // end of local scope
