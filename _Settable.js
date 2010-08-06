@@ -13,6 +13,7 @@
 dojo.provide('cujo._Settable');
 
 dojo.require('dojo.Stateful');
+dojo.require('dojo.string');
 
 (function () { // local scope
 
@@ -24,37 +25,54 @@ dojo.declare('cujo._Settable', null, {
         this._settableCache = {};
     },
 
-    // by default, everything is settable (null). to limit which properties are settable, change
-    // cujoSettables to a regex that matches the settable properties
-    cujoSettables: null,
+    // postscript is only called if this object was created explicitly (not a mixin to a dojo.declare)
+    postscript: function (mixin) {
+        if (mixin) {
+            dojo.mixin(this, mixin);
+        }
+    },
+
+    //  summary: by default, everything is settable (null). to limit which properties are settable, change
+    //      cujoSettables to a function that takes single name argument and returns a truthy/falsy result.
+    //      example: the following only allows methods that start with 'on; to be settable.
+    //          settableProps: function (name) { return dojo.isFunction(this[name]) && name.substr(0, 2) == 'on'; }
+    settableProps: null,
+
+    //  summary: if set to an function, it is used to transform the name passed to get()  or set() to a
+    //      local property. set this property to something falsy ('', false, null) to prevent any transform.
+    //      By default, settableXform transforms to a private-by-convention property (leading underbar).
+    settableXform: function (name) { return '_' + name },
 
     //  summary: if true, detects if a property was modified outside of the setter
     //      Detection does not happen immediately after modification. It happens the next
     //      time the get or set method is invoked.
-    detectDirectAccess: true,
+    detectDirectWrite: true,
 
     get: function (name) {
-        var oName = '_' + name,
+        var oName = this.settableXform ? this.settableXform(name) : name,
             value = stfu.get.call(oName);
-        if (this.detectDirectAccess && (name in this._settableCache) && value !== this._settableCache[name]) {
-            throw new Error('Detected a direct set on a settable property: ' + name);
+        if (this.detectDirectWrite && (name in this._settableCache) && value !== this._settableCache[name]) {
+            throw new Error(dojo.string.substitute(errDirectWrite, {name: name}));
         }
         return value;
     },
 
     set: function (name, value) {
-        var oName = '_' + name,
+        var oName = this.settableXform ? this.settableXform(name) : name,
             curr = stfu.get.call(oName);
-        if (this.detectDirectAccess && (name in this._settableCache) && curr !== this._settableCache[name]) {
-            throw new Error('Detected a direct set on a settable property: ' + name);
+        if (this.detectDirectWrite && (name in this._settableCache) && curr !== this._settableCache[name]) {
+            throw new Error(dojo.string.substitute(errDirectWrite, {name: name}));
         }
-        if (this.cujoSettables && !name.match(this.cujoSettables)) {
-            throw new Error('Attempt to set an unsettable property: ' + name);
+        if (this.settableProps && !name.match(this.settableProps)) {
+            throw new Error(dojo.string.substitute(errUnsettable, {name: name}));
         }
         this._settableCache[name] = value;
-        return stfu.set.call(this, '_' + name, value);
+        return stfu.set.call(this, oName, value);
     }
 
 });
 
+var
+    errUnsettable = 'Attempt to set an unsettable property: ${name}',
+    errDirectWrite = 'Detected a direct write (i.e. not via set()) on a settable property: ${name}.';
 })(); // end of local scope
