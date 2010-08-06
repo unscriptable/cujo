@@ -63,7 +63,7 @@ dojo.declare('cujo._Settable', null, {
         if (this.detectDirectWrite && (name in this._settableCache) && curr !== this._settableCache[name]) {
             throw new Error(dojo.string.substitute(errDirectWrite, {name: name}));
         }
-        if (this.settableProps && !name.match(this.settableProps)) {
+        if (this.settableProps && !this.settableProps(name)) {
             throw new Error(dojo.string.substitute(errUnsettable, {name: name}));
         }
         this._settableCache[name] = value;
