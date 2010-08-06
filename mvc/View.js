@@ -17,12 +17,31 @@ dojo.declare('cujo.mvc.View', [cujo._Widget, cujo._Templated, cujo._Connectable]
 
     widgetsInTemplate: false,
 
-    setState: function (/* cujo.__StateDef */ stateDef) {
+    // TODO: use dijit._Widget's get/set? and hook-up watch() in cujo._Widget
+    // (detect for existence before adding watch since it's in 1.6)
+
+/*====
+    //  state: String
+    //      sets the visual state of the View
+    state: '',
+====*/
+
+    _setStateAttr: function (value) {
+        return this._state;
+    },
+
+    _getStateAttr: function () {
+        dojo.toggleClass(this.domNode, value)
+        this._state = dojo.attr(this.domNode, 'class');
+        return this;
+    },
+
+    _setStateDef: function (/* cujo.__StateDef */ stateDef) {
         stateDef.scope = stateDef.scope || this.domNode;
         return cujo.dom.setState(stateDef);
     },
 
-    getState: function (/* String */ state) {
+    _getStateDef: function (/* String */ state) {
         return cujo.dom.getState(this.domNode, state);
     },
 

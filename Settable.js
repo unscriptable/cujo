@@ -1,5 +1,5 @@
 /*
-    cujo._Settable
+    cujo.Settable
     (c) copyright 2010, unscriptable.com
     author: john
 
@@ -7,10 +7,14 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
     Works just like dojo.Stateful's get/set but translates get/set names to "private" names
-    For watch functionality, use cujo._Watchable instead.
+    For watch functionality, use cujo.Watchable instead.
+
+    Use cujo._Settable as a mixin in a multiple-inheritance pattern.  Use cujo.Settable as a stand-alone. Example:
+        dojo.declare('myClass', cujo._Settable, { ... }); // mixin
+        var myObj = new cujo.Settable(props); // stand-alone
 
 */
-dojo.provide('cujo._Settable');
+dojo.provide('cujo.Settable');
 
 dojo.require('dojo.Stateful');
 dojo.require('dojo.string');
@@ -19,17 +23,12 @@ dojo.require('dojo.string');
 
 var stfu = dojo.Stateful.prototype;
 
+// Note: use _Settable as a mixin, but use Settable standalone
+    
 dojo.declare('cujo._Settable', null, {
 
-    constructor: function () {
+    constructor: function (mixin) {
         this._settableCache = {};
-    },
-
-    // postscript is only called if this object was created explicitly (not a mixin to a dojo.declare)
-    postscript: function (mixin) {
-        if (mixin) {
-            dojo.mixin(this, mixin);
-        }
     },
 
     //  summary: by default, everything is settable (null). to limit which properties are settable, change
@@ -68,6 +67,14 @@ dojo.declare('cujo._Settable', null, {
         }
         this._settableCache[name] = value;
         return stfu.set.call(this, oName, value);
+    }
+
+});
+
+dojo.declare('cujo.Settable', cujo._Settable, {
+
+    constructor: function (mixin) {
+        dojo.mixin(this, mixin);
     }
 
 });
