@@ -6,8 +6,6 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
-    TODO: prevent a connect using the same event/obj pair
-
 */
 dojo.provide('cujo._Connectable');
 
@@ -19,15 +17,16 @@ dojo.declare('cujo._Connectable', null, {
 
     // anything that doesn't start with an underscore is connectable by default
     // override this to allow or disallow other combos
-    cujoConnectables: /^[^_]/,
+    cujoConnectables: function (name) { return name.match(/^[^_]/); },
 
     _hasListener: function (/* String */ event) {
         return this._cujoConnects[event] > 0;
     },
 
     _cujoConnect: function (me, event, obj, method) {
-        if (!event.match(this.cujoConnectables))
+        if (!this.cujoConnectables(event)) {
             throw 'Attempted to connect to an unallowed event/method: ' + event;
+        }
         me._cujoConnects[event] = (me._cujoConnects[event] || 0) + 1;
     },
 
@@ -46,7 +45,9 @@ dojo.declare('cujo._Connectable', null, {
     },
 
     connect: function (source, event, func) {
-        this._connects.push(dojo.connect(source, event, this, func));
+        var handle = dojo.connect(source, event, this, func);
+        this._connects.push(handle);
+        return handle;
     },
 
     disconnect: function (handle) {
