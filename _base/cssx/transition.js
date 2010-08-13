@@ -330,7 +330,8 @@ function getProp (node, cs, prop) {
 
 // at the end of the animation, restore node.style properties to ''
 function onEndAnimation (anims) {
-
+// TODO: FIXME: find out why animation is still executing after onEnd fires! and remove setTimeout
+setTimeout(function () {
     d.forEach(anims, function (anim) {
         if (!anim._cujo_canceled) {
             var nodeDef = anim.nodeDef,
@@ -356,13 +357,14 @@ function onEndAnimation (anims) {
             for (var p in node._cujo_trans) {
                 stillAnimating = true; break;
             }
+console.log(stillAnimating);
             // clean up, if not
             if (!stillAnimating) {
                 delete node._cujo_trans;
             }
         }
     });
-
+}, 20);
 }
 
 function toMsec (str) {
