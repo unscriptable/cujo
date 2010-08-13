@@ -22,39 +22,54 @@ dojo.declare('cujo.mvc.View', [cujo._Widget, cujo._Templated, cujo._Connectable]
 
 /*====
     //  state: String
-    //      sets the visual state of the View
-    state: '',
+    //      Sets the visual state of the View.
+    //      Use set('state', 'edit') and get('state') to set or get the state.
+    //      States can be selected from a mutually-exclusive group by passing a cujo.__StateDef
+    //      object instead of a string.  See cujo.__StateDef in cujo.dom.
+    //      set() returns this widget TODO: return a promise if async
+    //      get() returns all classes set on the object
+    //      Example:
+    //          var states = ['ready', 'done', 'pending'];
+    //          widget.set('state', {state: 'pending', value: true, set: states});
 ====*/
 
-    _setStateAttr: function (value) {
-        return this._state;
+    state: function (/* String */ state, /* Boolean|cujo.__StateDef */ value) {
+
+        // disambiguate arguments
+        if (dojo.isObject(state)) {
+            // set
+            return this._setStateDef(state);
+        }
+        else if (arguments.length > 1) {
+            // set
+            return this._setStateDef({state: state, value: value});
+        }
+        else {
+            // get
+            return this._getState(state);
+        }
+
     },
 
-    _getStateAttr: function () {
-        dojo.toggleClass(this.domNode, value)
-        this._state = dojo.attr(this.domNode, 'class');
-        return this;
+    block: function () {
+        // TODO
+    },
+
+    capture: function () {
+        // TODO
+    },
+
+    query: function (query, /* DOMNode? */ node) {
+        return dojo.query(query, node || this.containerNode || this.domNode);
+    },
+
+    _getState: function (/* String */ state) {
+        return cujo.dom.getState(this.domNode, state);
     },
 
     _setStateDef: function (/* cujo.__StateDef */ stateDef) {
         stateDef.scope = stateDef.scope || this.domNode;
         return cujo.dom.setState(stateDef);
-    },
-
-    _getStateDef: function (/* String */ state) {
-        return cujo.dom.getState(this.domNode, state);
-    },
-
-    // TODO: this is just a stub. write for realz!
-    state: function (value) {
-        if (arguments.length == 0) {
-            return this._state;
-        }
-        else {
-            dojo.toggleClass(this.domNode, value)
-            this._state = dojo.attr(this.domNode, 'class');
-            return this;
-        }
     }
 
 });
