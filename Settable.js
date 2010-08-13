@@ -40,7 +40,7 @@ dojo.declare('cujo._Settable', null, {
     //  summary: if set to an function, it is used to transform the name passed to get()  or set() to a
     //      local property. set this property to something falsy ('', false, null) to prevent any transform.
     //      By default, settableXform transforms to a private-by-convention property (leading underbar).
-    settableXform: function (name) { return '_' + name },
+    settableXform: function (name) { return '_' + name; },
 
     //  summary: if true, detects if a property was modified outside of the setter
     //      Detection does not happen immediately after modification. It happens the next
