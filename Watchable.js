@@ -32,12 +32,6 @@ dojo.declare('cujo._Watchable', cujo._Settable, {
 
 });
 
-dojo.declare('cujo.Watchable', cujo._Watchable, {
-
-    constructor: function (mixin) {
-        dojo.mixin(this, mixin);
-    }
-
-});
+dojo.declare('cujo.Watchable', [cujo.Settable, cujo._Watchable], {});
 
 })(); // end of local scope

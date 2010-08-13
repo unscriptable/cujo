@@ -28,6 +28,8 @@ dojo.provide('cujo._Widget');
 
 dojo.require('dijit._Widget');
 dojo.require('cujo._Connectable');
+dojo.require('cujo._Settable');
+
 // cujo.registerPublisher('cujo.customize', 'last'); // last to register has right of first refusal
     //  other publisher types:
     //      first - first to register has right of first refusal
@@ -36,7 +38,7 @@ dojo.require('cujo._Connectable');
 
 (function () { // local scope
 
-dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
+dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable, cujo._Settable], {
 
     // most cujo images should reside here:
     imagesPath: dojo.moduleUrl('cujo', 'theme/img'),
@@ -53,7 +55,7 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
     //          customizableProps: Array - list of strings that need to be customized
     //      example listener:
     //          dojo.subscribe('cujo.customize', function (widget, clazz, props) {
-    //              // myGlobalCustomProps is a heirarchical map of objects that mirrors
+    //              // myGlobalCustomProps is a hierarchical map of objects that mirrors
     //              // our widgets (e.g. {cujo: {Accordion: {collapseLabel: 'collapse'}}})
     //              var custBase = dojo.getObject(clazz, myGlobalCustomProps, false);
     //              if (custBase) {
@@ -69,6 +71,18 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
     //              }
     //          })
     customizableProps: null,
+
+    postscript: function (params, srcNodeRef) {
+        // convert to private property names, if necessary
+        if (this.settableXform) {
+            var clean = dojo.mixin({}, params);
+            params = {};
+            for (var p in clean) {
+                params[this.settableXform(p)] = clean[p];
+            }
+        }
+        return this.inherited(arguments, [params, srcNodeRef]);
+    },
 
     postMixInProperties: function () {
         dojo.publish('cujo.customize', [this, this.declaredClass, this.customizableProps]);

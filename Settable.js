@@ -24,6 +24,9 @@ dojo.require('dojo.string');
 var stfu = dojo.Stateful.prototype;
 
 // Note: use _Settable as a mixin, but use Settable standalone
+// Anything that uses _Settable as a mixin should also ensure that any mixin properties passed to the
+// constructor (don't confuse these with mixin classes) are converted to the correct property name using
+// settableXform().
     
 dojo.declare('cujo._Settable', null, {
 
@@ -39,12 +42,17 @@ dojo.declare('cujo._Settable', null, {
 
     //  summary: if set to an function, it is used to transform the name passed to get()  or set() to a
     //      local property. set this property to something falsy ('', false, null) to prevent any transform.
-    //      By default, settableXform transforms to a private-by-convention property (leading underbar).
-    settableXform: function (name) { return '_' + name; },
+    //      By default, settableXform does nothing. However, to transform names to a private-by-convention property
+    //      (leading underbar), you could just use this:
+    //          function (name) { return '_' + name; }
+    settableXform: null,
+
+    //settableFromProp: function (name) { return name.substr(1); },
 
     //  summary: if true, detects if a property was modified outside of the setter
     //      Detection does not happen immediately after modification. It happens the next
     //      time the get or set method is invoked.
+    //      TODO: should we remove this and just detect direct access in the build script?
     detectDirectWrite: true,
 
     get: function (name) {
@@ -74,6 +82,14 @@ dojo.declare('cujo._Settable', null, {
 dojo.declare('cujo.Settable', cujo._Settable, {
 
     constructor: function (mixin) {
+        // convert to private property names, if necessary
+        if (this.settableXform) {
+            var clean = dojo.mixin({}, mixin);
+            mixin = {};
+            for (var p in clean) {
+                mixin[this.settableXform(p)] = clean[p];
+            }
+        }
         dojo.mixin(this, mixin);
     }
 
