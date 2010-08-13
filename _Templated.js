@@ -19,10 +19,10 @@ dojo.require('dijit._Templated');
 cujoConfig = cujoConfig || {};
 
 // default to html5-compatible custom attributes
-cujoConfig.attrAttach = cujoConfig.attrAttach || 'data-attach';
-cujoConfig.attrEvent = cujoConfig.attrEvent || 'data-event';
-cujoConfig.attrCujo = cujoConfig.attrCujo || 'data-cujo';
-cujoConfig.attrOverride = cujoConfig.attrOverride || 'data-override';
+cujoConfig.attrAttach = cujoConfig.attrAttach || 'data-dojo-attach';
+cujoConfig.attrEvent = cujoConfig.attrEvent || 'data-dojo-event';
+cujoConfig.attrCujo = cujoConfig.attrCujo || 'data-cujo-cfg';
+cujoConfig.attrOverride = cujoConfig.attrOverride || 'data-cujo-override';
 
 dojo.declare('cujo._Templated', dijit._Templated, {
     //  summary:
