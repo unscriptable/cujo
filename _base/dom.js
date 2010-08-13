@@ -8,7 +8,8 @@
 
     Note: this namespace is aliased as cujo.dom.  Developers should use cujo.dom.
 
-    TODO: add UIBlocker
+    TODO: add UIBlocker onVisible
+    TODO: don't force async since we're using promises now
 
 */
 dojo.provide('cujo._base.dom');
@@ -26,27 +27,40 @@ cujo.dom = cujo._base.dom = {
         //  summary:
         //      Instructs the UI / DOM to enter into the specified state. Most states are simply
         //      classNames applied to the scope node specified in stateDef, but some special-
-        //      purpose states, such as 'block' and 'capture' invoke behavior. All state changes
+        //      purpose states, such as 'cujo-block' and 'cujo-capture' invoke behavior. All state changes
         //      are asynchronous, even when applying classNames (CSS Transitions). Therefore, be
-        //      sure to supply a callback function to be notified when the state change is complete.
-        //  stateDef: cujo.__StateDef|cujo.__StateDef_Block
+        //      sure to supply a callback function to be notified when the state change is complete
+        //      or use the returned promise.
+        //      For normal, className, states and cujo-capture, the promise executes the progress() and then()
+        //      paths once the className(s) are applied.  For cujo-block, the progress() path executes
+        //      once the UI is blocked, but only executes the then() once any visual indication of
+        //      blocking appears (spinner, text).
+        //  stateDef: cujo.__StateDef | cujo.__StateDef_Block | other, future __StateDef types
         //      Specifies the scope, state, and parameters of the state change.
+        //  returns dojo.Deferred (aka a promise)
 
         var node = stateDef.scope,
             state = stateDef.state,
             value = stateDef.value == undefined ? true : stateDef.value,
-            callback = stateDef.onChanged,
-            context = stateDef.context || dojo.global;
+            context = stateDef.context || dojo.global,
+            promise = new dojo.Deferred(),
+            handles = [],
+            release = function () { dojo.forEach(handles, dojo.disconnect); };
+
+        // connect promise to error callback
+        handles.push(dojo.connect(stateDef, 'onError', function () { promise.reject(); release(); }));
 
         switch (state) {
 
-            case 'block': // ui blocking
+            case 'cujo-block': // ui blocking
                 if (!node)
                     node = dojo.body();
-                blockNode(node, value, callback, context, stateDef);
+                handles.push(dojo.connect(stateDef, 'onChanged', function () { promise.progress(); }));
+                handles.push(dojo.connect(stateDef, 'onVisible', function () { promise.resolve(); release(); }));
+                blockNode(node, value, stateDef.onChanged, context, stateDef);
                 break;
 
-            case 'capture': // TODO: ui input capturing
+            case 'cujo-capture': // TODO: ui input capturing
                 // create a set of capturing events that block (preventDefault and stopPropagation)
                 // everything but the specified nodes. If an optional onCapture callback is defined
                 // check it's result to decide whether to block. The dev may specify a list of
@@ -57,14 +71,15 @@ cujo.dom = cujo._base.dom = {
             default: // assume we're applying class state
                 if (!node)
                     node = dojo.doc.documentElement;
+                handles.push(dojo.connect(stateDef, 'onChanged', function () { promise.progress(); promise.resolve(); release(); }));
                 if (stateDef.set)
                     applyClassStateFromSet(node, state, stateDef.set, value, stateDef.custom,
-                        callback, context);
+                        stateDef.onChanged, context);
                 else
-                    applyClassState(node, state, value, stateDef.custom, callback, context);
+                    applyClassState(node, state, value, stateDef.custom, stateDef.onChanged, context);
         }
 
-        return true;
+        return promise;
 
     },
 
@@ -74,12 +89,12 @@ cujo.dom = cujo._base.dom = {
 
         switch (state) {
 
-            case 'block':
+            case 'cujo-block':
                 if (!node)
                     node = dojo.body();
                 return !!node._cujo_uiBlocker;
 
-            case 'capture':
+            case 'cujo-capture':
                 // TODO:
                 return false;
 
@@ -96,7 +111,7 @@ cujo.dom = cujo._base.dom = {
 
         if (!stateDef.value)
             stateDef.value = !this.getState(stateDef.scope, stateDef.state);
-        this.setState(stateDef);
+        return this.setState(stateDef);
 
     }
 
@@ -120,6 +135,8 @@ cujo.__StateDef = {
     //  onChanged: Function?
     //      All UI / DOM state operations are asynchronous. To be notified when a state change is
     //      complete, provide an onChanged callback function.
+    //  onError: Function?
+    //      A callback function to be notified if an error occurs. single param = Exception object
     //  context: Object?
     //      If specified, the onChanged callback is executed in this object's context.
 };
@@ -150,13 +167,15 @@ cujo.__StateDef_Block = {
     //  onChanged: Function?
     //      All UI / DOM state operations are asynchronous. To be notified when a state change is
     //      complete, provide an onChanged callback function.
+    //  onError: Function?
+    //      A callback function to be notified if an error occurs. single param = Exception object
     //  context: Object?
     //      If specified, the callbacks are executed in this object's context. To execute some
     //      callbacks in a different context, pre-bind them with dojo.hitch().
 };
 =====*/
 
-function stateToClass (c, u) { return c; }; //TODO: remove: return u ? c : ('cujo' + cujo.lang.capitalize(c)) };
+function stateToClass (c, u) { return c; } //TODO: remove: return u ? c : ('cujo' + cujo.lang.capitalize(c)) };
 
 function applyClassState (node, state, value, custom, callback, context) {
 
