@@ -28,34 +28,46 @@ var
 
 // IE6 chokes on complementary pairs of box offsets (top/bottom, left/right)
 // Note: this same proc must also run for all ie versions in quirks mode, if cujo ever supports quirks mode.
-d.declare('cujo.cssx.ieLayout.BoxOffsets', cssProc._DomProc, {
+// TODO: somehow track if selectors have been split s owe don't have to execute this as a _DomProc
+d.declare('cujo.cssx.ieLayout.BoxOffsets', cssProc._TextProc, {
 
     activate: d.isIE < 7, // || (d.isIE && document.compatMode == "BackCompat"),
 
-    onProperty: function (/* String */ prop, /* String */ value, /* CSSStyleRule */ rule, /* CSSStyleSheet */ ss) {
+    onProperty: function (/* String */ prop, /* String */ value, /* String */ selectors, /* CSSStyleSheet */ ss) {
+        /* temp */
+        // TODO: remove after re-designing cssProc
+        var splits = this.getSplitSelectors(selectors);
+        if (!splits) splits = [selectors];
+        dojo.forEach(splits, function (sel) {
+            this._addProp(prop, value, sel, ss);
+        }, this);
+    },
+
+    _addProp: function (/* String */ prop, /* String */ value, /* String */ selector, /* CSSStyleSheet */ ss) {
         // create a css expression rule to fix it
         if (prop == 'bottom' && value != 'auto') {
             // optimize common case in which bottom is in pixels already (IE always uses '0px' for '0')
             var decl = value.match(/px$/)
-                    ? 'height:expression(cujo.cssx.ieLayout.checkBoxHeight(this, ' + parseInt(value) + '))'
-                    : 'height:expression(cujo.cssx.ieLayout.checkBoxHeight(this));bottom:expression("' + value + '")';
+                    ? 'height:expression(cujo.cssx_ieLayout_checkBoxHeight(this, ' + parseInt(value) + '));'
+                    : 'height:expression(cujo.cssx_ieLayout_checkBoxHeight(this));bottom:expression("' + value + '");';
             // append it to the stylesheet
-            this.appendRule(rule.selectorText, decl);
+            this.appendRule(selector, decl);
+//alert('rule appended: ' + selector + ' { ' + decl + ' } ');
         }
         else if (prop == 'right' && value != 'auto') {
             // optimize common case in which right is in pixels already (IE always uses '0px' for '0')
             var decl = value.match(/px$/)
-                    ? 'width:expression(cujo.cssx.ieLayout.checkBoxWidth(this, ' + parseInt(value) + '))'
-                    : 'width:expression(cujo.cssx.ieLayout.checkBoxWidth(this));right:expression("' + value + '")';
+                    ? 'width:expression(cujo.cssx_ieLayout_checkBoxWidth(this, ' + parseInt(value) + '));'
+                    : 'width:expression(cujo.cssx_ieLayout_checkBoxWidth(this));right:expression("' + value + '");';
             // append it to the stylesheet
-            this.appendRule(rule.selectorText, decl);
+            this.appendRule(selector, decl);
         }
     }
 
 });
 cssProc.register(new cujo.cssx.ieLayout.BoxOffsets());
 
-cujo.cssx.ieLayout.checkBoxHeight = function (node, bVal) {
+cujo.cssx_ieLayout_checkBoxHeight = function (node, bVal) {
     var style = node.currentStyle,
         parent = node.offsetParent;
     // are we using box offset positioning? (Note: assumes position:fixed is fixed for IE6)
@@ -69,7 +81,7 @@ cujo.cssx.ieLayout.checkBoxHeight = function (node, bVal) {
         return '';
 };
 
-cujo.cssx.ieLayout.checkBoxWidth = function (node, rVal) {
+cujo.cssx_ieLayout_checkBoxWidth = function (node, rVal) {
     var style = node.currentStyle,
         parent = node.offsetParent;
     // are we using box offset positioning? (Note: assumes position:fixed is fixed for IE6)

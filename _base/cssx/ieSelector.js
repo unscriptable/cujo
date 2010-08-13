@@ -20,7 +20,7 @@ var d = dojo,
 
 d.declare('cujo.cssx.ieSelector.Child', cssProc._TextProc, {
 
-    activate: d.isIE < 7 || (d.isIE && document.compatMode == "BackCompat"),
+    activate: d.isIE < 7, // || (d.isIE && document.compatMode == "BackCompat"),
 
     onSelector: function (/* String */ selector, /* String */ ss) {
         // optimization: the vast majority of selectors will NOT have > so we're using indexOf (faster than split or match)
@@ -34,6 +34,9 @@ d.declare('cujo.cssx.ieSelector.Child', cssProc._TextProc, {
             this._selSplits.push(ancestry);
             if (!this._props)
                 this._props = [];
+            /* temp */
+            // TODO: remove after re-designing cssProc
+            this.saveSplitSelectors(selector, ancestry);
         }
     },
 
@@ -68,7 +71,7 @@ d.declare('cujo.cssx.ieSelector.Child', cssProc._TextProc, {
                 //this.appendRule(selectors, key + ':1;');
 
                 // add a rule to child to test if all ancestors match, and if so, apply first rule
-                this.appendRule(parts[parts.length - 1], key + '-exec:expression(cujo.cssx.ieSelector.checkMatch(this,"' + key + '",' + parts.length + '))');
+                this.appendRule(parts[parts.length - 1], key + '-exec:expression(cujo.cssx_ieSelector_checkMatch(this,"' + key + '",' + parts.length + '))');
 
             }
 
@@ -94,7 +97,7 @@ d.declare('cujo.cssx.ieSelector.Child', cssProc._TextProc, {
 });
 cssProc.register(new cujo.cssx.ieSelector.Child());
 
-cujo.cssx.ieSelector.checkMatch = function (child, key, levels) {
+cujo.cssx_ieSelector_checkMatch = function (child, key, levels) {
 
     // walk up the DOM to see if all of our ancestors match the original selector
     var

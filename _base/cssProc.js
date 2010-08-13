@@ -88,6 +88,19 @@ cujo.cssProc = cujo._base.cssProc = (function () {
         return cujo.sniff.gcsValue(propName, testVal, testVariants, document.body);
     }
 
+    /* temp to fix issue in which selectors could be split to fix unsupported selectors (IE) */
+    // TODO: remove after re-designing cssProc
+    //var _selSplits = {};
+    function saveSplitSelectors (sel, splits) {
+        if (!currText._selSplits) currText._selSplits = {};
+        currText._selSplits[sel] = splits;
+    }
+    function getSplitSelectors (sel) {
+        if (!currText._selSplits) currText._selSplits = {};
+        return currText._selSplits[sel];
+    }
+
+
     // check which css property we're going to hijack (all support outlineColor, FF supports counter-reset)
     // create functions to process values before inserting or retrieving from css
 // TODO: do we need this proxy stuff?  If so, determine JIT, since sniffGcs isn't available at load time
@@ -168,29 +181,9 @@ cujo.cssProc = cujo._base.cssProc = (function () {
         style[name] = value;
     }
 
-/*
-    function getCujoKeyPos (sval, key) {
-        var cujoKey = 'cujo-' + key;
-        return sval ? sval.indexOf(cujoKey) + cujoKey.length : -1;
-    }
-
-    function getCounterResetValue (style, key) {
-        var sval = style.counterReset,
-            pos = getCujoKeyPos(sval, key);
-        return pos >= 0 ? parseInt(sval.substr(pos)) : null;
-    }
-
-    function setCounterResetValue(style, key, value) {
-        var sval = style.counterReset,
-            pos = getCujoKeyPos(sval, key);
-        style.counterReset = sval.substr(0, pos) + ' ' + value + sval.substr(pos).replace(/^\s*\d+/, '');
-        return style;
-    }
-*/
-
     /***** base classes for creating css processors *****/
 
-    function _TextProc () {};
+    function _TextProc () {}
     _TextProc.prototype = {
 
         type: 'text',
@@ -222,7 +215,11 @@ cujo.cssProc = cujo._base.cssProc = (function () {
 
         sniffCssProp: sniffProp,
 
-        sniffCssValue: sniffVal
+        sniffCssValue: sniffVal,
+
+        saveSplitSelectors: saveSplitSelectors,
+
+        getSplitSelectors: getSplitSelectors
 
     };
 
@@ -243,8 +240,11 @@ cujo.cssProc = cujo._base.cssProc = (function () {
 
         appendRule: function (/* String */ selectorText, /* String */ propsText) {
 //console.log('dom appendRule', selectorText, '{', propsText, '}');
+//alert('dom appendRule' + selectorText + '{' + propsText + '}');
             assertCallback('appendRule');
-            return cujo.stylesheet.appendRule(selectorText, propsText, currSs);
+            var result = cujo.stylesheet.appendRule(selectorText, propsText, currSs);
+//alert(currSs.rules[currSs.rules.length - 1].style.cssText);
+            return result;
         },
 
         sniffCssProp: sniffProp,
@@ -351,9 +351,10 @@ cujo.cssProc = cujo._base.cssProc = (function () {
         // The following hack is brought to you by Firefox 3.0+ which doesn't allow
         // DOM manipulation of stylesheets immediately after text nodes have been inserted.
         // Therefore, we have to parse the rules collection later!
+        // IE6 seems to need this to prevent from hanging it
         // TODO: is there any way to sniff the need for this hack?!? ss.rules == null ?
         // TODO: should we create a separate stylesheet instead?
-        setTimeout(function () { domParser.parse(currSs); }, 0);
+        (function (ss) { setTimeout(function () { domParser.parse(ss); }, 0); })(currSs);
 
         currText = null;
 
