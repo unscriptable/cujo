@@ -22,13 +22,32 @@ cujo.lang = cujo._base.lang = (function () {
         ts = Object.prototype.toString,
         undefined;
 
+    function forIn (obj, lambda, context, ancestors) {
+        for (var p in obj) {
+            if (ancestors ^ obj.hasOwnProperty(p)) {
+                if (lambda.call(context, obj[p], p, obj) === false) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     return {
 
         forIn: function (/* Object */ obj, /* Function */ lambda, /* Object? */ context) {
-            for (var p in obj || {}) {
-                if (lambda.call(context, obj[p], p, obj) === false)
-                    break;
-            }
+            //  summary: Iterates over object properties, but only those on the immediate object rather than
+            //      inherited properties (via chained prototypes).
+            //      The iteration may be stopped by returning false (not just falsy) from the lambda function.
+            //  returns true if no lambda functions returned false.
+            return forIn(obj || {}, lambda, context || $.global, false);
+        },
+
+        forInAll: function (/* Object */ obj, /* Function */ lambda, /* Object? */ context) {
+            //  summary: Iterates over object properties, including inherited properties (via chained prototypes).
+            //      The iteration may be stopped by returning false (not just falsy) from the lambda function.
+            //  returns true if no lambda functions returned false.
+            return forIn(obj || {}, lambda, context || $.global, true);
         },
 
         pre: $.partial,
@@ -46,23 +65,7 @@ cujo.lang = cujo._base.lang = (function () {
         // TODO: return dojo.Deferred?
         soon: function (/* Function */ func, /* Object? */ context) {
             // TODO: use window.postMessage if avaiable for better performance
-            setTimeout(function () { func.call(context); });
-        },
-
-        guarantee: function (/* Function */ origFunc, /* Function */ finallyFunc, /* Object? */ context) {
-            // TODO: remove this now that dojo 1.5 has promises?
-            // summary: returns a new function that guarantees that the function, finallyFunc, will be called.
-            //   The function, origFunc, is called. If an exception is thrown, finallyFunc is still called.
-            //   In short, a try/finally block is injected.  When using dojo.Deferred, you don't need
-            //   to use guarantee since addBoth(finallyFunc) will guarantee finallyFunc will execute.
-            return function () {
-                try {
-                    return origFunc.apply(context, arguments);
-                }
-                finally {
-                    finallyFunc.apply(context);
-                }
-            };
+            setTimeout(function () { func.call(context || $.global); });
         },
 
         debounce: function (func, threshold, execAsap) {
