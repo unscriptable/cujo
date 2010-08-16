@@ -18,16 +18,60 @@ dojo.provide('cujo.mvc._Bindable');
 
 dojo.declare('cujo.mvc._Bindable', null, {
 
+    //  dataItem: Object
+    //  summary: the item from the dojo data store that will be bound to the nodes in this widget/view
+    //  Use set() and get() to set or get this property.
     dataItem: null,
 
+    beforeBindNode: function (node, name, attr) {},
+    afterBindNode: function (node, name, attr) {},
+    beforeUnbindNode: function (node, name, attr) {},
+    afterUnbindNode: function (node, name, attr) {},
+
+    constructor: function () {
+        // can't figure a better way to do this, yet
+        if (this.uninitialize) {
+            var handle = dojo.connect(this, 'destroy', this, function () {
+                this._unbindDataItem();
+                dojo.disconnect (handle);
+            });
+        }
+    },
+
     _setDataItemAttr: function (item) {
+        if (this.dataItem) {
+            this._unbindDataItem(this.dataItem);
+        }
+        if (item) {
+            this.dataItem = item;
+            this._bindDataItem(this.dataItem);
+        }
         // TODO: subscribe to anything here?
     },
 
+    _bindDataItem: function (item) {
+        cujo.lang.forIn(item || this.dataItem, this._bindNode);
+    },
+
+
+    _unbindDataItem: function (item) {
+        cujo.lang.forIn(item, this._unbindNode);
+    },
+
     _bindNode: function (node, attr) {
+        if (dojo.isString(node)) {
+            node = this[node];
+        }
         // TODO: determine if read-only or read-write (how?)
         // TODO: watch for attr changes on dataItem
         // TODO: set initial value on node
+    },
+
+    _unbindNode: function (node, attr) {
+        if (dojo.isString(node)) {
+            node = this[node];
+        }
+        // TODO:
     }
 
 });

@@ -23,14 +23,14 @@ dojo.provide('cujo.mvc._Iterable');
 dojo.declare('cujo.mvc._Iterable', null, {
 
     //  iterableContainer: String
-    //      The name of the node that has the same data-dojo-attach attribute.  This will be the node
-    //      that holds the data bound items. There will be one data bound item per item in the
-    //      result set. Typically, you'd leave this at its default value, 'containerNode'.
+    //      The name of the node that node that holds the data bound items. This will be the node that
+    //      has a data-dojo-attach attribute of the same name.  There will be one data bound node per item
+    //      in the result set. Typically, you'd leave this at its default value, 'containerNode'.
     iterableContainer: 'containerNode',
 
     //  iterableItem: String
-    //      The name of the node that has the same data-dojo-attach attribute. This will be the node
-    //      that is cloned and bound to each item in the result set.  If this node also has a data-dojo-type
+    //      The name of the node that is cloned and bound to each item in the result set. This will be the node
+    //      that has a data-dojo-attach attribute of the same name.  If this node also has a data-dojo-type
     //      (or dojotype) attribute, it will be instantiated as a widget and assumed to have the
     //      cujo.mvc._Bindable mixin. Typically, you'd leave this at its default value, 'itemNode'.
     iterableItem: 'itemNode',
