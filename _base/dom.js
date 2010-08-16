@@ -84,7 +84,6 @@ cujo.dom = cujo._base.dom = {
     },
 
     getState: function (/* DOMNode */ scope, /* String */ state) {
-
         var node = scope;
 
         switch (state) {
@@ -101,10 +100,15 @@ cujo.dom = cujo._base.dom = {
             default:
                 if (!node)
                     node = dojo.doc.documentElement;
-                return dojo.hasClass(node, state);
+                if (state) {
+                    return dojo.hasClass(node, state);
+                }
+                else {
+                    return dojo.attr(node, 'class');    
+                }
 
         }
-
+        
     },
 
     toggleState: function (/* cujo.__StateDef */ stateDef) {
