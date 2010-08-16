@@ -28,7 +28,7 @@ dojo.provide('cujo._Widget');
 
 dojo.require('dijit._Widget');
 dojo.require('cujo._Connectable');
-dojo.require('cujo._Settable');
+dojo.require('cujo.Settable');
 
 // cujo.registerPublisher('cujo.customize', 'last'); // last to register has right of first refusal
     //  other publisher types:
