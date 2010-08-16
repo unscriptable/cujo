@@ -29,7 +29,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
     afterUnbindNode: function (node, name, attr) {},
 
     constructor: function () {
-        // can't figure a better way to do this, yet
+        // ensure we unbind when destroyed
         if (this.uninitialize) {
             var handle = dojo.connect(this, 'destroy', this, function () {
                 this._unbindDataItem();
@@ -42,8 +42,8 @@ dojo.declare('cujo.mvc._Bindable', null, {
         if (this.dataItem) {
             this._unbindDataItem(this.dataItem);
         }
+        this.dataItem = item || null;
         if (item) {
-            this.dataItem = item;
             this._bindDataItem(this.dataItem);
         }
         // TODO: subscribe to anything here?

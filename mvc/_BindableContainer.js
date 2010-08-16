@@ -22,16 +22,16 @@ dojo.provide('cujo.mvc._BindableContainer');
 
 dojo.declare('cujo.mvc._BindableContainer', null, {
 
-    //  bindableContainer: String
-    //      The name of the node that node that holds the data bound items. This will be the node that
-    //      has a data-dojo-attach attribute of the same name.  There will be one data bound node per item
-    //      in the result set. Typically, you'd leave this at its default value, 'containerNode'.
-    bindableContainer: 'containerNode',
+    //  bindableRoot: String
+    //      The name of the node that holds the data bound items. This will be the node that has a
+    //      data-dojo-attach attribute (dojoAttachPoint) of the same name.  There will be one data bound node
+    //      per item in the result set. Typically, you'd leave this at its default value, 'containerNode'.
+    bindableRoot: 'containerNode',
 
     //  bindableItem: String
     //      The name of the node that is cloned and bound to each item in the result set. This will be the node
-    //      that has a data-dojo-attach attribute of the same name.  If this node also has a data-dojo-type
-    //      (or dojotype) attribute, it will be instantiated as a widget and assumed to have the
+    //      that has a data-dojo-attach attribute (dojoAttachPoint) of the same name.  If this node also has a
+    //      data-dojo-type (dojotype) attribute, it will be instantiated as a widget and assumed to have the
     //      cujo.mvc._Bindable mixin. Typically, you'd leave this at its default value, 'itemNode'.
     bindableItem: 'itemNode',
 
@@ -42,18 +42,75 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     resultSet: null,
 
     // hooks to catch item modifications
-    // should these be marked private (actually protected?)
-    beforeInsertItem: function () {},
-    afterInsertItem: function () {},
-    beforeUpdateItem: function () {}, // hm. not sure we can catch this b/c of data store api
-    afterUpdateItem: function () {},
-    beforeRemoveItem: function () {},
-    afterRemoveItem: function () {},
+    onAddItem: function (item) {},
+    onUpdateItem: function (item) {},
+    onDeleteItem: function (item) {},
+
+    constructor: function () {
+        // ensure we unsubscribe when destroyed
+        if (this.uninitialize) {
+            var handle = dojo.connect(this, 'uninitialize', this, function () {
+                this._unsubscribeResultSet();
+                dojo.disconnect(handle);
+            });
+        }
+    },
 
     _setResultSetAttr: function (rs) {
-        // TODO: unsubscribe from any previous resultSet
-        // TODO: subscribe to onAdd, onUpdate, and onRemove
-        // TODO: initialize anything?
+        // unsubscribe from any previous resultSet
+        if (this.resultSet) {
+            this._unsubscribeResultSet(this.resultSet);
+        }
+        // save result set and load items
+        this.resultSet = rs || null;
+        dojo.when(rs, dojo.hitch(this, '_resultsLoaded'), dojo.hitch(this, '_resultsError'), dojo.hitch(this, '_itemAdded'));
+        // subscribe to onAdd, onUpdate, and onRemove
+        if (rs) {
+            this._subscribeResultSet(rs);
+        }
+        // TODO: initialize anything else?
+    },
+
+    _subscribeResultSet: function (rs) {
+        if (rs && rs.subscribe) {
+            rs.subscribe('onAdd', dojo.hitch(this, '_itemAdded'));
+            rs.subscribe('onupdate', dojo.hitch(this, '_itemUpdated'));
+            rs.subscribe('onDelete', dojo.hitch(this, '_itemDeleted'));
+        }
+    },
+
+    _unsubscribeResultSet: function (rs) {
+        if (rs && rs.unsubscribe) {
+            // TODO: how to unsubscribe? the dojo 1.6 data store proposed api doesn't say how :(
+        }
+    },
+
+    _resultsLoaded: function (rs) {
+
+    },
+
+    _resultsError: function (err) {
+
+    },
+
+    _itemAdded: function (item) {
+        this.onAddItem(item);
+    },
+
+    _itemUpdated: function (item) {
+        // TODO: find item
+        var found;
+        if (found) {
+            this.onUpdateItem(item);
+        }
+    },
+
+    _itemDeleted: function (id) {
+        // TODO: find item from id
+        var item;
+        if (item) {
+            this.onDeleteItem(item);
+        }
     }
 
 });
