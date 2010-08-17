@@ -171,20 +171,20 @@ function execWaiter (waiter) {
 }
 
 cujo.requireCss = function (/* String */ module, /* Object? */ options) {
-    // TODO: return a promise instead of taking a function and a context
     // TODO: make this load as efficiently as possible (LABjs?)
     // TODO: do we have to fix IE's 31 stylesheet limit????
-    // TODO: don't download the same resource more than once
+    // TODO: don't download the same resource more than once in IE
     // FF 3.x and Safari 4 won't fetch the css file twice if we xhr it after creating the link element
     // TODO: test Opera and 3.0 browsers
 
     var opts = dojo.mixin({}, cujo.cssProcOptions, options),
-        path = cujo._moduleToThemePath(module),
+        path = dojo.moduleUrl('', [cujo._moduleToThemePath(module, 'css'), 'css'].join('.')),
         attrs = {
             rel: 'stylesheet',
             type: 'text/css',
             href: path
-        };
+        },
+        promise = new dojo.Deferred();
 
     // create link node
     var link = getDoc().createElement('link');
@@ -196,40 +196,55 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
     // TODO: structure this so that the dev can wait for just xhr if cssx is turned off
     cujo.wait(['dojo._base.xhr', 'cujo._base.cssProc'], function () {
 
-        var promise = dojo.xhr('GET', {url: path, sync: false});
+        var dfd = dojo.xhr('GET', {url: path, sync: false});
 
 //        if (opts.cssx) {
-            promise.addCallback(function (resp) {
-                cujo.cssProc.processCss(resp, opts);
-            });
+            dfd
+                .addCallback(function (resp) {
+                    cujo.cssProc.processCss(resp, opts);
+                    promise.callback({link: link, cssText: resp});
+                }).
+                addErrback(function (err) {
+                    promise.errback(err);
+                });
 //        }
 
     });
 
-    // TODO! return promise
-//    return promise;
+    return promise;
 
 };
 
-cujo.setThemePath = function (/* String */ name, /* String */ path, /* Object? */ options) {
+// TODO: cujo.requireHtml
+cujo.requireHtml = function (/* String */ module, /* Object? */ options) {};
+
+cujo.getHtml = function (/* String */ module) {
+    return dojo.cache('', [cujo._moduleToThemePath(module, 'html'), 'html'].join('.'));
+};
+
+cujo.setThemePath = function (/* String */ name, /* String */ type, /* String */ path, /* Object? */ options) {
     options = dojo.mixin({}, defaultDef.options, options);
     if (path.substr(path.length - 1) != '/') {
         path = path + '/';
     }
-    themeDefs[name] = { path: path, options: options };
+    var defs = themeDefs[name];
+    if (!defs) {
+        defs = themeDefs[name] = {};
+    }
+    defs[type] = { path: path, options: options };
 };
 
 cujo.setTheme = function (/* String */ name) {
     theme = name;
 };
 
-cujo.getThemePath = cujo._moduleToThemePath = function (/* String */ module) {
-    var def = themeDefs[theme],
-        path = def.path;
-    if (def.options.expand) {
+cujo.getThemePath = cujo._moduleToThemePath = function (/* String */ module, /* String */ type) {
+    var defs = themeDefs[theme],
+        path = defs[type].path;
+    if (defs[type].options.expand) {
         module = module.replace(/\./g, '/');
     }
-    return path + module + '.' + def.options.ext;
+    return path + module;
 };
 
 cujo._getHeadElement = function (/* DOMDocument? */ doc) {
@@ -250,8 +265,14 @@ function getDoc () {
 }
 
 var theme = 'default',
-    defaultDef = {path: './', options: {ext: 'css', expand: true}},
-    themeDefs = { 'default': defaultDef };
+    defaultDef = {path: './', options: {expand: true}},
+    themeDefs = {
+        'default': {
+            css: defaultDef,
+            html: defaultDef,
+            img: defaultDef
+        }
+    };
 
 })();
 
@@ -271,7 +292,7 @@ dojo.require('cujo._base.cssx.transition');
 /* IE shims */
 // Note: it *IS* ok to sniff for older versions of IE.  Only a noob would claim otherwise.
 
-//if (dojo.isIE < 9) {
+if (dojo.isIE < 9) {
 
     //  Add HTML5 tags to IE's DOM implementation.
     //  I learned this concept from Paul Irish. http://paulirish.com/
@@ -284,4 +305,4 @@ dojo.require('cujo._base.cssx.transition');
     dojo['require']('cujo._base.cssx.ieSelector');
     dojo['require']('cujo._base.cssx.ieLayout');
 
-//}
+}
