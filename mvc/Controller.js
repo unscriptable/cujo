@@ -1,6 +1,6 @@
 /*
     cujo.mvc.Controller
-    (c) copyright %date:%Y, unscriptable.com
+    (c) copyright 2010, unscriptable.com
     author: john
 
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
@@ -13,7 +13,9 @@ dojo.provide('cujo.mvc.Controller');
 dojo.declare('cujo.mvc.Controller', cujo._Connectable, {
 
     // TODO:
-    promise: function () {}
+    init: function () {},
+
+    ready: function () {}
 
 });
 
