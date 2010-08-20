@@ -1,19 +1,20 @@
 /*
-    cujo.mvc.View
+    cujo.mvc.BaseView
     (c) copyright 2010, unscriptable.com
     author: john
 
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-dojo.provide('cujo.mvc.View');
+dojo.provide('cujo.mvc.BaseView');
 
 dojo.require('cujo._Widget');
 dojo.require('cujo._Templated');
+dojo.require('cujo._Connectable');
 
 (function () { // local scope
 
-dojo.declare('cujo.mvc.View', [cujo._Widget, cujo._Templated, cujo._Connectable], {
+dojo.declare('cujo.mvc.BaseView', [cujo._Widget, cujo._Templated, cujo._Connectable], {
 
     widgetsInTemplate: false,
 
