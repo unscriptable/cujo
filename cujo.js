@@ -170,10 +170,46 @@ function execWaiter (waiter) {
     setTimeout(function () { func.call(context); }, 0);
 }
 
+function Promise (canceler) {
+    // creates a simple, promise-like interface until dojo.Deferred is available
+    var dfd,
+        thens = [],
+        resolution,
+        result;
+    this.then = function (resolved, error, progress) {
+        thens.push({resolved: resolved, error: error, progress: progress});
+        return this;
+    };
+    this.cancel = function () { complete('cancel'); };
+    this.resolve = function (res) { complete('resolve', res); };
+    this.reject = function (err) { complete('reject', err); };
+    function complete (type, res) {
+        resolution = type;
+        result = res;
+        // did dojo.Deferred load before we had a resolution? if so, execute
+        if (dfd) {
+            dfd[resolution](result);
+        }
+    }
+    function defaultCanceler () { return 'Promise canceled.'; }
+    // wait for dojo.Deferred
+    cujo.wait('dojo._base.Deferred', function () {
+        dfd = new dojo.Deferred(canceler || defaultCanceler),
+            chain = dfd;
+        for (var i = 0, len = thens.length; i < len; i++) {
+            var then = thens[i];
+            chain = chain.then(then.resolved, then.error, then.progress);
+        }
+        // did we get a resolution before dojo.Deferred loaded? if so, execute
+        if (resolution) {
+            dfd[resolution](result);
+        }
+    });
+}
+
 cujo.requireCss = function (/* String */ module, /* Object? */ options) {
-    // TODO: make this load as efficiently as possible (LABjs?)
     // TODO: do we have to fix IE's 31 stylesheet limit????
-    // TODO: don't download the same resource more than once in IE
+    // TODO: don't download the same resource more than once in IE (even if cache directives are missing)
     // FF 3.x and Safari 4 won't fetch the css file twice if we xhr it after creating the link element
     // TODO: test Opera and 3.0 browsers
 
@@ -184,7 +220,7 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
             type: 'text/css',
             href: path
         },
-        promise = new dojo.Deferred();
+        promise = new Promise(function () { return 'requireCss canceled: ' + module; });
 
     // create link node
     var link = getDoc().createElement('link');
@@ -193,7 +229,7 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
     link.setAttribute('href', path);
     cujo._getHeadElement().appendChild(link);
 
-    // TODO: structure this so that the dev can wait for just xhr if cssx is turned off
+    // TODO: change this so that the dev can wait for just xhr if cssx is turned off
     cujo.wait(['dojo._base.xhr', 'cujo._base.cssProc'], function () {
 
         var dfd = dojo.xhr('GET', {url: path, sync: false});
@@ -202,10 +238,10 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
             dfd
                 .addCallback(function (resp) {
                     cujo.cssProc.processCss(resp, opts);
-                    promise.callback({link: link, cssText: resp});
-                }).
-                addErrback(function (err) {
-                    promise.errback(err);
+                    promise.resolve({link: link, cssText: resp});
+                })
+                .addErrback(function (err) {
+                    promise.reject(err);
                 });
 //        }
 
