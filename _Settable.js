@@ -1,5 +1,5 @@
 /*
-    cujo.Settable
+    cujo._Settable
     (c) copyright 2010, unscriptable.com
     author: john
 
@@ -7,14 +7,13 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
     Works just like dojo.Stateful's get/set but translates get/set names to "private" names
-    For watch functionality, use cujo.Watchable instead.
+    For watch functionality, use cujo._Watchable instead.
 
-    Use cujo._Settable as a mixin in a multiple-inheritance pattern.  Use cujo.Settable as a stand-alone. Example:
+    Use cujo._Settable as a mixin in a multiple-inheritance pattern. Example:
         dojo.declare('myClass', cujo._Settable, { ... }); // mixin
-        var myObj = new cujo.Settable(props); // stand-alone
 
 */
-dojo.provide('cujo.Settable');
+dojo.provide('cujo._Settable');
 
 dojo.require('dojo.Stateful');
 dojo.require('dojo.string');
@@ -23,14 +22,13 @@ dojo.require('dojo.string');
 
 var stfu = dojo.Stateful.prototype;
 
-// Note: use _Settable as a mixin, but use Settable standalone
 // Anything that uses _Settable as a mixin should also ensure that any mixin properties passed to the
 // constructor (don't confuse these with mixin classes) are converted to the correct property name using
 // settableXform().
     
 dojo.declare('cujo._Settable', null, {
 
-    constructor: function (mixin) {
+    constructor: function () {
         this._settableCache = {};
     },
 
@@ -47,8 +45,6 @@ dojo.declare('cujo._Settable', null, {
     //          function (name) { return '_' + name; }
     settableXform: null,
 
-    //settableFromProp: function (name) { return name.substr(1); },
-
     //  summary: if true, detects if a property was modified outside of the setter
     //      Detection does not happen immediately after modification. It happens the next
     //      time the get or set method is invoked.
@@ -57,7 +53,7 @@ dojo.declare('cujo._Settable', null, {
 
     get: function (name) {
         var oName = this.settableXform ? this.settableXform(name) : name,
-            value = stfu.get.call(oName);
+            value = stfu.get.call(this, oName);
         if (this.detectDirectWrite && (name in this._settableCache) && value !== this._settableCache[name]) {
             throw new Error(dojo.string.substitute(errDirectWrite, {name: name}));
         }
@@ -66,7 +62,7 @@ dojo.declare('cujo._Settable', null, {
 
     set: function (name, value) {
         var oName = this.settableXform ? this.settableXform(name) : name,
-            curr = stfu.get.call(oName);
+            curr = stfu.get.call(this, oName);
         if (this.detectDirectWrite && (name in this._settableCache) && curr !== this._settableCache[name]) {
             throw new Error(dojo.string.substitute(errDirectWrite, {name: name}));
         }
@@ -75,22 +71,6 @@ dojo.declare('cujo._Settable', null, {
         }
         this._settableCache[name] = value;
         return stfu.set.call(this, oName, value);
-    }
-
-});
-
-dojo.declare('cujo.Settable', cujo._Settable, {
-
-    constructor: function (mixin) {
-        // convert to private property names, if necessary
-        if (this.settableXform) {
-            var clean = dojo.mixin({}, mixin);
-            mixin = {};
-            for (var p in clean) {
-                mixin[this.settableXform(p)] = clean[p];
-            }
-        }
-        dojo.mixin(this, mixin);
     }
 
 });

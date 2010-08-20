@@ -1,5 +1,5 @@
 /*
-    cujo.Watchable
+    cujo._Watchable
     (c) copyright 2010, unscriptable.com
     author: john
 
@@ -8,21 +8,17 @@
 
     Works just like dojo.Stateful (get, set, and watch) but translates names to "private" names
 
-    Use cujo._Watchable as a mixin in a multiple-inheritance pattern.  Use cujo.Watchable as a stand-alone. Example:
+    Use cujo._Watchable as a mixin in a multiple-inheritance pattern. Example:
         dojo.declare('myClass', cujo._Watchable, { ... }); // mixin
-        var myObj = new cujo.Watchable(props); // stand-alone
-
 
 */
-dojo.provide('cujo.Watchable');
+dojo.provide('cujo._Watchable');
 
-dojo.require('cujo.Settable');
+dojo.require('cujo._Settable');
 
 (function () { // local scope
 
 var stfu = dojo.Stateful.prototype;
-
-// Note: use _Watchable as a mixin, but use Watchable standalone
 
 dojo.declare('cujo._Watchable', cujo._Settable, {
 
@@ -31,7 +27,5 @@ dojo.declare('cujo._Watchable', cujo._Settable, {
     }
 
 });
-
-dojo.declare('cujo.Watchable', [cujo.Settable, cujo._Watchable], {});
 
 })(); // end of local scope
