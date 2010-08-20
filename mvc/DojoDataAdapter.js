@@ -10,7 +10,7 @@
 */
 dojo.provide('cujo.mvc.DojoDataAdapter');
 
-dojo.require("cujo.Watchable");
+dojo.require("cujo._Watchable");
 dojo.require("cujo._Connectable");
 dojo.require("dojo.StateFul");
 
