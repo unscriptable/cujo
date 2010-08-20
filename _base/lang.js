@@ -24,7 +24,7 @@ cujo.lang = cujo._base.lang = (function () {
 
     function forIn (obj, lambda, context, ancestors) {
         for (var p in obj) {
-            if (ancestors ^ obj.hasOwnProperty(p)) {
+            if (ancestors || obj.hasOwnProperty(p)) {
                 if (lambda.call(context, obj[p], p, obj) === false) {
                     return false;
                 }
