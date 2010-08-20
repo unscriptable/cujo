@@ -55,8 +55,10 @@ dojo.declare('cujo._Derivable', null, {
     },
 
     postMixInProperties: function () {
+        // TODO: once watch() is implemented, should we switch over to that?
+        // make sure all props are done before deriving new ones
+        var result = this.inherited(arguments);
         // establish links from derivedProps's rel properties...
-        // once watch() is implemented, should we switch over to that?
         cujo.lang.forInAll(this.derivedProps, function (deriver, name) {
             if (deriver.rel) {
                 var commands = this._relProps[deriver.rel];
@@ -70,10 +72,11 @@ dojo.declare('cujo._Derivable', null, {
             }
             // persist any persistent properties
             if (this.persistDerivedAtCreate && deriver.persist !== false) {
+                dojo.setObject(name, this._getDerivedValue(name, deriver), this);
                 this[name] = this._getDerivedValue(name, deriver);
             }
         }, this);
-        return this.inherited(arguments);
+        return result;
     },
 
     get: function (/*String*/ attr) {

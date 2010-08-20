@@ -5,6 +5,12 @@
 
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
+
+    Introduces some new cujo view states (see cujo.mvc.DataBoundView.dataStates below):
+        cujoDataUnknown - the view does not yet know if there is data or not
+        cujoDataEmpty - the view received a data item, but it is null
+        cujoDataBound - the view is bound to a data item
+
 */
 dojo.provide('cujo.mvc.DataBoundView');
 
@@ -16,11 +22,11 @@ dojo.require('cujo._Derivable');
 
 dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, cujo._Derivable], {
 
-    // TODO: replace with requireLocalization/getLocalization
+    // TODO: apply requireLocalization/getLocalization
     strings: {
     },
 
-    // TODO: replace with requireLocalization/getLocalization
+    // TODO: apply requireLocalization/getLocalization
     formatters: null,
 
     formatProperty: function (/* Any */ value, /* String */ propName) {
@@ -45,8 +51,36 @@ dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, c
         //      view instance for the hash map (and source of format functions) for convenience.
         // TODO: do something with the transform function parameter? Right now it's null:
         return dojo.string.substitute(template, map || this, null, this);
+    },
+
+    postCreate: function () {
+        this._refreshDataState();
+        return this.inherited(arguments);
+    },
+
+    _setDataItem: function (item) {
+        //  summary: overrides cujo._Derivable's _setDataItemAttr to toggle state
+        this._refreshDataState();
+        return this.inherited(arguments);
+    },
+
+    _refreshDataState: function () {
+        this.state({state: dataStateMapper(this[this.dataItemAttr]), set: dataStates});
     }
 
 });
+
+var dataStates = cujo.mvc.DataBoundView.dataStates = {
+        unknown: 'cujoDataUnknown',
+        empty: 'cujoDataEmpty',
+        bound: 'cujoDataBound'
+    },
+    dataStateMapper = function (dataItem) {
+        return (
+            dataItem === undefined ? dataStates.unknown :
+            dataItem == null ? dataStates.empty :
+            dataStates.bound
+        );
+    };
 
 })(); // end of local scope
