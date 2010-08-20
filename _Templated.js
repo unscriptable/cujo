@@ -42,47 +42,94 @@ dojo.declare('cujo._Templated', dijit._Templated, {
         // TODO: cache dom-ified templates for a perf boost
         // Note: this will break if the dom-ified template is not valid HTML. e.g: <div ${attrPairs}></div>
 
-        // grab template
-        var tmpl = dijit._Templated.getCachedTemplate(this.templatePath, this.templateString, this._skipNodeCache),
-            tmplIsString = dojo.isString(tmpl);
+        // grab template and related info
+        var tmplDef = {
+                template: dijit._Templated.getCachedTemplate(this.templatePath, this.templateString, this._skipNodeCache)
+            };
+
+        tmplDef.isString = dojo.isString(tmplDef.template);
 
         // convert to dom, if necessary
         // (the cached version will be a string if it contained an ${} tokens)
-        if (tmplIsString) {
-            tmpl = dojo._toDom(tmpl);
+        if (tmplDef.isString) {
+            tmplDef.hasTokens = true;
+            tmplDef.templateString = tmplDef.template;
+            tmplDef.template = dojo._toDom(tmplDef.template);
         }
 
         // get config and check for attribute overrides
-        var cujoParams = dojo.fromJson(dojo.attr(tmpl, cujoConfig.attrCujo)) || {};
+        var cujoParams = dojo.fromJson(dojo.attr(tmplDef.template, cujoConfig.attrCujo)) || {};
         this._setAttrNames(cujoParams);
+
+        this._cujoConfig = tmplDef.config = cujoParams;
+        this._usesInheritance = 'inherit' in cujoParams;
 
         // get ancestor template, perform inheritance, insert new template into cache
         if (this._usesInheritance) {
-            var ancestor = this.constructor.superclass,
-                baseTmpl = dijit._Templated.getCachedTemplate(ancestor.templatePath, ancestor.templateString, ancestor._skipNodeCache),
-                baseIsString = dojo.isString(baseTmpl);
-            baseTmpl = baseIsString ? dojo._toDom(baseTmpl): baseTmpl.cloneNode(true);
+
+            var ancestor = this.constructor.superclass;
+            tmplDef.baseTemplate = dijit._Templated.getCachedTemplate(ancestor.templatePath, ancestor.templateString, ancestor._skipNodeCache);
+            tmplDef.isBaseString = dojo.isString(tmplDef.baseTemplate);
+            if (tmplDef.isBaseString) {
+                tmplDef.baseTemplateString = tmplDef.baseTemplate;
+            }
+
+            // to dom fragment
+            var newTemplate = tmplDef.isBaseString ? dojo._toDom(tmplDef.baseTemplate): tmplDef.baseTemplate.cloneNode(true);
+
+            tmplDef.hasTokens |= tmplDef.isBaseString;
+
             // TODO: allow data-attach to be optional on the root node
-            if (dojo.attr(tmpl, this._attrOverride)) {
-                this._overrideNodes([tmpl], baseTmpl);
+            if (dojo.attr(tmplDef.template, this._attrOverride)) {
+                this._overrideNodes([tmplDef.template], newTemplate);
+                tmplDef.isDirty = true;
             }
-            var overrides = dojo.query('[' + this._attrOverride + ']', tmpl);
+
+            var overrides = dojo.query('[' + this._attrOverride + ']', tmplDef.template);
             if (overrides.length > 0) {
-                this._overrideNodes(overrides, baseTmpl);
-                if (tmplIsString || baseIsString) {
-                    // TODO: cache dom-ified version, too!
-                    // convert back to string before caching
-                    var cont = dojo.create('div');
-                    cont.appendChild(baseTmpl);
-                    baseTmpl = cont.innerHTML;
-                    cont.removeChild(cont.lastChild);
-                }
-                // replace cached template (there is no dojo API to do this, unfortunately)
-                dijit._Templated._templateCache[this.templateString || this.templatePath] = baseTmpl;
+                this._overrideNodes(overrides, newTemplate);
+                tmplDef.isDirty = true;
             }
+
+            // replace template
+            tmplDef.template = newTemplate;
+
+            if (tmplDef.hasTokens) {
+                // TODO: cache dom-ified version, too!
+                // convert back to string before caching
+                var cont = dojo.create('div');
+                cont.appendChild(newTemplate);
+                tmplDef.template = cont.innerHTML;
+                cont.removeChild(cont.lastChild);
+            }
+
         }
-        // continue as normal. inherited method will grab template already in the cache
+
+        // allow any post-processing (data binding for instance)
+        this.afterTemplateInheritance(tmplDef);
+
+        if (tmplDef.isDirty) {
+            // replace cached template (there is no dojo API to do this, unfortunately)
+            dijit._Templated._templateCache[this.templateString || this.templatePath] = tmplDef.template;
+        }
+
+        // continue as normal. inherited method will grab template we just inserted into the cache
         return this.inherited('buildRendering', arguments);
+    },
+
+    afterTemplateInheritance: function (templateDef) {
+        //  summary: a hook into buildRendering after possible template inheritance.
+        //  templateDef: an object containing inheritance state:
+        //      template: DOMNode - the template as a dom fragment
+        //      isString: Boolean - true if the template was cached as a string
+        //      templateString: String? - exists only if isString == true
+        //      baseTemplate: DOMNode - the ancestor template as a dom fragment
+        //      isBaseString: Boolean - true if the ancestor template was cached as a string
+        //      baseTemplateString: String? - exists only if isBaseString == true
+        //      isDirty: Boolean - true if the template was changed (can be overridden)
+        //      hasTokens: Boolean - true if the template has tokens in it (can be overridden)
+        //  Example: templateDef.hasTokens = false; // cancels the re-stringification of the template
+        //  Example: templateDef.isDirty = false; // cancels the re-caching of the template
     },
 
     // summary: cujo attribute names. These may have been overridden in the template's root node
@@ -192,9 +239,7 @@ dojo.declare('cujo._Templated', dijit._Templated, {
             _attrOverride: config.override || cujoConfig.attrOverride
         });
 
-        this._usesInheritance = 'inherit' in config;
-
-        // duck-punch dijit._Widget if _attrAttach isn't already defined (or else it won't be mapped into the widget)
+        // duck-punch dijit._Widget if _attrAttach isn't already defined (or else it won't be mapped into the widgets)
         if (!(this._attrAttach in dijit._Widget.prototype)) {
             dijit._Widget.prototype[this._attrAttach] = '';
         }
