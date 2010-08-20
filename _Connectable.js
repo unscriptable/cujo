@@ -11,13 +11,17 @@ dojo.provide('cujo._Connectable');
 
 (function () { // local scope
 
+// some common use cases
+cujo._Connectable.public = function (name) { return name.match(/^[^_]/); };
+cujo._Connectable.events = function (name) { return name.match(/^on/); };
+
 dojo.declare('cujo._Connectable', null, {
 
     _cujoConnects: null,
 
     // anything that doesn't start with an underscore is connectable by default
     // override this to allow or disallow other combos
-    cujoConnectables: function (name) { return name.match(/^[^_]/); },
+    cujoConnectables: cujo._Connectable.public,
 
     _hasListener: function (/* String */ event) {
         return this._cujoConnects[event] > 0;
