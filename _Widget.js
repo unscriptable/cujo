@@ -28,7 +28,7 @@ dojo.provide('cujo._Widget');
 
 dojo.require('dijit._Widget');
 dojo.require('cujo._Connectable');
-dojo.require('cujo.Settable');
+dojo.require('cujo._Settable');
 
 // cujo.registerPublisher('cujo.customize', 'last'); // last to register has right of first refusal
     //  other publisher types:
@@ -44,6 +44,7 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable, cujo._Settable],
     imagesPath: dojo.moduleUrl('cujo', 'theme/img'),
 
     //  customizableProps: Array (of String)
+    //  TODO: expand this to allow for i18n and multiple resource bundles mapped to multiple properties 
     //      A list of strings to be translated or customized before instantiating this widget.
     //      It is the developer's responsibility to subscribe to the 'cujo.customize' topic
     //      and listen for publications for this widget.  The listener should replace any
