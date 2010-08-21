@@ -90,8 +90,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
     _attrToDom: function (/*String*/ attr, /*String*/ value) {
         // handles child widgets and data transformations that dijit._Widget does not
-        var commands = [].concat(this.attributeMap[attr]),
-            self = this;
+        var commands = [].concat(this.attributeMap[attr]);
         dojo.forEach(commands, function (command) {
             if (command.type == 'widget') {
                 var attribute = command.attribute || attr;
