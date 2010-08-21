@@ -19,12 +19,6 @@ dojo.provide('cujo.mvc._Bindable');
 dojo.declare('cujo.mvc._Bindable', null, {
     // assumes we're mixing into a widget or view with uninitialize(), postMixInProperties(), set(), and connect()
 
-    //  dataItemAttr: String
-    //      The name of the property that holds the item from the dojo data store
-    //      that will be bound to the nodes in this widget/view.
-    //      Use set() and get() to set or get this property.
-    dataItemAttr: 'dataItem',
-
     //  unboundAttrs: Object
     //      These are the definitions in attributeMap that should not be auto-bound to the item from the
     //      dojo data store.  For instance, if the data item has an id property, it will conflict with
@@ -77,7 +71,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
     set: function (attr, value) {
         // override _Widget's set() to bind data item when set.
         var result = this.inherited(arguments);
-        if (attr == this.dataItemAttr) {
+        if (attr == 'dataItem') {
             this._setDataItem(value);
         }
         return result;
@@ -109,13 +103,13 @@ dojo.declare('cujo.mvc._Bindable', null, {
     },
 
     _getDataItem: function () {
-        return this[this.dataItemAttr];
-        //return this.get(this.dataItemAttr);
+        return this.dataItem;
+        //return this.get('dataItem');
     },
 
     _setDataItem: function (item) {
         this._unbindDataItem();
-        this[this.dataItemAttr] = item || null;
+        this.dataItem = item || null;
         this._bindDataItem();
     },
 

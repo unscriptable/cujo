@@ -49,8 +49,14 @@ dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, c
     formatString: function (/* String */ template, /* Object? */ map) {
         //  summary: formats a string using dojo.string.substitute, but inserts the current
         //      view instance for the hash map (and source of format functions) for convenience.
-        // TODO: do something with the transform function parameter? Right now it's null:
-        return dojo.string.substitute(template, map || this, null, this);
+        // TODO: do something useful with the transform function parameter?
+        try {
+            return dojo.string.substitute(template, map || this, null, this);
+        }
+        catch (ex) {
+            // TODO: figure out how to intelligently handle when the data item isn't yet available
+            return '';
+        }
     },
 
     postCreate: function () {
@@ -59,13 +65,13 @@ dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, c
     },
 
     _setDataItem: function (item) {
-        //  summary: overrides cujo._Derivable's _setDataItemAttr to toggle state
+        //  summary: overrides cujo.mvc._Bindable's _setDataItem to toggle state
         this._refreshDataState();
         return this.inherited(arguments);
     },
 
     _refreshDataState: function () {
-        this.state({state: dataStateMapper(this[this.dataItemAttr]), set: dataStates});
+        this.state({state: dataStateMapper(this.dataItem), set: dataStates});
     }
 
 });
