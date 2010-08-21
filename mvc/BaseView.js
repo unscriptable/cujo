@@ -18,8 +18,11 @@ dojo.declare('cujo.mvc.BaseView', [cujo._Widget, cujo._Templated, cujo._Connecta
 
     widgetsInTemplate: false,
 
-    // TODO: use dijit._Widget's get/set? and hook-up watch() in cujo._Widget
-    // (detect for existence before adding watch since it's in 1.6)
+    //  onStateChange: Function
+    //      Event hook to catch state changes. Subclasses can override this to take special
+    //      actions when state changes.  Controllers can hook into this to listen in on state changes
+    //      that are triggered internally (e.g. in reaction to user events or data events).
+    onStateChange: function (stateDef) {},
 
     state: function (/* String|cujo.__StateDef */ state, /* Boolean? */ value) {
         //  summary:
@@ -86,7 +89,9 @@ dojo.declare('cujo.mvc.BaseView', [cujo._Widget, cujo._Templated, cujo._Connecta
 
     _setStateDef: function (/* cujo.__StateDef */ stateDef) {
         stateDef.scope = stateDef.scope || this.domNode;
-        return cujo.dom.setState(stateDef);
+        var result = cujo.dom.setState(stateDef);
+        this.onStateChange(stateDef);
+        return result;
     }
 
 });
