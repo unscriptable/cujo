@@ -357,7 +357,6 @@ setTimeout(function () {
             for (var p in node._cujo_trans) {
                 stillAnimating = true; break;
             }
-console.log(stillAnimating);
             // clean up, if not
             if (!stillAnimating) {
                 delete node._cujo_trans;
