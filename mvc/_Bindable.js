@@ -59,15 +59,9 @@ dojo.declare('cujo.mvc._Bindable', null, {
     },
 
     get: function (attr) {
-        // override _Widget's get() to check for custom bindings
-        var def = this.propertyMap[attr],
-            dataItem = this.dataItem;
-        if (def && def.bind && dataItem) {
-            return dojo.isFunction(dataItem.get) ? dataItem.get(def.bind) : dataItem[def.bind];
-        }
-        else {
-            return this.inherited(arguments);
-        }
+        // override _Widget's get() to check for custom bindings?
+        // the values should be synchronized at all times, so just return the inherited value
+        return this.inherited(arguments);
     },
 
     postMixInProperties: function () {
@@ -96,7 +90,9 @@ dojo.declare('cujo.mvc._Bindable', null, {
         if (this.dataItem) {
             cujo.lang.forIn(this.dataItem, this._bindDataProp, this);
             // watch for all property changes
-            this._dataItemWatchHandle = this.dataItem.watch('*', dojo.hitch(this, '_dataPropUpdated')) || this.dataItem;
+            if (this.dataItem.watch) {
+                this._dataItemWatchHandle = this.dataItem.watch('*', dojo.hitch(this, '_dataPropUpdated')) || this.dataItem;
+            }
         }
     },
 
@@ -112,8 +108,8 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
     _bindDataProp: function (propValue, propName, dataItem) {
         // set initial value
-        propName = this._reverseBindings[propName] || propName;
-        this.set(propName, dataItem[propName]);
+         var boundName = this._reverseBindings[propName] || propName;
+        this.set(boundName, dataItem[propName]);
     },
 
     _unbindDataProp: function (propValue, propName, dataItem) {
