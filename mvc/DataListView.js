@@ -37,7 +37,7 @@ dojo.declare('cujo.mvc.DataListView', [cujo.mvc.BaseView, cujo.mvc._BindableCont
     },
 
     _refreshDataState: function () {
-        this.state({state: dataStateMapper(this[this.dataItemAttr]), set: dataStates});
+        this.state({state: dataStateMapper(this.resultSet), set: dataStates});
     }
 
 });

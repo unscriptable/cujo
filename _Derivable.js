@@ -67,10 +67,12 @@ dojo.declare('cujo._Derivable', null, {
                     links.push(link);
                 }
             }
-            // ensure we've got a getter
+            // ensure we've got a getter and a transform
             deriver.get = deriver.get || noop;
             // persist property
-            dojo.setObject(name, this._getDerivedValue(name, deriver), this);
+            if (deriver.source && deriver.transform) {
+                dojo.setObject(name, this._getDerivedValue(name, deriver), this);
+            }
         }, this);
 
         return result;
@@ -80,9 +82,8 @@ dojo.declare('cujo._Derivable', null, {
     get: function (/*String*/ attr) {
         // handle derived properties
         var deriver = this.propertyMap[attr];
-        if (deriver && deriver.source) {
-            // don't sniff for deriver.persist, just grab value if it's defined on this.
-            // (this.set() may not have been called, yet)
+        if (deriver && deriver.source && deriver.transform) {
+            // just grab value if it's defined on this. Note: this.set() may not have been called, yet
             return (attr in this) ? this[attr] : this._getDerivedValue(attr, deriver);
         }
         else {
@@ -116,8 +117,8 @@ dojo.declare('cujo._Derivable', null, {
             try {
                 dojo.forEach(deps, function (dep) {
                     var val = this._getDerivedValue(dep.name, dep.deriver);
-                    //  Note: we can't call the inherited set (and avoid the infinite loops) because there may be
-                    //  a superclass set that needs to run, too.
+                    //  Note: we can't call the inherited set because there may be
+                    //  a superclass set() that needs to run, too.
                     this.set(dep.name, val);
                 }, this);
             }

@@ -47,7 +47,7 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
     //  attributeMap: Object
     //      attributeMap is defined in dijit._Widget, but cujo._Widget has an additional attribute
     //      type added: 'widget'. This allows embedded widgets to be included in the bindings.
-    //      propertyMap: {
+    //      attributeMap: {
     //          startDate: {
     //              node: 'startDateBox',
     //              type: 'widget',
@@ -71,7 +71,7 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
     //      Bi-directional binding:
     //      When a binding is bi-directional, the developer must also designate the event to be
     //      hooked in order to receive update notifications.  Example:
-    //      propertyMap: {
+    //      attributeMap: {
     //          startDate: {
     //              node: 'startDateBox',
     //              type: 'widget',
@@ -117,10 +117,6 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
     //          })
     customizableProps: null,
 
-    constructor: function () {
-        this.propertyMap = this.propertyMap || {};
-    },
-
     postscript: function (params, srcNodeRef) {
         // convert to private property names, if necessary
         if (this.settableXform) {
@@ -140,8 +136,7 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
     _attrToDom: function (/*String*/ attr, /*String*/ value) {
         // handles child widgets that dijit._Widget does not and hooks up bi-directional bindings
         if (this.domNode) {
-console.log(attr, value);
-            var commands = this.propertyMap[attr];
+            var commands = this.attributeMap[attr];
             dojo.forEach(commands && [].concat(commands), function (command) {
                 // check for widgets
                 var node = this[command.node],
@@ -149,20 +144,43 @@ console.log(attr, value);
                 if (command.type == 'widget') {
                    node.set(attribute, value);
                 }
-                // check for two-way binding
-                if (command.event) {
-                    this.connect(node, command.event, function () { this._domToAttr(node, attribute); });
-                }
             }, this);
             // call inherited
             this.inherited(arguments);
         }
     },
 
-    _domToAttr: function (node, attr) {
-        // (node could be a widget)
-        var val = node.get ? node.get(attr) : dojo.attr(node, attr);
+    _domToAttr: function (attr, command) {
+        // Note: node could be a widget
+        var node = this[command.node],
+            attribute = command.attribute || attr,
+            val = node.get ? node.get(attribute) : dojo.attr(node, attribute);
         this.set(attr, val);
+        if (command.callback) {
+            dojo.hitch(this, command.callback)(val, attr, command);
+        }
+    },
+
+    _applyAttributes: function () {
+        //  dijit._Widget only binds the starting value of a property onto a node (i.e. runs
+        //  _attrToDom()) if the property has a custom setter _setXXXAttr or has a non-falsy
+        //  initial value on the prototype or was supplied as a constructor param.
+        //  We need the _attrToDom to run for anything with two-way binding, too!
+        // TODO: add watch support when dijit supports it
+        cujo.lang.forInAll(this.attributeMap, function (commands, attr) {
+            dojo.forEach(commands && [].concat(commands), function (command) {
+                if (command.event) {
+                    // check for two-way binding
+                    var node = this[command.node];
+                    if (node) {
+                        this.connect(node, command.event, function () { this._domToAttr(attr, command); });
+                    }
+                    // TODO: only process attributes that wouldn't get set by dijit_Widget's _applyAttributes
+                    this.set(attr, this[attr]);
+                }
+            }, this);
+        }, this);
+        return this.inherited(arguments);
     }
 
 });
