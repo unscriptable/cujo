@@ -152,7 +152,7 @@ dojo.declare('cujo._Templated', dijit._Templated, {
 
         function getDataAttr (node, name) {
             // translate property from html5 data-* or custom name
-            return getAttrFunc(node, map[name] || name);
+            return getAttrFunc(node, map[name]) || getAttrFunc(node, name);
         }
         
         return this.inherited('_attachTemplateNodes', arguments, [rootNode, getDataAttr]);
@@ -175,7 +175,7 @@ dojo.declare('cujo._Templated', dijit._Templated, {
         // iterate over overrides and replace or mixin, as specified
         dojo.forEach(overrides, function (node) {
 
-            var aParts = dojo.attr(node, this._attrOverride).split(':'),
+            var aParts = (dojo.attr(node, this._attrOverride) || '').split(':'),
                 oper = aParts[0],
                 query = aParts[1],
                 attach = dojo.attr(node, this._attrAttach),

@@ -54,13 +54,13 @@ dojo.declare('cujo.mvc.BaseView', [cujo._Widget, cujo._Templated, cujo._Connecta
             // set string
             return this._setStateDef({state: cujo.lang.uncamelize(state), value: value});
         }
-        else if (!!state) {
+        else if (!state) {
             // get array of current states
             return dojo.map(this._getState().split(' '), function (cn) { return cujo.lang.camelize(cn); });
         }
         else {
             // get status of single state (boolean)
-            return this._getState(cujo.lang.uncamelize(state));
+            return !!this._getState(cujo.lang.uncamelize(state));
         }
 
     },
