@@ -19,72 +19,70 @@ dojo.provide('cujo._Derivable');
 dojo.declare('cujo._Derivable', null, {
     //  Note: derived properties can't rely on other derived properties (yet?). This is only a
     //      problem concerning persistDerivedAtCreate, afaik.
-    // TODO: allow this class to be mixed-in to non-widget classes (culprit: postMixInProperties)
+    // TODO: allow this class to be mixed-in to non-widget classes? (culprit: postMixInProperties)
 
-    //  derivedProps: Object
-    //      Defines a set of derived properties. These act exactly like normal properties, but are changed
+    //  propertyMap: Object
+    //      Defines a set of derived properties. These act like normal properties, but are changed
     //      automatically when another property changes (or vice versa).  Each property definition has a
-    //      getter and a setter, as well as a possible linked property to watch (rel).
+    //      transform and a reverse transform, as well as a possible linked property to watch (source).
     //      Example:
-    //          derivedProps: {
+    //          propertyMap: {
     //              displayStartDate: {
-    //                  rel: 'startDate',
-    //                  get: '_dateToDisplayDate',
-    //                  set: '_displayDateToDate',
-    //                  persist: false
+    //                  source: 'startDate', // required
+    //                  transform: '_dateToDisplayDate', // required
+    //                  reverse: '_displayDateToDate'
     //              }
     //          }
-    //      When a linked property (rel) is defined, the getter (get) is called to derive the value.  If a setter
-    //      (set) is defined, then the relationship is two-way and the setter will be used to set a value
-    //      back onto the linked property.  The signatures of the setter and getter are the same:
+    //      When a linked property (source) is defined, the transform is called to derive the value.  If a
+    //      reverse transform (reverse) is defined, then the relationship is two-way and the setter will be used  
+    //      to set a value back onto the linked property.  The signatures of the setter and getter are the same:
     //      _dateToDisplayDate: function (/* Any */ value, /* String */ propName, /* String */ relPropName) {
     //          return dojo.date.locale.format(value, {selector: 'date', formatLength: 'long'});
     //      }
-    //      When the optional persist property is not false, the property will be persisted onto the current
-    //      object.  In other words, this[<property name>] will be set whenever the property is derived.
-    derivedProps: null,
-
-    //  persistDerivedAtCreate: Boolean
-    //      Default is true. Set this to false to prevent the object from setting any persistent derived
-    //      properties at creation time (postMixInProperties, specifically).
-    persistDerivedAtCreate: true,
+    propertyMap: null,
 
     constructor: function () {
-        this.derivedProps = this.derivedProps || {};
-        this._relProps = {};
+        this.propertyMap = this.propertyMap || {};
+        this._dependentProps = {};
     },
 
     postMixInProperties: function () {
         // TODO: once watch() is implemented, should we switch over to that?
+
         // make sure all props are done before deriving new ones
         var result = this.inherited(arguments);
-        // establish links from derivedProps's rel properties...
-        cujo.lang.forInAll(this.derivedProps, function (deriver, name) {
-            if (deriver.rel) {
-                var commands = this._relProps[deriver.rel];
-                if (!commands) {
-                    commands = this._relProps[deriver.rel] = [];
+
+        cujo.lang.forInAll(this.propertyMap, function (deriver, name) {
+            // establish link from propertyMap's source property...
+            if (deriver.source) {
+                var link = {
+                        name: name,
+                        deriver: deriver
+                    };
+                var links = this._dependentProps[deriver.source];
+                if (!links) {
+                    this._dependentProps[deriver.source] = [link];
                 }
-                commands.push({
-                    derived: name,
-                    deriver: deriver
-                });
+                else {
+                    links.push(link);
+                }
             }
-            // persist any persistent properties
-            if (this.persistDerivedAtCreate && deriver.persist !== false) {
-                dojo.setObject(name, this._getDerivedValue(name, deriver), this);
-                this[name] = this._getDerivedValue(name, deriver);
-            }
+            // ensure we've got a getter
+            deriver.get = deriver.get || noop;
+            // persist property
+            dojo.setObject(name, this._getDerivedValue(name, deriver), this);
         }, this);
+
         return result;
+
     },
 
     get: function (/*String*/ attr) {
         // handle derived properties
-        var deriver = this.derivedProps[attr];
-        if (deriver) {
+        var deriver = this.propertyMap[attr];
+        if (deriver && deriver.source) {
             // don't sniff for deriver.persist, just grab value if it's defined on this.
-            // (set() may not have been called, yet)
+            // (this.set() may not have been called, yet)
             return (attr in this) ? this[attr] : this._getDerivedValue(attr, deriver);
         }
         else {
@@ -93,53 +91,61 @@ dojo.declare('cujo._Derivable', null, {
     },
 
     set: function (/* String */ attr, /* Any */ value) {
-        // TODO: pull out some of these routines into protected methods
-        var deriver = this.derivedProps[attr],
-            result;
-        // handle derived properties
-        if (deriver) {
-            if (deriver.persist !== false) {
-                this[attr] = value;
+
+        var deriver = this.propertyMap[attr],
+            result = this.inherited(arguments);
+
+        // handle source properties (if a bi-directional link has been set. i.e. deriver.reverse is specified)
+        if (deriver && deriver.source && deriver.reverse && !deriver._skip) {
+            var val = deriver.reverse.call(this, value, attr, deriver.source);
+            deriver._skip = true;
+            try {
+                //  Note: we can't call the inherited set (and avoid the infinite loops) because there may be
+                //  a superclass set that needs to run, too.
+                this.set(deriver.source, val);
             }
-            if (deriver.set) {
-                // always run deriver.set() even if there's no link since it may do manual linking
-                var set = dojo.hitch(this, deriver.set),
-                    linked = deriver.rel,
-                    links = this._relProps[linked],
-                    val = set(value, attr, linked);
-                if (linked && !links._skip) {
-                    links._skip = true; // prevents infinite cascade
-                    result = this.set(linked, val);
-                    delete links._skip;
-                }
+            finally {
+                delete deriver._skip;
             }
         }
-        else {
-            result = this.inherited(arguments);
-            // handle linked properties
-            var links = this._relProps[attr];
-            if (links && !links._skip) {
-                dojo.forEach(links, function (link) {
-                    var get = dojo.hitch(this, link.deriver.get),
-                        derived = link.derived,
-                        deriver = this.derivedProps[derived],
-                        val = get(value, derived, attr);
-                    deriver._skip = true; // prevents infinite cascade
-                    this.set(derived, val);
-                    delete deriver._skip;
+
+        // handle derived properties (if this is a source attr)
+        var deps = this._dependentProps[attr];
+        if (deps && !sources._skip) {
+            deps._skip = true;
+            try {
+                dojo.forEach(deps, function (dep) {
+                    var val = this._getDerivedValue(dep.name, dep.deriver);
+                    //  Note: we can't call the inherited set (and avoid the infinite loops) because there may be
+                    //  a superclass set that needs to run, too.
+                    this.set(dep.name, val);
                 }, this);
             }
+            finally {
+                delete sources._skip;
+            }
         }
-        return result || this;
+
+        return result;
+
     },
 
     _getDerivedValue: function (attr, deriver) {
-        // always run get even if there's no link since it may do manual linking
-        var linkedVal = deriver.rel && this[deriver.rel],
-            get = dojo.hitch(this, deriver.get);
-        return get(linkedVal, attr, deriver.rel);
+        // always run transform() even if there's no link since it may do manual linking
+        var linkedVal = deriver.source && dojo.getObject(deriver.source, false, this),
+            transform = dojo.isFunction(deriver.transform) ?
+                deriver.transform :
+                dojo.getObject(deriver.transform, false, this);
+        if (!dojo.isFunction(transform)) {
+            throw new Error(dojo.string.substitute(errTransformNotFound, {transform: transform, attr: attr}));
+        }
+        return transform.call(this, linkedVal, attr, deriver.source);
     }
 
 });
+
+var
+    noop = function (val) { return val; },
+    errTransformNotFound = 'Transform (${transform}) not found for ${attr}.';
 
 })();

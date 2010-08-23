@@ -38,10 +38,54 @@ dojo.require('cujo._Settable');
 
 (function () { // local scope
 
-dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable, cujo._Settable], {
+dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
 
     // most cujo images should reside here:
     imagesPath: dojo.moduleUrl('cujo', 'theme/img'),
+
+/*=====
+    //  attributeMap: Object
+    //      attributeMap is defined in dijit._Widget, but cujo._Widget has an additional attribute
+    //      type added: 'widget'. This allows embedded widgets to be included in the bindings.
+    //      propertyMap: {
+    //          startDate: {
+    //              node: 'startDateBox',
+    //              type: 'widget',
+    //              attribute: 'value'
+    //          },
+    //          displayDate: [
+    //              {
+    //                  node: 'startDateTitle',
+    //                  type: 'attribute',
+    //                  attribute: 'title'
+    //              },
+    //              {
+    //                  node: 'startDateTitle',
+    //                  type: 'innerHTML'
+    //              }
+    //          ]
+    //      }
+    //      In this example, startDateBox is the name of the attach point for some widget. There is also
+    //      a node (attach point == 'startDateTitle') that is bound twice to displayDate (title attribute
+    //      and innerHTML).
+    //      Bi-directional binding:
+    //      When a binding is bi-directional, the developer must also designate the event to be
+    //      hooked in order to receive update notifications.  Example:
+    //      propertyMap: {
+    //          startDate: {
+    //              node: 'startDateBox',
+    //              type: 'widget',
+    //              attribute: 'value',
+    //              event: 'onChange',
+    //              watch: "" // future
+    //          }
+    //      }
+    //      When dijit's widgets support the watch method, the watch property (if present) will preclude
+    //      the event property.  The watch property may have a string value that indicates the name of
+    //      the property to watch on the widget. If set to "", the attribute property is the default.
+    attributeMap: null,
+=====*/
+
 
     //  customizableProps: Array (of String)
     //  TODO: expand this to allow for i18n and multiple resource bundles mapped to multiple properties 
@@ -73,6 +117,10 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable, cujo._Settable],
     //          })
     customizableProps: null,
 
+    constructor: function () {
+        this.propertyMap = this.propertyMap || {};
+    },
+
     postscript: function (params, srcNodeRef) {
         // convert to private property names, if necessary
         if (this.settableXform) {
@@ -87,6 +135,34 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable, cujo._Settable],
 
     postMixInProperties: function () {
         dojo.publish('cujo.customize', [this, this.declaredClass, this.customizableProps]);
+    },
+
+    _attrToDom: function (/*String*/ attr, /*String*/ value) {
+        // handles child widgets that dijit._Widget does not and hooks up bi-directional bindings
+        if (this.domNode) {
+console.log(attr, value);
+            var commands = this.propertyMap[attr];
+            dojo.forEach(commands && [].concat(commands), function (command) {
+                // check for widgets
+                var node = this[command.node],
+                    attribute = command.attribute || attr;
+                if (command.type == 'widget') {
+                   node.set(attribute, value);
+                }
+                // check for two-way binding
+                if (command.event) {
+                    this.connect(node, command.event, function () { this._domToAttr(node, attribute); });
+                }
+            }, this);
+            // call inherited
+            this.inherited(arguments);
+        }
+    },
+
+    _domToAttr: function (node, attr) {
+        // (node could be a widget)
+        var val = node.get ? node.get(attr) : dojo.attr(node, attr);
+        this.set(attr, val);
     }
 
 });

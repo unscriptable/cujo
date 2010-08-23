@@ -17,64 +17,57 @@ dojo.provide('cujo.mvc._Bindable');
 (function () {
 
 dojo.declare('cujo.mvc._Bindable', null, {
-    // assumes we're mixing into a widget or view with uninitialize(), postMixInProperties(), set(), and connect()
+    // assumes we're mixing into a widget (or view) with uninitialize(),
+    // postMixInProperties(), set(), and connect().
 
-    //  unboundAttrs: Object
-    //      These are the definitions in attributeMap that should not be auto-bound to the item from the
-    //      dojo data store.  For instance, if the data item has an id property, it will conflict with
-    //      the id assigned and maintained by dijit.
-    unboundAttrs: {id: ''},
+    dataItem: null,
 
- /*=====
-    //  attributeMap: Object
-    //      attributeMap is the same as dijit._Widget's attributeMap, but has an additional attribute
-    //      type added: 'widget'. This allows embedded widgets to be included in the bindings.
-    //      attributeMap: {
+    //  propertyMap: Object
+    //      propertyMap maps widget properties to data item properties.
+    //      propertyMap: {
+    //          eventName: '',
+    //          eventType: 'eventTypeStr',
     //          startDate: {
-    //              node: 'startDateBox',
-    //              type: 'widget',
-    //              attribute: 'value'
+    //              bind: 'beginDate'
     //          },
-    //          displayDate: [
-    //              {
-    //                  node: 'startDateTitle',
-    //                  type: 'attribute',
-    //                  attribute: 'title'
-    //              },
-    //              {
-    //                  node: 'startDateTitle',
-    //                  type: 'innerHTML'
-    //              }
-    //          ]
+    //          aWidgetProp: 'aDataProp'
     //      }
-    //      In this example, startDateBox is the name of the attach point for some widget. There is also
-    //      a node (attach point == 'startDateTitle') that is bound twice to displayDate (title attribute
-    //      and innerHTML).
-    //      Bi-directional binding:
-    //      When a data-binding is bi-directional, the developer must also designate the event to be
-    //      hooked in order to receive update notifications.  Example:
-    //      attributeMap: {
-    //          startDate: {
-    //              node: 'startDateBox',
-    //              type: 'widget',
-    //              attribute: 'value',
-    //              event: 'onChange',
-    //              watch: true
-    //          }
-    //      }
-    //      When dijit's widgets support the watch method, the watch property (if truthy) will preclude
-    //      the event property.  The watch property may have a string value that indicates the name of
-    //      the property to watch on the widget. If not a string, the attribute property is the default.
-    attributeMap: null,
-=====*/
+    propertyMap: null,
+
+    constructor: function () {
+        // expand shortcut propertyMap definitions
+        this.propertyMap = this.propertyMap || {};
+        var reverse = this._reverseBindings = {};
+        cujo.lang.forInAll(this.propertyMap, function (def, propName, map) {
+            if (dojo.isString(def)) {
+                map[propName] = def = { bind: def || propName };
+            }
+            if (def.bind) {
+                reverse[def.bind] = propName;
+            }
+        });
+    },
 
     set: function (attr, value) {
-        // override _Widget's set() to bind data item when set.
-        var result = this.inherited(arguments);
-        if (attr == 'dataItem') {
-            this._setDataItem(value);
+        // override _Widget's set() to check for custom bindings
+        var def = this.propertyMap[attr],
+            dataItem = this.dataItem;
+        if (def && def.bind && dataItem) {
+            dojo.isFunction(dataItem.set) ? dataItem.set(def.bind, value) : dataItem[def.bind] = value;
         }
-        return result;
+        return this.inherited(arguments);
+    },
+
+    get: function (attr) {
+        // override _Widget's get() to check for custom bindings
+        var def = this.propertyMap[attr],
+            dataItem = this.dataItem;
+        if (def && def.bind && dataItem) {
+            return dojo.isFunction(dataItem.get) ? dataItem.get(def.bind) : dataItem[def.bind];
+        }
+        else {
+            return this.inherited(arguments);
+        }
     },
 
     postMixInProperties: function () {
@@ -88,25 +81,11 @@ dojo.declare('cujo.mvc._Bindable', null, {
         return this.inherited(arguments);
     },
 
-    _attrToDom: function (/*String*/ attr, /*String*/ value) {
-        // handles child widgets and data transformations that dijit._Widget does not
-        var commands = [].concat(this.attributeMap[attr]);
-        dojo.forEach(commands, function (command) {
-            if (command.type == 'widget') {
-                var attribute = command.attribute || attr;
-                this[command.node].set(attribute, value);
-            }
-        });
-        // call inherited
-        this.inherited(arguments);
-    },
-
-    _getDataItem: function () {
+    _getDataItemAttr: function () {
         return this.dataItem;
-        //return this.get('dataItem');
     },
 
-    _setDataItem: function (item) {
+    _setDataItemAttr: function (item) {
         this._unbindDataItem();
         this.dataItem = item || null;
         this._bindDataItem();
@@ -114,71 +93,36 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
     _bindDataItem: function () {
         // update dom
-        var dataItem = this._getDataItem();
-        if (dataItem) {
-            cujo.lang.forIn(dataItem, this._bindDataProp, this);
+        if (this.dataItem) {
+            cujo.lang.forIn(this.dataItem, this._bindDataProp, this);
             // watch for all property changes
-            this._dataItemWatchHandle = dataItem.watch('*', dojo.hitch(this, '_dataPropUpdated')) || dataItem;
+            this._dataItemWatchHandle = this.dataItem.watch('*', dojo.hitch(this, '_dataPropUpdated')) || this.dataItem;
         }
     },
 
     _unbindDataItem: function () {
-        var dataItem = this._getDataItem();
         // unwatch
         if (this._dataItemWatchHandle && this._dataItemWatchHandle.unwatch) {
             this._dataItemWatchHandle.unwatch();
         }
-        if (dataItem) {
-            cujo.lang.forIn(dataItem, this._unbindDataProp, this);
+        if (this.dataItem) {
+            cujo.lang.forIn(this.dataItem, this._unbindDataProp, this);
         }
     },
 
     _bindDataProp: function (propValue, propName, dataItem) {
         // set initial value
-        if (!(propName in this.unboundAttrs)) {
-            this.set(propName, dataItem[propName]);
-        }
-        // hook into nodes/widgets to receive changes
-        var commands = [].concat(this.attributeMap[propName]);
-        dojo.forEach(commands, function (command) {
-            if (command && (command.event || command.watch)) {
-                var node = this[command.node],
-                    attr = command.attribute || propName;
-                if (!command._connects) {
-                    command._connects = [];
-                }
-                function callback () {
-                    var val = command.type == 'widget' ? node.get(attr) : dojo.attr(node, attr);
-                    this.set(propName, val);
-                }
-                if (command.watch && node.watch) {
-                    var watchee = dojo.isString(command.watch) ? command.watch : attr;
-                    command._connects.push(node.watch(watchee, callback));
-                }
-                else {
-                    command._connects.push(this.connect(node, command.event, callback));
-                }
-            }
-        }, this);
+        propName = this._reverseBindings[propName] || propName;
+        this.set(propName, dataItem[propName]);
     },
 
     _unbindDataProp: function (propValue, propName, dataItem) {
-        // unhook node/widget event callbacks
-        var commands = [].concat(this.attributeMap[propName]);
-        dojo.forEach(commands, function (command) {
-            dojo.forEach(command._connects, function (handle) {
-                if (handle.unwatch) {
-                    handle.unwatch();
-                }
-                else {
-                    this.disconnect(handle);
-                }
-            }, this);
-        }, this);
+        // wondering if there's ever going to be something to do here?
     },
 
     _dataPropUpdated: function (propName, oldValue, newValue) {
-        this.set(propName, this._getDataItem()[propName]);
+        var dataItem = this.dataItem;
+        this.set(propName, dojo.isFunction(dataItem.get) ? dataItem.get(propName) : dataItem[propName]);
     }
 
 });

@@ -24,37 +24,45 @@ dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, c
 
     // TODO: apply requireLocalization/getLocalization
     strings: {
+        // this is a catchall place to store strings that will be translated / customized
+        // before placing in the dom
     },
 
-    // TODO: apply requireLocalization/getLocalization
-    formatters: null,
+    //  propertyMap: Object
+    //      Since virtually all data items have an 'id' property, we need to map it from a
+    //      different widget property.  The convention is to use 'dataId' as the widget property.
+    propertyMap: dojo.delegate(cujo.mvc.BaseView.prototype.propertyMap, {
+        dataId: {
+            bind: 'id'
+        }
+    }),
 
-    formatProperty: function (/* Any */ value, /* String */ propName) {
-        //  summary: formats some value based on the named entry in the formatters hash map.
-        //      The formatters use the dojo standard string formatting (see dojo.string.substitute).
+    applyTemplate: function (/* Any */ value, /* String */ propName) {
+        //  summary: applies a template defined by propName to the current widget (this).
+        //      The template uses dojo standard string formatting (see dojo.string.substitute).
         //      You'd typically use this to format a read-only derived property, but there are
-        //      many other potential uses. Examples of typical formatters:
+        //      many other potential uses. Examples of typical templates:
         //          displayName: '${lastName}, ${firstName}',
         //          salutation: 'Hello ${firstName}!',
         //          startDate: '${$value:_myFormatFunction}'
         //      The special property, $value, exists in cases when the value isn't a property
-        //      on the current view (e.g. a derived property). See the documentation for
-        //      dojo.string.substitute for a description of how to apply format functions.
+        //      on the current widget. See the documentation for dojo.string.substitute for
+        //      a description of how to apply format functions in templates.
         //      Note: if you need more complex formatting (e.g. branching or looping) on a
-        //      derived property, write your own custom get() function in the derivedProp
+        //      derived property, write your own custom get() function in the propertyMap
         //      definition.  This method is for the simple cases. :)
-        return this.formatString(this.formatters[propName], dojo.delegate(this, {$value: value}));
+        return this.formatString(dojo.getObject(propName, false, this), dojo.delegate(this, {$value: value}));
     },
 
     formatString: function (/* String */ template, /* Object? */ map) {
         //  summary: formats a string using dojo.string.substitute, but inserts the current
         //      view instance for the hash map (and source of format functions) for convenience.
-        // TODO: do something useful with the transform function parameter?
+        // TODO: do something useful with the null transform function parameter?
         try {
             return dojo.string.substitute(template, map || this, null, this);
         }
         catch (ex) {
-            // TODO: figure out how to intelligently handle when the data item isn't yet available
+            // TODO: figure out how to intelligently handle when a property isn't yet available
             return '';
         }
     },
