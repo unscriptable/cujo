@@ -107,15 +107,16 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     },
 
     _itemAdded: function (item) {
-        this._createBoundItem(item);
-        this.onAddItem(item);
+        var widget = this._createBoundItem(item);
+        this.onAddItem(widget);
     },
 
     _itemUpdated: function (item) {
         // TODO: find item
         var found;
         if (found) {
-            this.onUpdateItem(item);
+            var widget;
+            this.onUpdateItem(widget);
         }
     },
 
@@ -123,7 +124,8 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         // TODO: find item from id
         var item;
         if (item) {
-            this.onDeleteItem(item);
+            var widget;
+            this.onDeleteItem(widget);
         }
     },
 
