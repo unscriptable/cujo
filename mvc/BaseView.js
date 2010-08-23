@@ -47,20 +47,15 @@ dojo.declare('cujo.mvc.BaseView', [cujo._Widget, cujo._Templated, cujo._Connecta
         // disambiguate arguments
         if (!dojo.isString(state)) {
             // set object
-            state.state = cujo.lang.uncamelize(state.state);
             return this._setStateDef(state);
         }
         else if (arguments.length > 1) {
             // set string
-            return this._setStateDef({state: cujo.lang.uncamelize(state), value: value});
-        }
-        else if (!state) {
-            // get array of current states
-            return dojo.map(this._getState().split(' '), function (cn) { return cujo.lang.camelize(cn); });
+            return this._setStateDef({state: state, value: value});
         }
         else {
-            // get status of single state (boolean)
-            return !!this._getState(cujo.lang.uncamelize(state));
+            // get state
+            return this._getState(state);
         }
 
     },
@@ -84,13 +79,20 @@ dojo.declare('cujo.mvc.BaseView', [cujo._Widget, cujo._Templated, cujo._Connecta
     },
 
     _getState: function (/* String */ state) {
-        return cujo.dom.getState(this.domNode, state) || '';
+        if (state) state = cujo.lang.uncamelize(state);
+        var states = cujo.dom.getState(this.domNode, state) || '';
+        return state ? !!states : dojo.map(states.split(' '), function (s) { return cujo.lang.camelize(s); });
     },
 
     _setStateDef: function (/* cujo.__StateDef */ stateDef) {
         stateDef.scope = stateDef.scope || this.domNode;
-        var result = cujo.dom.setState(stateDef);
-        this.onStateChange(stateDef);
+        var currState = cujo.dom.getState(stateDef.scope);
+            rawDef = dojo.delegate(stateDef);
+        rawDef.state = cujo.lang.uncamelize(stateDef.state);
+        var result = cujo.dom.setState(rawDef);
+        if (currState != cujo.dom.getState(stateDef.scope)) {
+            this.onStateChange(stateDef);
+        }
         return result;
     }
 
