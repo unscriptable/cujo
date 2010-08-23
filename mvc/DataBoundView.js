@@ -37,7 +37,7 @@ dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, c
         }
     }),
 
-    applyTemplate: function (/* Any */ value, /* String */ propName) {
+    applyTemplate: function (/* Any */ template) {
         //  summary: applies a template defined by propName to the current widget (this).
         //      The template uses dojo standard string formatting (see dojo.string.substitute).
         //      You'd typically use this to format a read-only derived property, but there are
@@ -45,19 +45,18 @@ dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, c
         //          displayName: '${lastName}, ${firstName}',
         //          salutation: 'Hello ${firstName}!',
         //          startDate: '${$value:_myFormatFunction}'
-        //      The special property, $value, exists in cases when the value isn't a property
-        //      on the current widget. See the documentation for dojo.string.substitute for
+        //      See the documentation for dojo.string.substitute for
         //      a description of how to apply format functions in templates.
         //      Note: if you need more complex formatting (e.g. branching or looping) on a
-        //      derived property, write your own custom get() function in the propertyMap
+        //      derived property, write your own custom transform() function in the propertyMap
         //      definition.  This method is for the simple cases. :)
-        return this.formatString(dojo.getObject(propName, false, this), dojo.delegate(this, {$value: value}));
+        return this.formatString(template, this);
     },
 
     formatString: function (/* String */ template, /* Object? */ map) {
         //  summary: formats a string using dojo.string.substitute, but inserts the current
         //      view instance for the hash map (and source of format functions) for convenience.
-        // TODO: do something useful with the null transform function parameter?
+        // TODO: do something useful with the transform function parameter?
         try {
             return dojo.string.substitute(template, map || this, null, this);
         }
@@ -72,7 +71,7 @@ dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, c
         return this.inherited(arguments);
     },
 
-    _setDataItem: function (item) {
+    _setDataItemAttr: function (item) {
         //  summary: overrides cujo.mvc._Bindable's _setDataItem to toggle state
         this._refreshDataState();
         return this.inherited(arguments);
