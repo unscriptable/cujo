@@ -5,13 +5,10 @@
     - requires use of dojo.addClass/removeClass/toggleClass
 
     TODO:
-    - use -webkit-animation instead of js for custom (cujo-bounce) transitions
+    - use -webkit-animation instead of js for custom (-cujo-bounce) transitions
     - hook up :target, :focus, :active, and :hover events via document-wide event handler
         - scan rules for :hover, :target, etc. and keep map of rules/classes
         - when event is triggered, scan map and fire event if it's a rule we're tracking
-    - when starting a new animation, check existing animations for a node to see if one or more
-      properties are redundant.  If so, remove the property from the previous (older) animation
-      like this: oldAnim.curve._properties[conflictingProperty] == undefined;
 
 */
 dojo.provide('cujo._base.cssx.transition');
@@ -57,12 +54,16 @@ d.declare('cujo.cssx.transition.Check', cssProc._CssxProc, {
         // if css3 transition property detected
         if (propName.match(/\btransition\b/)) {
             // if browser does not support transitions or there is a non-standard transition prop
-            if (prefix !== '' || this.hasCujoExt(propName, value)) {
+            if (!useNative || this.hasCujoExt(propName, value)) {
                 this.addTransProp(propName, value, selectors);
                 useCssx = true;
                 if (!initialized) {
                     initialize();
                 }
+            }
+            // if browser uses a vendor prefix
+            else if (prefix != '') {
+                this.appendRule(selectors, cssProp + ':' + value);
             }
         }
     },
@@ -77,7 +78,7 @@ d.declare('cujo.cssx.transition.Check', cssProc._CssxProc, {
         // add cujo cssx property
         var selText = d.isArray(selectors) ? selectors.join(',') : selectors;
         this.createCssxProp(selText, 'transition', value);
-        if (useNative) {
+        if (useNative && prefix == '') {
             // remove existing css3 prop
             this.appendRule(selectors, propName + ': none;');
         }
@@ -101,6 +102,10 @@ var
     //      for different browsers. This library will figure out which proprietary variant
     //      works.  i.e. WebkitTransition for Webkit-based browsers.
     transProp = 'transition',
+
+    //  transCssProp: String
+    //      the css version using dashes instead of camel-case
+    cssProp = 'transition',
 
     //  eventName: String
     //      summary: The name of the javascript event that fires at the document level after
@@ -131,6 +136,7 @@ function setVendorVariants () {
         transProp = prefix + 'Transition';
         eventName = prefix + 'TransitionEnd';
         useNative = true;
+        cssProp = cujo.lang.uncamelize(transProp);
     }
     else if (prefix !== null) {
         useNative = true;
@@ -416,7 +422,7 @@ function fixupEasing () {
 function getEasing (timing) {
     // TODO: convert this from cubic-bezier func, if specified.
     // remove cujo- prefix
-    timing = cujo.lang.camelize((timing || '').replace(/^cujo-/, ''));
+    timing = cujo.lang.camelize((timing || '').replace(/^-?cujo-/, ''));
     return timings[timing];
 }
 
