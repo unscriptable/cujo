@@ -32,8 +32,9 @@ dojo.declare('cujo.mvc.DataListView', [cujo.mvc.BaseView, cujo.mvc._BindableCont
 
     _setResultSetAttr: function (item) {
         //  summary: overrides cujo.mvc._BindableContainer's _setResultSetAttr to toggle state
+        var result = this.inherited(arguments);
         this._refreshDataState();
-        return this.inherited(arguments);
+        return result;
     },
 
     _refreshDataState: function () {
