@@ -103,18 +103,25 @@ cujo.cssProc = cujo._base.cssProc = (function () {
 
     // check which css property we're going to hijack (all support outlineColor, FF supports counter-reset)
     // create functions to process values before inserting or retrieving from css
-// TODO: do we need this proxy stuff?  If so, determine JIT, since sniffGcs isn't available at load time
+// TODO: determine JIT (and remove browser sniff), since sniffGcs isn't available at load time
 //    if (sniffGcs('counterReset', '_cujo_test 27', false)) {
-        var proxyProp = 'counterReset',
+    if (!dojo.isWebKit) {
+        var
+            proxyProp = 'counterReset',
             proxyCss = 'counter-reset',
             proxyGet = function (val) { var m = val.match(/cujo-cssx\s+(\d+)/); return m ? parseInt(m[1]) : undefined; },
             proxySet = function (val) { return 'cujo-cssx ' + val; };
-//    }
+    }
+    else /*if(proxyProp = sniffProp('animationName', true))*/ {
+        // you're extremely unlikely to be using transitions and animations at the same time, so we're hijacking it
+        var
+            proxyProp = sniffProp('animationName', true),
+            proxyCss = cujo.lang.uncamelize(proxyProp), //'animation-name',
+            proxyGet = function (val) { return val ? parseInt(val.replace(/^\D*/, '')) : void 0; },
+            proxySet = function (val) { console.log('setting', val); return 'cujo-cssx-' + val; };
+    }
 //    else {
-//        var proxyProp = sniffProp('animationName', true),
-//            proxyCss = 'animation-name',
-//            proxyGet = function (val) { return val ? parseInt(val.replace(/^\D*/, '')) : undefined; }
-//            proxySet = function (val) { return 'cujo-cssx-' + val; };
+//        throw new Error('Can\'t find a proxy property for css transitions.' );
 //    }
 
     // cssx functions are different for browsers that support expando style objects (IE)
@@ -200,7 +207,6 @@ cujo.cssProc = cujo._base.cssProc = (function () {
         onProperty: function (/* String */ propName, /* String */ value, /* String|Array */ selectors, /* String */ ss) {},
 
         appendRule: function (/* String|Array */ selectors, /* String */ propsText) {
-//console.log('text appendRule', selectors, '{', propsText, '}');
             assertCallback('appendRule');
             if (dojo.isArray(selectors)) {
                 selectors = selectors.join(',');
