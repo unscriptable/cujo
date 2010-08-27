@@ -13,6 +13,7 @@ dojo.provide('cujo.mvc.BaseController');
 dojo.declare('cujo.mvc.BaseController', cujo._Connectable, {
 
     // TODO:
+
     init: function () {},
 
     ready: function () {}

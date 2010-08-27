@@ -21,12 +21,13 @@ dojo.declare('cujo._Derivable', null, {
     //      problem concerning persistDerivedAtCreate, afaik.
     // TODO: allow this class to be mixed-in to non-widget classes? (culprit: postMixInProperties)
 
-    //  propertyMap: Object
+    // TODO: this should be a class member, not a prototype member. how to fix this?
+    //  derivedAttributes: Object
     //      Defines a set of derived properties. These act like normal properties, but are changed
     //      automatically when another property changes (or vice versa).  Each property definition has a
     //      transform and a reverse transform, as well as a possible linked property to watch (source).
     //      Example:
-    //          propertyMap: {
+    //          derivedAttributes: {
     //              displayStartDate: {
     //                  source: 'startDate', // required
     //                  transform: '_dateToDisplayDate', // required
@@ -39,10 +40,10 @@ dojo.declare('cujo._Derivable', null, {
     //      _dateToDisplayDate: function (/* Any */ value, /* String */ propName, /* String */ relPropName) {
     //          return dojo.date.locale.format(value, {selector: 'date', formatLength: 'long'});
     //      }
-    propertyMap: null,
+    derivedAttributes: null,
 
     constructor: function () {
-        this.propertyMap = this.propertyMap || {};
+        this.derivedAttributes = this.derivedAttributes || {};
         this._dependentProps = {};
     },
 
@@ -52,8 +53,8 @@ dojo.declare('cujo._Derivable', null, {
         // make sure all props are done before deriving new ones
         var result = this.inherited(arguments);
 
-        cujo.lang.forInAll(this.propertyMap, function (deriver, name) {
-            // establish link from propertyMap's source property...
+        cujo.lang.forInAll(this.derivedAttributes, function (deriver, name) {
+            // establish link from derivedAttributes's source property...
             if (deriver.source) {
                 var link = {
                         name: name,
@@ -81,7 +82,7 @@ dojo.declare('cujo._Derivable', null, {
 
     get: function (/*String*/ attr) {
         // handle derived properties
-        var deriver = this.propertyMap[attr];
+        var deriver = this.derivedAttributes[attr];
         if (deriver && deriver.source && deriver.transform) {
             // just grab value if it's defined on this. Note: this.set() may not have been called, yet
             return (attr in this) ? this[attr] : this._getDerivedValue(attr, deriver);
@@ -93,7 +94,7 @@ dojo.declare('cujo._Derivable', null, {
 
     set: function (/* String */ attr, /* Any */ value) {
 
-        var deriver = this.propertyMap[attr],
+        var deriver = this.derivedAttributes[attr],
             result = this.inherited(arguments);
 
         // handle source properties (if a bi-directional link has been set. i.e. deriver.reverse is specified)

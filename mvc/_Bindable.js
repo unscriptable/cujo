@@ -22,9 +22,10 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
     dataItem: null,
 
-    //  propertyMap: Object
-    //      propertyMap maps widget properties to data item properties.
-    //      propertyMap: {
+    // TODO: this should be a class member, not a prototype member. how to fix this?
+    //  boundAttributes: Object
+    //      boundAttributes maps widget/view properties to data item properties.
+    //      boundAttributes: {
     //          eventName: '',
     //          eventType: 'eventTypeStr',
     //          startDate: {
@@ -32,13 +33,19 @@ dojo.declare('cujo.mvc._Bindable', null, {
     //          },
     //          aWidgetProp: 'aDataProp'
     //      }
-    propertyMap: null,
+    boundAttributes: null,
+
+    //  bindAllAttributes: Boolean
+    //      Set bindAllAttributes to true to always bind all attributes from the dataItem.
+    //      This is good for generic solutions, NOT FOR LAZY PROGRAMMERS. :)
+    bindAllAttributes: false,
 
     constructor: function () {
-        // expand shortcut propertyMap definitions
-        this.propertyMap = this.propertyMap || {};
+        // expand shortcut boundAttributes definitions
+        this.boundAttributes = this.boundAttributes || {};
         var reverse = this._reverseBindings = {};
-        cujo.lang.forInAll(this.propertyMap, function (def, propName, map) {
+        // fill-in shortcut boundAttributes definitions
+        cujo.lang.forInAll(this.boundAttributes, function (def, propName, map) {
             if (dojo.isString(def)) {
                 map[propName] = def = { bind: def || propName };
             }
@@ -50,11 +57,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
     set: function (attr, value) {
         // override _Widget's set() to check for custom bindings
-        var def = this.propertyMap[attr],
-            dataItem = this.dataItem;
-        if (def && def.bind && dataItem) {
-            dojo.isFunction(dataItem.set) ? dataItem.set(def.bind, value) : dataItem[def.bind] = value;
-        }
+        this._viewAttrToDataAttr(value, attr);
         return this.inherited(arguments);
     },
 
@@ -106,19 +109,43 @@ dojo.declare('cujo.mvc._Bindable', null, {
         }
     },
 
-    _bindDataProp: function (propValue, propName, dataItem) {
+    _bindDataProp: function (value, dataAttr, dataItem) {
+        // create reverse binding if it hasn't been already and we're binding all
+        if (this.bindAllAttributes && !this._reverseBindings[dataAttr]) {
+            this._reverseBindings[dataAttr] = { bind: dataAttr };
+        }
         // set initial value
-         var boundName = this._reverseBindings[propName] || propName;
-        this.set(boundName, dataItem[propName]);
+        this._dataAttrToViewAttr(value, dataAttr);
     },
 
-    _unbindDataProp: function (propValue, propName, dataItem) {
-        // wondering if there's ever going to be something to do here?
+    _unbindDataProp: function (value, dataAttr, dataItem) {
+        // remove reverse binding if it was created automatically
+        if (this.bindAllAttributes && !this.boundAttributes[dataAttr]) {
+            delete this._reverseBindings[dataAttr];
+        }
+        // remove value
+        this._dataAttrToViewAttr(void 0, dataAttr);
+    },
+
+    _dataAttrToViewAttr: function (value, dataAttr) {
+        var dataItem = this.dataItem,
+            viewName = this._reverseBindings[dataAttr];
+        if (viewName) {
+            this.set(viewName, value);
+        }
+    },
+
+    _viewAttrToDataAttr: function (value, viewAttr) {
+        var dataItem = this.dataItem,
+            binding = this.boundAttributes[viewAttr],
+            boundName = binding && binding.bind;
+        if (boundName) {
+            dojo.isFunction(dataItem.set) ? dataItem.set(boundName, value) : dataItem[boundName] = value;
+        }
     },
 
     _dataPropUpdated: function (propName, oldValue, newValue) {
-        var dataItem = this.dataItem;
-        this.set(propName, dojo.isFunction(dataItem.get) ? dataItem.get(propName) : dataItem[propName]);
+        this._dataAttrToViewAttr(newValue, propName);
     }
 
 });
