@@ -23,17 +23,18 @@ dojo.declare('cujo.mvc._Bindable', null, {
     dataItem: null,
 
     // TODO: this should be a class member, not a prototype member. how to fix this?
-    //  boundAttributes: Object
-    //      boundAttributes maps widget/view properties to data item properties.
-    //      boundAttributes: {
-    //          eventName: '',
-    //          eventType: 'eventTypeStr',
+    //  attributeMap: Object
+    //      attributeMap maps widget/view properties to data item properties.
+    //      attributeMap: {
+    //          userName: '',
+    //          userId: 'displayId',
     //          startDate: {
-    //              bind: 'beginDate'
+    //              bind: 'beginDate',
+    //              type: 'unmapped'
     //          },
     //          aWidgetProp: 'aDataProp'
     //      }
-    boundAttributes: null,
+    attributeMap: null,
 
     //  bindAllAttributes: Boolean
     //      Set bindAllAttributes to true to always bind all attributes from the dataItem.
@@ -41,11 +42,11 @@ dojo.declare('cujo.mvc._Bindable', null, {
     bindAllAttributes: false,
 
     constructor: function () {
-        // expand shortcut boundAttributes definitions
-        this.boundAttributes = this.boundAttributes || {};
+        // expand shortcut attributeMap definitions
+        this.attributeMap = this.attributeMap || {};
         var reverse = this._reverseBindings = {};
-        // fill-in shortcut boundAttributes definitions
-        cujo.lang.forInAll(this.boundAttributes, function (def, propName, map) {
+        // fill-in shortcut attributeMap definitions
+        cujo.lang.forInAll(this.attributeMap, function (def, propName, map) {
             if (dojo.isString(def)) {
                 map[propName] = def = { bind: def || propName };
             }
@@ -57,7 +58,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
     set: function (attr, value) {
         // override _Widget's set() to check for custom bindings
-        this._viewAttrToDataAttr(value, attr);
+        this._localAttrToDataAttr(value, attr);
         return this.inherited(arguments);
     },
 
@@ -115,19 +116,19 @@ dojo.declare('cujo.mvc._Bindable', null, {
             this._reverseBindings[dataAttr] = { bind: dataAttr };
         }
         // set initial value
-        this._dataAttrToViewAttr(value, dataAttr);
+        this._dataAttrToLocalAttr(value, dataAttr);
     },
 
     _unbindDataProp: function (value, dataAttr, dataItem) {
         // remove reverse binding if it was created automatically
-        if (this.bindAllAttributes && !this.boundAttributes[dataAttr]) {
+        if (this.bindAllAttributes && !this.attributeMap[dataAttr]) {
             delete this._reverseBindings[dataAttr];
         }
         // remove value
-        this._dataAttrToViewAttr(void 0, dataAttr);
+        this._dataAttrToLocalAttr(void 0, dataAttr);
     },
 
-    _dataAttrToViewAttr: function (value, dataAttr) {
+    _dataAttrToLocalAttr: function (value, dataAttr) {
         var dataItem = this.dataItem,
             viewName = this._reverseBindings[dataAttr];
         if (viewName) {
@@ -135,9 +136,9 @@ dojo.declare('cujo.mvc._Bindable', null, {
         }
     },
 
-    _viewAttrToDataAttr: function (value, viewAttr) {
+    _localAttrToDataAttr: function (value, viewAttr) {
         var dataItem = this.dataItem,
-            binding = this.boundAttributes[viewAttr],
+            binding = this.attributeMap[viewAttr],
             boundName = binding && binding.bind;
         if (boundName) {
             dojo.isFunction(dataItem.set) ? dataItem.set(boundName, value) : dataItem[boundName] = value;
@@ -145,7 +146,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
     },
 
     _dataPropUpdated: function (propName, oldValue, newValue) {
-        this._dataAttrToViewAttr(newValue, propName);
+        this._dataAttrToLocalAttr(newValue, propName);
     }
 
 });

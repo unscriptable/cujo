@@ -28,12 +28,13 @@ dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, c
         // before placing in the dom
     },
 
-    //  boundAttributes: Object
+    //  attributeMap: Object
     //      Since virtually all data items have an 'id' property, we need to map it from a
     //      different widget property.  The convention is to use 'dataId' as the widget property.
-    boundAttributes: {
+    attributeMap: {
         dataId: {
-            bind: 'id'
+            bind: 'id',
+            type: 'unmapped'
         }
     },
 
@@ -48,7 +49,7 @@ dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, c
         //      See the documentation for dojo.string.substitute for
         //      a description of how to apply format functions in templates.
         //      Note: if you need more complex formatting (e.g. branching or looping) on a
-        //      derived property, write your own custom transform() function in the boundAttributes
+        //      derived property, write your own custom transform() function in the attributeMap
         //      definition.  This method is for the simple cases. :)
         return this.formatString(template, this);
     },
