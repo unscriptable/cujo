@@ -28,7 +28,7 @@ dojo.provide('cujo._Widget');
 
 dojo.require('dijit._Widget');
 dojo.require('cujo._Connectable');
-dojo.require('cujo._Settable');
+dojo.require('dojo.Stateful');
 
 // cujo.registerPublisher('cujo.customize', 'last'); // last to register has right of first refusal
     //  other publisher types:
@@ -133,6 +133,24 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
         dojo.publish('cujo.customize', [this, this.declaredClass, this.customizableProps]);
     },
 
+    // TODO: remove for dojo 1.6 which will have watch() already
+    set: function (name, value) {
+        if (!dojo.isObject(name)) {
+            var oldValue = this[name],
+                result = this.inherited(arguments);
+            if(this._watchCallbacks){
+                this._watchCallbacks(name, oldValue, value);
+            }
+        }
+        else {
+            result = this.inherited(arguments);
+        }
+        return result;
+    },
+
+    // TODO: remove for dojo 1.6 which will have watch() already
+    watch: dojo.Stateful.prototype.watch,
+
     _attrToDom: function (/*String*/ attr, /*String*/ value) {
         // handles child widgets that dijit._Widget does not and hooks up bi-directional bindings
         if (this.domNode) {
@@ -156,9 +174,6 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
             attribute = command.attribute || attr,
             val = node.get ? node.get(attribute) : dojo.attr(node, attribute);
         this.set(attr, val);
-        if (command.callback) {
-            dojo.hitch(this, command.callback)(val, attr, command);
-        }
     },
 
     _applyAttributes: function () {
