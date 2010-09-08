@@ -21,14 +21,14 @@ dojo.declare('cujo._Connectable', null, {
 
     // anything that doesn't start with an underscore is connectable by default
     // override this to allow or disallow other combos
-    cujoConnectables: cujo._Connectable.public,
+    connectables: cujo._Connectable.public,
 
     _hasListener: function (/* String */ event) {
         return this._cujoConnects[event] > 0;
     },
 
     _cujoConnect: function (me, event, obj, method) {
-        if (!this.cujoConnectables(event)) {
+        if (!this.connectables(event)) {
             throw 'Attempted to connect to an unallowed event/method: ' + event;
         }
         me._cujoConnects[event] = (me._cujoConnects[event] || 0) + 1;

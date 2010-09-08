@@ -30,7 +30,7 @@ dojo.declare('cujo.mvc.DojoDataAdapter', [cujo._Watchable, cujo._Connectable], {
     },
 
     // store is not settable!
-    settableProps: function (name) { return name != 'store'; },
+    settables: function (name) { return name != 'store'; },
 
     // use get('store') to get a handle to the store!
     _store: null,

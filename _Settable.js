@@ -33,10 +33,10 @@ dojo.declare('cujo._Settable', null, {
     },
 
     //  summary: by default, everything is settable (null). to limit which properties are settable, change
-    //      cujoSettables to a function that takes single name argument and returns a truthy/falsy result.
+    //      settables to a function that takes single name argument and returns a truthy/falsy result.
     //      example: the following only allows methods that start with 'on; to be settable.
-    //          settableProps: function (name) { return dojo.isFunction(this[name]) && name.substr(0, 2) == 'on'; }
-    settableProps: null,
+    //          settables: function (name) { return dojo.isFunction(this[name]) && name.substr(0, 2) == 'on'; }
+    settables: null,
 
     //  summary: if set to an function, it is used to transform the name passed to get()  or set() to a
     //      local property. set this property to something falsy ('', false, null) to prevent any transform.
@@ -66,7 +66,7 @@ dojo.declare('cujo._Settable', null, {
         if (this.detectDirectWrite && (name in this._settableCache) && curr !== this._settableCache[name]) {
             throw new Error(dojo.string.substitute(errDirectWrite, {name: name}));
         }
-        if (this.settableProps && !this.settableProps(name)) {
+        if (this.settables && !this.settables(name)) {
             throw new Error(dojo.string.substitute(errUnsettable, {name: name}));
         }
         this._settableCache[name] = value;
