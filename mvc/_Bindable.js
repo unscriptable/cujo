@@ -26,11 +26,21 @@ dojo.declare('cujo.mvc._Bindable', null, {
     //  attributeMap: Object
     //      attributeMap maps widget/view properties to data item properties.
     //      attributeMap: {
+    //          // 3-way binding on this.userName/domNode.userName/dataItem.userName
     //          userName: '',
+    //          // 3-way binding on this.userId/domNode.displayId/dataItem.displayId
     //          userId: 'displayId',
+    //          // 3-way binding on this.endDate/endDateNode.value/dataItem.finalDate
+    //          endDate: {
+    //              type: 'attribute',
+    //              node: 'endDateNode',
+    //              attribute: 'value',
+    //              data: 'finalDate'
+    //          },
+    //          // 2-way binding on this.startDate/dataItem.beginDate
     //          startDate: {
-    //              bind: 'beginDate',
-    //              type: 'unmapped'
+    //              data: 'beginDate',
+    //              type: 'no-dom'
     //          },
     //          aWidgetProp: 'aDataProp'
     //      }
