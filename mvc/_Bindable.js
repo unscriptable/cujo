@@ -22,7 +22,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
     dataItem: null,
 
-    // TODO: this should be a class member, not a prototype member. how to fix this?
+    /*=====
     //  attributeMap: Object
     //      attributeMap maps widget/view properties to data item properties.
     //      attributeMap: {
@@ -42,9 +42,22 @@ dojo.declare('cujo.mvc._Bindable', null, {
     //              data: 'beginDate',
     //              type: 'no-dom'
     //          },
-    //          aWidgetProp: 'aDataProp'
+    //          // bind multiple dom nodes (no need to specify data binding twice)
+    //          title: [
+    //              {
+    //                  type: 'attribute',
+    //                  node: 'linkNode',
+    //                  attribute: 'title',
+    //                  data: 'title'
+    //              },
+    //              {
+    //                  type: 'innerText',
+    //                  node: 'labelNode'
+    //              }
+    //          ]
     //      }
     attributeMap: null,
+    =====*/
 
     //  bindAllAttributes: Boolean
     //      Set bindAllAttributes to true to always bind all attributes from the dataItem.
@@ -53,17 +66,27 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
     constructor: function () {
         // expand shortcut attributeMap definitions
-        this.attributeMap = this.attributeMap || {};
+
         var reverse = this._reverseBindings = {};
-        // fill-in shortcut attributeMap definitions
-        cujo.lang.forInAll(this.attributeMap, function (def, propName, map) {
-            if (dojo.isString(def)) {
-                map[propName] = def = { bind: def || propName };
+        cujo.lang.forInAll(this.attributeMap, function (defs, propName, map) {
+            if (dojo.isString(defs)) {
+                // fill-in shortcut attributeMap definitions
+                // Note: we have to auto-populate node since once we've constructed a
+                // command object, dijit._Widget assumes that it defines a node.
+                // default node is this.domNode
+                map[propName] = defs = { 
+                    data: defs || propName,
+                    node: 'domNode'
+                };
             }
-            if (def.bind) {
-                reverse[def.bind] = propName;
-            }
+            // grab reverse-lookups
+            dojo.forEach([].concat(defs), function (def) {
+                if (def.data) {
+                    reverse[def.data] = propName;
+                }
+            });
         });
+
     },
 
     set: function (attr, value) {
@@ -79,7 +102,9 @@ dojo.declare('cujo.mvc._Bindable', null, {
     },
 
     postMixInProperties: function () {
-        this._bindDataItem();
+        if (this.dataItem) {
+            this._bindDataItem(this.dataItem);
+        }
         return this.inherited(arguments);
     },
     
@@ -94,36 +119,44 @@ dojo.declare('cujo.mvc._Bindable', null, {
     },
 
     _setDataItemAttr: function (item) {
-        this._unbindDataItem();
-        this.dataItem = item || null;
-        this._bindDataItem();
-    },
-
-    _bindDataItem: function () {
-        // update dom
-        if (this.dataItem) {
-            cujo.lang.forIn(this.dataItem, this._bindDataProp, this);
-            // watch for all property changes
-            if (this.dataItem.watch) {
-                this._dataItemWatchHandle = this.dataItem.watch('*', dojo.hitch(this, '_dataPropUpdated')) || this.dataItem;
+        if (item !== this.dataItem) {
+            // unbind
+            if (this.dataItem) {
+                // disconnect dataItem before we start setting all bound properties to undefined
+                // (or we'll set the dataItem properties to undefined, too)
+                var currDataItem = this.dataItem;
+                this.dataItem = void 0;
+                this._unbindDataItem(currDataItem);
+            }
+            // bind
+            if (item) {
+                this._bindDataItem(item);
+                this.dataItem = item;
             }
         }
     },
 
-    _unbindDataItem: function () {
+    _bindDataItem: function (dataItem) {
+        // update dom
+        cujo.lang.forIn(dataItem, this._bindDataProp, this);
+        // watch for all property changes
+        if (dataItem.watch) {
+            this._dataItemWatchHandle = dataItem.watch('*', dojo.hitch(this, '_dataPropUpdated')) || dataItem;
+        }
+    },
+
+    _unbindDataItem: function (dataItem) {
         // unwatch
         if (this._dataItemWatchHandle && this._dataItemWatchHandle.unwatch) {
             this._dataItemWatchHandle.unwatch();
         }
-        if (this.dataItem) {
-            cujo.lang.forIn(this.dataItem, this._unbindDataProp, this);
-        }
+        cujo.lang.forIn(dataItem, this._unbindDataProp, this);
     },
 
     _bindDataProp: function (value, dataAttr, dataItem) {
         // create reverse binding if it hasn't been already and we're binding all
         if (this.bindAllAttributes && !this._reverseBindings[dataAttr]) {
-            this._reverseBindings[dataAttr] = { bind: dataAttr };
+            this._reverseBindings[dataAttr] = { data: dataAttr };
         }
         // set initial value
         this._dataAttrToLocalAttr(value, dataAttr);
@@ -139,17 +172,19 @@ dojo.declare('cujo.mvc._Bindable', null, {
     },
 
     _dataAttrToLocalAttr: function (value, dataAttr) {
-        var dataItem = this.dataItem,
-            viewName = this._reverseBindings[dataAttr];
-        if (viewName) {
-            this.set(viewName, value);
+        var attrName = this._reverseBindings[dataAttr];
+        // only call set if the attribute has changed
+        // Note: we're using this[propName] instead of this.get(propName). This should be safe
+        // because we're always keeping this[propName] current. 
+        if (attrName && value != this[attrName]) {
+            this.set(attrName, value);
         }
     },
 
     _localAttrToDataAttr: function (value, viewAttr) {
         var dataItem = this.dataItem,
             binding = this.attributeMap[viewAttr],
-            boundName = binding && binding.bind;
+            boundName = binding && binding.data;
         if (boundName) {
             dojo.isFunction(dataItem.set) ? dataItem.set(boundName, value) : dataItem[boundName] = value;
         }
