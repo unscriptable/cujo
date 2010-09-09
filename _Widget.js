@@ -138,7 +138,7 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
         if (!dojo.isObject(name)) {
             var oldValue = this[name],
                 result = this.inherited(arguments);
-            if(this._watchCallbacks){
+            if (this._watchCallbacks && oldValue !== value) {
                 this._watchCallbacks(name, oldValue, value);
             }
         }
@@ -170,7 +170,7 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
 
     _domToAttr: function (attr, command) {
         // Note: node could be a widget
-        var node = this[command.node],
+        var node = this[command.node || command || 'domNode'],
             attribute = command.attribute || attr,
             val = node.get ? node.get(attribute) : dojo.attr(node, attribute);
         this.set(attr, val);
