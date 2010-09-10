@@ -185,7 +185,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
         var dataItem = this.dataItem,
             binding = this.attributeMap[viewAttr],
             boundName = binding && binding.data;
-        if (boundName) {
+        if (boundName && dataItem) {
             dojo.isFunction(dataItem.set) ? dataItem.set(boundName, value) : dataItem[boundName] = value;
         }
     },

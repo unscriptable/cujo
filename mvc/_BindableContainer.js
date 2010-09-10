@@ -38,7 +38,6 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     //  resultSet: Object
     //      The collection of data items used to create and bind the sub-views. Note: you must use get() and
     //      set() to access this property.
-    //      TODO: not sure I like treating this like a property (also see _setResultSetAttr below)
     resultSet: null,
 
     // hooks to catch item modifications
