@@ -7,7 +7,7 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
     Introduces some new cujo view states (see cujo.mvc.DataListView.dataStates below):
-        cujoListUnknown - the view does not yet know if there is a result set or not
+        cujoListUnbound - the view does not have a result set
         cujoListEmpty - the view received a result set, but it is empty
         cujoListBound - the view is bound to a result set that is not empty
 
@@ -20,10 +20,6 @@ dojo.require('cujo.mvc._BindableContainer');
 (function () { // local scope
 
 dojo.declare('cujo.mvc.DataListView', [cujo.mvc.BaseView, cujo.mvc._BindableContainer], {
-
-    // TODO: apply requireLocalization/getLocalization
-    strings: {
-    },
 
     postCreate: function () {
         this._refreshDataState();
@@ -44,14 +40,14 @@ dojo.declare('cujo.mvc.DataListView', [cujo.mvc.BaseView, cujo.mvc._BindableCont
 });
 
 var dataStates = cujo.mvc.DataListView.dataStates = {
-        unknown: 'cujoListUnknown',
+        unknown: 'cujoListUnbound',
         empty: 'cujoListEmpty',
         bound: 'cujoListBound'
         // TODO: add a state to indicate list is only partially loaded?
     },
     dataStateMapper = function (resultSet) {
         return (
-            resultSet === undefined ? dataStates.unknown :
+            !resultSet ? dataStates.unknown :
             resultSet.length == 0 ? dataStates.empty :
             dataStates.bound
         );
