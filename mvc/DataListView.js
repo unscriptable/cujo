@@ -14,12 +14,12 @@
 */
 dojo.provide('cujo.mvc.DataListView');
 
-dojo.require('cujo.mvc.BaseView');
+dojo.require('cujo.mvc.View');
 dojo.require('cujo.mvc._BindableContainer');
 
 (function () { // local scope
 
-dojo.declare('cujo.mvc.DataListView', [cujo.mvc.BaseView, cujo.mvc._BindableContainer], {
+dojo.declare('cujo.mvc.DataListView', [cujo.mvc.View, cujo.mvc._BindableContainer], {
 
     postCreate: function () {
         this._refreshDataState();

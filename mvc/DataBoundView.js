@@ -14,13 +14,13 @@
 */
 dojo.provide('cujo.mvc.DataBoundView');
 
-dojo.require('cujo.mvc.BaseView');
+dojo.require('cujo.mvc.View');
 dojo.require('cujo.mvc._Bindable');
 dojo.require('cujo._Derivable');
 
 (function () { // local scope
 
-dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.BaseView, cujo.mvc._Bindable, cujo._Derivable], {
+dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.View, cujo.mvc._Bindable, cujo._Derivable], {
 
     //  attributeMap: Object
     //      Since virtually all data items have an 'id' property, we need to map it from a
