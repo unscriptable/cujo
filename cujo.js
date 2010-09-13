@@ -122,7 +122,7 @@ cujo.isLoaded = function (/* Array|String */ moduleNames) {
         }
     }
     return !!result;
-}
+};
 
 cujo.wait = function (/* Array|String */ moduleNames, /* Function */ func, /* Object? */ context) {
     // TODO: return a promise instead of taking a function and a context
@@ -159,7 +159,7 @@ cujo.wait = function (/* Array|String */ moduleNames, /* Function */ func, /* Ob
     if (waiter.count == 0) {
         execWaiter(waiter);
     }
-}
+};
 
 function execWaiter (waiter) {
     var context = waiter.context || d.global,
@@ -211,10 +211,11 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
     // TODO: work-around IE's 31 stylesheet limit
     // TODO: don't download the same resource more than once in IE (even if cache directives are missing)
     // FF 3.x and Safari 4 won't fetch the css file twice if we xhr it after creating the link element
-    // TODO: test Opera and 3.0 browsers
+    // TODO: test Opera, Chrome, and 3.0 browsers
 
     var opts = dojo.mixin({}, cujo.cssProcOptions, options),
-        path = dojo.moduleUrl('', [cujo._moduleToThemePath(module, 'css'), 'css'].join('.')),
+        path = dojo._getModuleSymbols(module).join("/") + '.css',
+        //themePath = dojo.moduleUrl('', [cujo._moduleToThemePath(module, 'css'), 'css'].join('.')),
         attrs = {
             rel: 'stylesheet',
             type: 'text/css',
@@ -229,6 +230,7 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
     link.setAttribute('href', path);
     cujo._getHeadElement().appendChild(link);
 
+    // TODO: change this so that the dev can wait for just xhr if cssx is turned off
     cujo.wait(['dojo._base.xhr', 'cujo._base.cssProc'], function () {
 
         var dfd = dojo.xhr('GET', {url: path, sync: false});
@@ -254,32 +256,36 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
 cujo.requireHtml = function (/* String */ module, /* Object? */ options) {};
 
 cujo.getHtml = function (/* String */ module) {
-    return dojo.cache('', [cujo._moduleToThemePath(module, 'html'), 'html'].join('.'));
+    // TODO: incorporate i18n and theming
+    var lastDot = module.lastIndexOf('.'),
+        path = [module.substr(0, lastDot), module.substr(lastDot + 1)];
+    return dojo.cache(path[0], path[1] + '.html');
+    //return dojo.cache('', [cujo._moduleToThemePath(module, 'html'), 'html'].join('.'));
 };
 
 cujo.setThemePath = function (/* String */ name, /* String */ type, /* String */ path, /* Object? */ options) {
-    options = dojo.mixin({}, defaultDef.options, options);
-    if (path.substr(path.length - 1) != '/') {
-        path = path + '/';
-    }
-    var defs = themeDefs[name];
-    if (!defs) {
-        defs = themeDefs[name] = {};
-    }
-    defs[type] = { path: path, options: options };
+//    options = dojo.mixin({}, defaultDef.options, options);
+//    if (path.substr(path.length - 1) != '/') {
+//        path = path + '/';
+//    }
+//    var defs = themeDefs[name];
+//    if (!defs) {
+//        defs = themeDefs[name] = {};
+//    }
+//    defs[type] = { path: path, options: options };
 };
 
 cujo.setTheme = function (/* String */ name) {
-    theme = name;
+//    theme = name;
 };
 
 cujo.getThemePath = cujo._moduleToThemePath = function (/* String */ module, /* String */ type) {
-    var defs = themeDefs[theme],
-        path = defs[type].path;
-    if (defs[type].options.expand) {
-        module = module.replace(/\./g, '/');
-    }
-    return path + module;
+//    var defs = themeDefs[theme],
+//        path = defs[type].path;
+//    if (defs[type].options.expand) {
+//        module = module.replace(/\./g, '/');
+//    }
+//    return path + module;
 };
 
 cujo._getHeadElement = function (/* DOMDocument? */ doc) {
