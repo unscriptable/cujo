@@ -10,13 +10,18 @@
 */
 dojo.provide('cujo.mvc.DojoDataAdapter');
 
-dojo.require("dojo.StateFul");
+dojo.require("dojo.Stateful");
 
-dojo.declare('cujo.mvc.DojoDataAdapter', null, {
+/* the following classes are copied from pre-dojo1.6 trunk */
 
+dojo.provide("dojo.store.DataStore");
+dojo.provide("dojo.store.util.QueryResults");
+dojo.provide("dojo.store.util.SimpleQueryEngine");
+dojo.provide("dojo.store.Watchable");
+
+dojo.declare("dojo.store.DataStore", null, {
 	target: "",
-
-    constructor: function(options){
+	constructor: function(options){
 		// summary:
 		// 		This is an adapter for using Dojo Data stores with an object store consumer.
 		//		You can provide a Dojo data store and use this adapter to interact with it through
@@ -28,20 +33,29 @@ dojo.declare('cujo.mvc.DojoDataAdapter', null, {
 		dojo.mixin(this, options);
 		this.idProperty = this.store.getIdentityAttributes()[0];
 	},
-
-    get: function(id, options){
+	_objectConverter: function(callback){
+		var store = this.store;
+		return function(item){
+			var object = {};
+			var attributes = store.getAttributes(item);
+			for(var i = 0; i < attributes.length; i++){
+				object[attributes[i]] = store.getValue(item, attributes[i]);
+			}
+			return callback(object);
+		}
+	},
+	get: function(id, options){
 		//	summary:
 		// 		Retrieves an object by it's identity. This will trigger a fetchItemByIdentity
 		// id:
 		// 		The identity to use to lookup the object
 		var returnedObject, returnedError;
 		var deferred = new dojo.Deferred();
-		var store = this.store, self = this;
-		store.fetchItemByIdentity({
+		this.store.fetchItemByIdentity({
 			identity: id,
-			onItem: function(item){
-				deferred.resolve(returnedObject = self._itemToObject(item));
-			},
+			onItem: this._objectConverter(function(object){
+				deferred.resolve(returnedObject = object)
+			}),
 			onError: function(error){
 				deferred.reject(returnedError = error);
 			}
@@ -55,8 +69,7 @@ dojo.declare('cujo.mvc.DojoDataAdapter', null, {
 		}
 		return deferred.promise;
 	},
-
-    put: function(object, options){
+	put: function(object, options){
 		//	summary:
 		// 		Stores an object by it's identity.
 		// object:
@@ -86,10 +99,9 @@ dojo.declare('cujo.mvc.DojoDataAdapter', null, {
 			});
 		}
 	},
-
-    "delete": function(id){
+	remove: function(id){
 		//	summary:
-		// 		Deletes an object by its identity.
+		// 		Deletes an object by it's identity.
 		// id:
 		// 		The identity to use to delete the object
 		var store = this.store;
@@ -101,8 +113,7 @@ dojo.declare('cujo.mvc.DojoDataAdapter', null, {
 		});
 
 	},
-
-    query: function(query, options){
+	query: function(query, options){
 		//	summary:
 		// 		Queries the store for objects.
 		// query:
@@ -110,83 +121,46 @@ dojo.declare('cujo.mvc.DojoDataAdapter', null, {
 		var returnedObject, returnedError;
 		var deferred = new dojo.Deferred();
 		deferred.total = new dojo.Deferred();
+		var converter = this._objectConverter(function(object){return object});
 		this.store.fetch(dojo.mixin({
 			query: query,
 			onBegin: function(count){
 				deferred.total.resolve(count);
 			},
 			onComplete: function(results){
-                var self = this,
-                    statefulResults = dojo.map(results, function (item) { return self._itemToObject(item);} );
-				deferred.resolve(statefulResults);
+				deferred.resolve(dojo.map(results, converter));
 			},
 			onError: function(error){
 				deferred.reject(error);
 			}
 		}, options));
-		return this._deferredToResultSet(deferred);
-	},
+		return dojo.store.util.QueryResults(deferred);
+	}
+});
 
-    _itemToObject: function (item) {
-        var object = dojo.delegate({_item: item});
-        var attributes = this.store.getAttributes(item);
-        for(var i = 0; i < attributes.length; i++){
-            object[attributes[i]] = this.store.getValue(item, attributes[i]);
-        }
-        return new dojo.Stateful(object);
+dojo.declare('cujo.mvc.DojoDataAdapter', dojo.store.DataStore, {
+
+    queryEngine: null,
+
+    constructor: function (options) {
+
+        dojo.store.Watchable(this);
+
     },
 
-    _deferredToResultSet: function (dfd) {
-        // TODO: how to unsubscribe? dojo 1.6 wiki does not say!
-        // add subscribe
-        dfd.subscribe = function (event, callback) {
-            var handle;
-            dojo.when(dfd, function (results) {
-                if (event = 'onAdd') {
-                    handle = dojo.connect(this.store, 'onNew', this, function (item, parentInfo) {
-                        // TODO: how to tell if the item belongs in our query's result set????
-                        callback(this._itemToObject(item));
-                    });
-                }
-                else if (event = 'onUpdate') {
-                    handle = dojo.connect(this.store, 'onSet', this, function (item, attribute, oldValue, newValue) {
-                        // find item and then call callback
-                        var found;
-                        dojo.some(results, function (obj, i) {
-                            return found = (item == obj._item ? obj : void 0);
-                        });
-                        if (found) {
-                            callback(found, attribute, oldValue, newValue);
-                        }
-                    });
-                }
-                else if (event = 'onRemove') {
-                    handle = dojo.connect(this.store, 'onDelete', this, function (item) {
-                        // find item and then call callback
-                        var found;
-                        dojo.some(results, function (obj, i) {
-                            return found = (item == obj._item ? obj : void 0);
-                        });
-                        if (found) {
-                            callback(found);
-                        }
-                    });
-                }
-                return {
-                    unsubscribe: function () {
-                        if (handle) dojo.disconnect(handle);
-                    }
-                };
-            });
-        };
-        // add other methods
-        return cujo.mvc.QueryResults(dfd);
-    }
+	_objectConverter: function(callback){
+        // summary: ensures that the returned object has get and watch methods (set is assumed)
+        function makeStatefulAndCallback (object) {
+            var stfuObj = object.get && object.watch ? object : new dojo.Stateful(object);
+            return callback(stfuObj);
+        }
+        return this.inherited(arguments, [makeStatefulAndCallback]);
+	}
 
 });
 
 
-cujo.mvc.QueryResults = function(results){
+dojo.store.util.QueryResults = function(results){
 	//	summary:
 	//		This wraps a query results with the appropriate methods
 	function addIterativeMethod(method){
@@ -209,4 +183,136 @@ cujo.mvc.QueryResults = function(results){
 		});
 	}
 	return results;
+};
+
+dojo.store.util.SimpleQueryEngine = function(query, options){
+	// summary:
+	//		Simple query engine that matches using filter functions, named filter
+	// 		functions or objects by name-value on a query object hash
+
+	// create our matching query function
+	if(typeof query == "string"){
+		// named query
+		query = this[query];
+	}else if(typeof query == "object"){
+		var queryObject = query;
+		query = function(object){
+			for(var key in queryObject){
+				if(queryObject[key] != object[key]){
+					return false;
+				}
+			}
+			return true;
+		};
+	}
+	function execute(array){
+		// execute the whole query, first we filter
+		var results = dojo.filter(array, query);
+		// next we sort
+		if(options && options.sort){
+			results.sort(function(a, b){
+				for(var sort, i=0; sort = options.sort[i]; i++){
+					var aValue = a[sort.attribute];
+					var bValue = b[sort.attribute];
+					if (aValue != bValue) {
+						return sort.descending == aValue > bValue ? -1 : 1;
+					}
+				}
+				return 0;
+			});
+		}
+		// now we paginate
+		if(options && (options.start || options.count)){
+			results = results.slice(options.start || 0, (options.start || 0) + (options.count || Infinity));
+		}
+		return results;
+	}
+	execute.matches = query;
+	return execute;
+};
+
+dojo.store.Watchable = function(store){
+	//	summary:
+	//		The Watch store wrapper takes a store and sets a watch method on query()
+	// 		results that can be used to monitor results for changes
+	var callbacks = [];
+	// a Comet driven store could directly call notify to notify watchers when data has
+	// changed on the backend
+	var notifyAll = store.notify = function(object, existingId){
+		for(var i = 0, l = callbacks.length; i < l; i++){
+			callbacks[i](object, existingId);
+		}
+	}
+	var originalQuery = store.query;
+	store.query = function(query, options){
+		var results = originalQuery.apply(this, arguments);
+		var queryExecutor = store.queryEngine && store.queryEngine(query, options);
+		if(results && results.forEach){
+			results.watch = function(listener){
+				var callback = function(changed, existingId){
+					if(queryExecutor){
+						if(existingId){
+							// remove the old one
+							results.forEach(function(object, i){
+								if(store.getIdentity(object) == existingId){
+									results.splice(i, 1);
+									listener(i, existingId);
+								}
+							});
+						}
+						// add the new one
+						if(changed &&
+								// if a matches function exists, use that (probably more efficient)
+								(queryExecutor.matches ? queryExecutor.matches(changed) : queryExecutor([changed]).length)){
+							// TODO: handle paging correctly
+							results.push(changed);
+							results = queryExecutor(results);
+							listener(results.indexOf(changed), undefined, changed);
+						}
+					}else{
+						// we don't have a queryEngine, so we don't provide any index information or updates to result sets
+						listener(undefined, existingId, changed);
+					}
+				};
+				callbacks.push(callback);
+				return {
+					unwatch: function(){
+						callbacks.splice(dojo.indexOf(callbacks, callback), 1);
+					}
+				}
+			};
+		}
+		return results;
+	};
+	var inMethod;
+	function whenFinished(method, action){
+		var original = store[method];
+		if(original){
+			store[method] = function(value){
+				if(inMethod){
+					// if one method calls another (like add() calling put()) we don't want two events
+					return original.apply(this, arguments);
+				}
+				inMethod = true;
+				try{
+					return dojo.when(original.apply(this, arguments), function(results){
+						action(value);
+						return results;
+					});
+				}finally{
+					inMethod = false;
+				}
+			};
+		}
+	}
+	// monitor for updates by listening to these methods
+	whenFinished("put", function(object){
+		notifyAll(object, store.getIdentity(object));
+	});
+	whenFinished("add", notifyAll);
+	whenFinished("remove", function(id){
+		notifyAll(undefined, id);
+	});
+
+	return store;
 };
