@@ -117,18 +117,6 @@ dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
     //          })
     customizableProps: null,
 
-    postscript: function (params, srcNodeRef) {
-        // convert to private property names, if necessary
-        if (this.settableXform) {
-            var clean = dojo.mixin({}, params);
-            params = {};
-            for (var p in clean) {
-                params[this.settableXform(p)] = clean[p];
-            }
-        }
-        return this.inherited(arguments, [params, srcNodeRef]);
-    },
-
     postMixInProperties: function () {
         dojo.publish('cujo.customize', [this, this.declaredClass, this.customizableProps]);
     },
