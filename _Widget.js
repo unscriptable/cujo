@@ -27,7 +27,6 @@
 dojo.provide('cujo._Widget');
 
 dojo.require('dijit._Widget');
-dojo.require('cujo._Connectable');
 dojo.require('dojo.Stateful');
 
 // cujo.registerPublisher('cujo.customize', 'last'); // last to register has right of first refusal
@@ -38,7 +37,7 @@ dojo.require('dojo.Stateful');
 
 (function () { // local scope
 
-dojo.declare('cujo._Widget', [dijit._Widget, cujo._Connectable], {
+dojo.declare('cujo._Widget', [dijit._Widget], {
 
     // most cujo images should reside here:
     imagesPath: dojo.moduleUrl('cujo', 'theme/img'),
