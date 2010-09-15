@@ -40,10 +40,20 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     //      set() to access this property.
     resultSet: null,
 
+    //  boundViews: Array
+    //      The collection of sub-views created and bound to data items in resultSet.  These get generated
+    //      automatically.
+    boundViews: null,
+
     // hooks to catch item modifications
     onAddItem: function (item) {},
     onUpdateItem: function (item) {},
     onDeleteItem: function (item) {},
+
+    constructor: function () {
+        // create list of items
+        this.boundViews = [];
+    },
 
     buildRendering: function () {
         var result = this.inherited(arguments);
@@ -54,7 +64,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     },
 
     uninitialize: function () {
-        this._unsubscribeResultSet();
+        this._unwatchResultSet();
         this.inherited(arguments);
     },
 
@@ -65,7 +75,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     _setResultSetAttr: function (rs) {
         // unsubscribe from any previous resultSet
         if (this.resultSet) {
-            this._unsubscribeResultSet(this.resultSet);
+            this._unwatchResultSet();
         }
         // save result set and initialize
         this.resultSet = rs || null;
@@ -75,23 +85,38 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     _initResultSet: function () {
         // subscribe to onAdd, onUpdate, and onRemove
         if (this.resultSet) {
+            // TODO: will the progress handler ever fire?
             dojo.when(this.resultSet, dojo.hitch(this, '_resultsLoaded'), dojo.hitch(this, '_resultsError'), dojo.hitch(this, '_itemAdded'));
-            this._subscribeResultSet(this.resultSet);
-        }
-        // TODO: initialize anything else?
-    },
-
-    _subscribeResultSet: function (rs) {
-        if (rs && rs.subscribe) {
-            rs.subscribe('onAdd', dojo.hitch(this, '_itemAdded'));
-            rs.subscribe('onupdate', dojo.hitch(this, '_itemUpdated'));
-            rs.subscribe('onDelete', dojo.hitch(this, '_itemDeleted'));
+            this._watchResultSet();
         }
     },
 
-    _unsubscribeResultSet: function (rs) {
-        if (rs && rs.unsubscribe) {
-            // TODO: how to unsubscribe? the dojo 1.6 data store proposed api doesn't say how :(
+    _watchResultSet: function () {
+        var rs = this.resultSet;
+        if (rs && rs.watch) {
+            var unwatch = rs.watch(dojo.hitch(this, '_handleResultSetEvent')).unwatch,
+                handle = this.connect(this, '_unwatchResultSet', function () {
+                    if (unwatch) unwatch();
+                    this.disconnect(handle);
+                });
+        }
+    },
+
+    _unwatchResultSet: function () {
+        //  summary: this gets called when the result set is unwatched but unwatching
+        //      happens in a callback within _watchResultSet
+    },
+
+    _handleResultSetEvent: function (index, id, changed) {
+        // summary: fires when an item in result set changes
+        if (index == null) {
+            // TODO: ok, what to do if the dev hasn't defined a queryExecutor?
+        }
+        else if (id == null) {
+            this._itemAdded(changed, index);
+        }
+        else {
+            this._itemDeleted(id, index);
         }
     },
 
@@ -102,29 +127,22 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     },
 
     _resultsError: function (err) {
-
+        // TODO
     },
 
-    _itemAdded: function (item) {
-        var widget = this._createBoundItem(item);
+    _itemAdded: function (item, index) {
+        var views = this.boundViews,
+            widget = this._createBoundItem(item);
+        views.splice(index >= 0 ? index : views.length, 0, widget);
         this.onAddItem(widget);
+        return widget;
     },
 
-    _itemUpdated: function (item) {
-        // TODO: find item
-        var found;
-        if (found) {
-            var widget;
-            this.onUpdateItem(widget);
-        }
-    },
-
-    _itemDeleted: function (id) {
-        // TODO: find item from id
-        var item;
-        if (item) {
-            var widget;
-            this.onDeleteItem(widget);
+    _itemDeleted: function (id, index) {
+        var removed = this.boundViews.splice(index, 1)[0];
+        if (removed) {
+            removed.destroyRecursive();
+            this.onDeleteItem(removed);
         }
     },
 
