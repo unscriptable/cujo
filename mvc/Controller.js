@@ -8,6 +8,8 @@
 */
 dojo.provide('cujo.mvc.Controller');
 
+dojo.require('cujo._Connectable');
+
 (function () { // local scope
 
 dojo.declare('cujo.mvc.Controller', cujo._Connectable, {
