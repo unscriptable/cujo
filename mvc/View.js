@@ -10,11 +10,10 @@ dojo.provide('cujo.mvc.View');
 
 dojo.require('cujo._Widget');
 dojo.require('cujo._Templated');
-dojo.require('cujo._Connectable');
 
 (function () { // local scope
 
-dojo.declare('cujo.mvc.View', [cujo._Widget, cujo._Templated, cujo._Connectable], {
+dojo.declare('cujo.mvc.View', [cujo._Widget, cujo._Templated], {
 
     widgetsInTemplate: false,
 
