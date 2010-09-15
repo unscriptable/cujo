@@ -12,8 +12,9 @@ dojo.provide('cujo._Connectable');
 (function () { // local scope
 
 // some common use cases
-cujo._Connectable.public = function (name) { return name.match(/^[^_]/); };
-cujo._Connectable.events = function (name) { return name.match(/^on/); };
+cujo._Connectable.any = function () { return true };
+cujo._Connectable.publicOnly = function (name) { return name.match(/^[^_]/); };
+cujo._Connectable.eventsOnly = function (name) { return name.match(/^on/); };
 
 dojo.declare('cujo._Connectable', null, {
 
@@ -21,7 +22,7 @@ dojo.declare('cujo._Connectable', null, {
 
     // anything that doesn't start with an underscore is connectable by default
     // override this to allow or disallow other combos
-    connectables: cujo._Connectable.public,
+    connectables: cujo._Connectable.any,
 
     _hasListener: function (/* String */ event) {
         return this._cujoConnects[event] > 0;
@@ -46,6 +47,7 @@ dojo.declare('cujo._Connectable', null, {
 
     destroy: function () {
         dojo.forEach(this._connects, dojo.disconnect);
+        this.inherited(arguments);
     },
 
     connect: function (source, event, func) {
