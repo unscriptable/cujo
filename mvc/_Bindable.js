@@ -90,16 +90,18 @@ dojo.declare('cujo.mvc._Bindable', null, {
     },
 
     set: function (attr, value) {
-        // override _Widget's set() to check for custom bindings
-        this._localAttrToDataAttr(value, attr);
+        //  summary: override _Widget's set() to check for custom bindings
+        if (this[attr] !== value) {
+            this._localAttrToDataAttr(value, attr);
+        }
         return this.inherited(arguments);
     },
 
-    get: function (attr) {
-        // override _Widget's get() to check for custom bindings?
-        // the values should be synchronized at all times, so just return the inherited value
-        return this.inherited(arguments);
-    },
+//    get: function (attr) {
+//        // override _Widget's get() to check for custom bindings?
+//        // the values should be synchronized at all times, so just return the inherited value
+//        return this.inherited(arguments);
+//    },
 
     postMixInProperties: function () {
         if (this.dataItem) {
@@ -172,21 +174,26 @@ dojo.declare('cujo.mvc._Bindable', null, {
     },
 
     _dataAttrToLocalAttr: function (value, dataAttr) {
-        var attrName = this._reverseBindings[dataAttr];
+        var localAttr = this._reverseBindings[dataAttr],
+            binding = this.attributeMap[localAttr];
         // only call set if the attribute has changed
         // Note: we're using this[propName] instead of this.get(propName). This should be safe
         // because we're always keeping this[propName] current. 
-        if (attrName && value != this[attrName]) {
-            this.set(attrName, value);
+        if (localAttr && value !== this[localAttr] && binding.activeSource != 'local') {
+            binding.activeSource = 'data';
+            this.set(localAttr, value);
+            delete binding.activeSource;
         }
     },
 
-    _localAttrToDataAttr: function (value, viewAttr) {
+    _localAttrToDataAttr: function (value, localAttr) {
         var dataItem = this.dataItem,
-            binding = this.attributeMap[viewAttr],
-            boundName = binding && binding.data;
-        if (boundName && dataItem) {
-            dojo.isFunction(dataItem.set) ? dataItem.set(boundName, value) : dataItem[boundName] = value;
+            binding = this.attributeMap[localAttr],
+            dataAttr = binding && binding.data;
+        if (dataAttr && dataItem && binding.activeSource != 'data') {
+            binding.activeSource = 'local';
+            dojo.isFunction(dataItem.set) ? dataItem.set(dataAttr, value) : dataItem[dataAttr] = value;
+            delete binding.activeSource;
         }
     },
 

@@ -122,17 +122,21 @@ dojo.declare('cujo._Widget', [dijit._Widget], {
 
     // TODO: remove for dojo 1.6 which will have watch() already
     set: function (name, value) {
-        if (!dojo.isObject(name)) {
-            var oldValue = this[name],
-                result = this.inherited(arguments);
-            if (this._watchCallbacks && oldValue !== value) {
-                this._watchCallbacks(name, oldValue, value);
-            }
+        if (dojo.isObject(name)) {
+            // inherited dijit._Widget will break object into individual properties
+            // and call set() recursively
+            this.inherited(arguments);
         }
         else {
-            result = this.inherited(arguments);
+            var oldValue = this[name];
+            this.inherited(arguments);
+            if (oldValue !== value) {
+                if (this._watchCallbacks && oldValue !== value) {
+                    this._watchCallbacks(name, oldValue, value);
+                }
+            }
         }
-        return result;
+        return this;
     },
 
     // TODO: remove for dojo 1.6 which will have watch() already

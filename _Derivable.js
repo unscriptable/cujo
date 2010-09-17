@@ -1,5 +1,5 @@
 /*
-    cujo.mvc._Derivable
+    cujo._Derivable
     (c) copyright 2010, unscriptable.com
     author: john
 
