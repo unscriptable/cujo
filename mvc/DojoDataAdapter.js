@@ -12,12 +12,15 @@ dojo.provide('cujo.mvc.DojoDataAdapter');
 
 dojo.require("dojo.Stateful");
 
-/* the following dojo.* classes are copied from pre-dojo1.6 trunk */
+/*
+    The following dojo.* classes are copied from pre- dojo 1.6 trunk.
+    Scroll down to find the actual cujo.mvc.DojoDataAdapter class.
+*/
 
 dojo.provide("dojo.store.DataStore");
 dojo.provide("dojo.store.util.QueryResults");
 dojo.provide("dojo.store.util.SimpleQueryEngine");
-dojo.provide("dojo.store.Watchable");
+dojo.provide("dojo.store.Observable");
 
 dojo.declare("dojo.store.DataStore", null, {
 	target: "",
@@ -43,6 +46,10 @@ dojo.declare("dojo.store.DataStore", null, {
 			return callback(object);
 		}
 	},
+    getIdentity: function (object) {
+        var idAttr = this.store.getIdentityAttributes()[0];
+        return object[idAttr];
+    },
 	get: function(id, options){
 		//	summary:
 		// 		Retrieves an object by it's identity. This will trigger a fetchItemByIdentity
@@ -143,18 +150,24 @@ dojo.declare('cujo.mvc.DojoDataAdapter', dojo.store.DataStore, {
 
     constructor: function (options) {
 
-        dojo.store.Watchable(this);
+        dojo.store.Observable(this);
 
     },
 
-	_objectConverter: function(callback){
-        // summary: ensures that the returned object has get and watch methods (set is assumed)
+    _objectConverter: function(callback){
+        //  summary:
+        //      ensures that the returned object has a watch method
+        //      (e.g. dojo.Stateful) but not the mozilla native watch method
+        //      since the mozilla watch method doesn't support the same method
+        //      signatures for watching all properties as dojo.Stateful:
+        //      o.watch(callback) // throws TypeError
+        //      o.watch('*', callback); // adds a '*' property to the object
         function makeStatefulAndCallback (object) {
-            var stfuObj = object.get && object.watch ? object : new dojo.Stateful(object);
+            var stfuObj = object.watch != Object.prototype.watch ? object : new dojo.Stateful(object);
             return callback(stfuObj);
         }
         return this.inherited(arguments, [makeStatefulAndCallback]);
-	}
+    }
 
 });
 
@@ -230,9 +243,9 @@ dojo.store.util.SimpleQueryEngine = function(query, options){
 	return execute;
 };
 
-dojo.store.Watchable = function(store){
+dojo.store.Observable = function(store){
 	//	summary:
-	//		The Watch store wrapper takes a store and sets a watch method on query()
+	//		The Observable store wrapper takes a store and sets an observe method on query()
 	// 		results that can be used to monitor results for changes
 	var queryUpdaters = [], revision = 0;
 	// a Comet driven store could directly call notify to notify watchers when data has
@@ -250,40 +263,53 @@ dojo.store.Watchable = function(store){
 			var queryExecutor = store.queryEngine && store.queryEngine(query, options);
 			var queryRevision = revision;
 			var listeners = [], queryUpdater;
-			results.watch = function(listener){
+			results.observe = function(listener, includeObjectUpdates){
 				if(listeners.push(listener) == 1){
 					// first listener was added, create the query checker and updater
 					queryUpdaters.push(queryUpdater = function(changed, existingId){
 						if(++queryRevision != revision){
 							throw new Error("Query is out of date, you must watch() the query prior to any data modifications");
 						}
+						var removedObject, removedFrom, insertedInto;
+						if(existingId){
+							// remove the old one
+							results.forEach(function(object, i){
+								if(store.getIdentity(object) == existingId){
+									removedObject = object;
+									removedFrom = i;
+									if (results.splice) {
+                                        results.splice(i, 1);
+                                    }
+                                    else {
+                                        results = results.filter(function (o, index) { return i != index; });
+                                    }
+								}
+							});
+						}
 						if(queryExecutor){
-							if(existingId){
-								// remove the old one
-								results.forEach(function(object, i){
-									if(store.getIdentity(object) == existingId){
-										results.splice(i, 1);
-										listener(i, existingId);
-									}
-								});
-							}
 							// add the new one
 							if(changed &&
 									// if a matches function exists, use that (probably more efficient)
 									(queryExecutor.matches ? queryExecutor.matches(changed) : queryExecutor([changed]).length)){
 								// TODO: handle paging correctly
 								results.push(changed);
-								results = queryExecutor(results);
-								listener(results.indexOf(changed), undefined, changed);
+								insertedInto = queryExecutor(results).indexOf(changed);
 							}
-						}else{
-							// we don't have a queryEngine, so we don't provide any index information or updates to result sets
-							listener(undefined, existingId, changed);
+						}else if(changed){
+							// we don't have a queryEngine, so we can't provide any information
+							// about where it was inserted, but we can at least indicate a new object
+							insertedInto = removedFrom || -1;
+						}
+						if((removedFrom > -1 || insertedInto > -2) &&
+								(includeObjectUpdates || (removedFrom != insertedInto))){
+							for(var i = 0;listener = listeners[i]; i++){
+								listener(changed || removedObject, removedFrom, insertedInto);
+							}
 						}
 					});
 				}
 				return {
-					unwatch: function(){
+					dismiss: function(){
 						// remove this listener
 						listeners.splice(dojo.indexOf(listeners, listener), 1);
 						if(!listeners.length){
