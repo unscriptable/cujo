@@ -92,9 +92,10 @@ dojo.declare('cujo._Derivable', null, {
 //    },
 
     set: function (/* String */ attr, /* Any */ value) {
+console.log('_Derivable#set:', arguments);
+        var currValue = this[attr];
 
-        var currValue = this[attr],
-            result = this.inherited(arguments);
+        this.inherited(arguments);
 
         if (currValue !== value) {
             // handle derived properties (if this is a source attr)
@@ -106,7 +107,7 @@ dojo.declare('cujo._Derivable', null, {
             }, this);
         }
 
-        return result;
+        return this;
 
     },
 
