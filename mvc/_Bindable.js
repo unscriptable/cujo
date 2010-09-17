@@ -179,10 +179,10 @@ dojo.declare('cujo.mvc._Bindable', null, {
         // only call set if the attribute has changed
         // Note: we're using this[propName] instead of this.get(propName). This should be safe
         // because we're always keeping this[propName] current. 
-        if (localAttr && value !== this[localAttr] && binding.activeSource != 'local') {
-            binding.activeSource = 'data';
+        if (localAttr && value !== this[localAttr] && binding._origin != 'local') {
+            binding._origin = 'data';
             this.set(localAttr, value);
-            delete binding.activeSource;
+            delete binding._origin;
         }
     },
 
@@ -190,10 +190,10 @@ dojo.declare('cujo.mvc._Bindable', null, {
         var dataItem = this.dataItem,
             binding = this.attributeMap[localAttr],
             dataAttr = binding && binding.data;
-        if (dataAttr && dataItem && binding.activeSource != 'data') {
-            binding.activeSource = 'local';
+        if (dataAttr && dataItem && binding._origin != 'data') {
+            binding._origin = 'local';
             dojo.isFunction(dataItem.set) ? dataItem.set(dataAttr, value) : dataItem[dataAttr] = value;
-            delete binding.activeSource;
+            delete binding._origin;
         }
     },
 
