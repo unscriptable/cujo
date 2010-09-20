@@ -45,15 +45,38 @@ dojo.declare('cujo._Derivable', null, {
     
     constructor: function () {
         this._deriverSources = {};
-//        this._derivedAttrs = {};
+        this._derivablesPending = true;
+    },
+
+    postscript: function () {
+        this.inherited(arguments);
+        // check if we need to initialize
+        if (this._derivablesPending) this._initDerivables(this.attributeMap, this._deriverSources, this);
+        delete this._derivablesPending;
     },
 
     postMixInProperties: function () {
+        this.inherited(arguments);
+        // check if we need to initialize
+        if (this._derivablesPending) this._initDerivables(this.attributeMap, this._deriverSources, this);
+        delete this._derivablesPending;
+    },
 
-        // make sure all props are done before deriving new ones
-        var result = this.inherited(arguments);
+    set: function (/* String */ attr, /* Any */ value) {
 
-        cujo.lang.forInAll(this.attributeMap, function (commands, name) {
+        var inherited = this.getInherited('set', arguments);
+
+        this._setAndCheckDerivables(attr, value, inherited, this._deriverSources, this);
+
+        return this;
+
+    },
+
+    /* the following methods are context-free so they can be reused in the Derivable decorator */
+
+    _initDerivables: function (map, sources, context) {
+
+        cujo.lang.forInAll(map, function (commands, name) {
             dojo.some([].concat(commands), function (command) {
                 if (command.deriver) {
                     // establish links from attributeMap's source property...
@@ -63,51 +86,33 @@ dojo.declare('cujo._Derivable', null, {
                                 command: command,
                                 source: source
                             };
-                        this._deriverSources[source] = this._deriverSources[source] || [];
-                        this._deriverSources[source].push(link);
-                    }, this);
-//                    this._derivedAttrs[name] = link;
+                        sources[source] = sources[source] || [];
+                        sources[source].push(link);
+                    });
                     // persist property
-                    this.set(name, this._getDerivedValue(name, command));
+                    context.set(name, context._getDerivedValue(name, command));
                     return true;
                 }
-            }, this);
-        }, this);
-
-        return result;
+            });
+        });
 
     },
 
-//    get: function (/*String*/ attr) {
-//        // handle derived properties
-//        var command = this._derivedAttrs[attr] && this._derivedAttrs[attr].command;
-//        if (command && command.deriver) {
-//            // just grab value if it's defined on this.
-//            // Note: this.set() may not have been called on any sources, yet
-//            return (attr in this) ? this[attr] : this._getDerivedValue(attr, command);
-//        }
-//        else {
-//            return this.inherited(arguments);
-//        }
-//    },
+    _setAndCheckDerivables: function (attr, value, origSet, sources, context) {
 
-    set: function (/* String */ attr, /* Any */ value) {
+        var currValue = context[attr];
 
-        var currValue = this[attr];
-
-        this.inherited(arguments);
+        origSet.call(context, attr, value);
 
         if (currValue !== value) {
             // handle derived properties (if this is a source attr)
-            dojo.forEach(this._deriverSources[attr], function (dep) {
-                var val = this._getDerivedValue(dep.name, dep.command);
+            dojo.forEach(sources[attr], function (dep) {
+                var val = context._getDerivedValue(dep.name, dep.command);
                 //  Note: don't call the inherited set because there may be
                 //  a superclass set() that needs to run, too.
-                this.set(dep.name, val);
-            }, this);
+                context.set(dep.name, val);
+            });
         }
-
-        return this;
 
     },
 
