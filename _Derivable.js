@@ -5,41 +5,63 @@
 
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
-
-    Use cujo.mvc._Derivable as a mixin in a multiple-inheritance pattern:
-        dojo.declare('myClass', cujo._Derivable, { ... }); // mixin
-
 */
 dojo.provide('cujo._Derivable');
 
 (function () {
 
 dojo.declare('cujo._Derivable', null, {
+    //  summary:
+    //      This is the Mixin version of the cujo.js's Derivable helper.
+    //      Both of these versions allow you to add derived attributes (a.k.a.
+    //      computed properties) to an object declaratively.  The derived atributes are
+    //      initialized and updated continually by watching one or more source attributes.
+    //      When a source attribute is changed, the derived attribute is, too.
+    //  description:
+    //      Use cujo._Derivable as a mixin in a multiple-inheritance pattern:
+    //          dojo.declare('myClass', cujo._Derivable, { ... }); // mixin
+    //      cujo.js's Derivable helpers must be used on an object that implements the set 
+    //      method. Any object that descends from cujo._Widget, dijit._Widget, or dojo.Stateful
+    //      (as well as others) implements a set method.
+    //      This helper is especially useful for adding computed properties to views and
+    //      data models.  (hint, hint)
+    //      This helper's attributeMap overloads dijit's attributeMap to define the derived 
+    //      attributes.  See the attributeMap documentation below.
 
     /*=====
     //  attributeMap: Object
     //      Defines a set of derived properties. These act like normal properties, but are changed
-    //      automatically when another property changes (or vice versa).  Each property definition has a
-    //      deriver function as well as possible linked attributes to watch (source).
+    //      automatically when another property changes (or vice versa).  Each property definition 
+    //      has a deriver function as well as possible linked attributes to watch (source).
     //      Example:
     //          attributeMap: {
-    //              displayStartDate: {
-    //                  source: 'startDate',
-    //                  deriver: '_toDisplayDate' // required
+    //              info: {
+    //                  derived: 'funFacts',
+    //                  deriver: function (def) { return 'Fun Facts: ' + this.get('info'); }
     //              },
-    //              greeting: {
-    //                  source: ['lastName', 'firstName'],
+    //              startDate: {
+    //                  derived: 'displayStartDate',
+    //                  deriver: '_toDisplayDate' // calls this._toDisplayDate(attrDef);
+    //              },
+    //              lastName: {
+    //                  derived: 'greeting',
+    //                  deriver: 'applyTemplate',
+    //                  template: 'strings.greeting' // applyTemplate knows what to do with this
+    //              },
+    //              firstName: {
+    //                  derived: 'greeting', // also updates greeting
     //                  deriver: 'applyTemplate',
     //                  template: 'strings.greeting' // applyTemplate knows what to do with this
     //              }
     //          }
     //      Each derived property must have a deriver function.  This function is passed a single
-    //      parameter: the derived property definition.  It is the job of the deriver function to
-    //      know how to return the value of the derived property from the deriver function.
-    //      When linked attributes (source) are defined, the deriver function is called whenever
-    //      those linked attributes change.
-    //      Note: attributeMap allows multiple mappings per property name, but this doesn't make
-    //      any sense for derived attributes. Therefore, only the first one is used.
+    //      parameter: the entire derived property definition.  It is the job of the deriver 
+    //      function to know how to return the value of the derived property from the deriver 
+    //      function. You may add additional properties to the attribute definition to help the 
+    //      deriver function do its job.  For instance, the lastName and firstName definitions 
+    //      above include a template property that the applyTemplate method knows how to use.
+    //      Note: attributeMap allows multiple definitions per property name. See dijit._Widget for
+    //      more information about this.
     attributeMap: null,
     =====*/
     
@@ -72,7 +94,7 @@ dojo.declare('cujo._Derivable', null, {
 
     },
 
-    /* the following methods are context-free so they can be reused in the Derivable decorator */
+    /* the following methods are context-free so they can be reused in the Derivable decorator version */
 
     _initDerivables: function (map, sources, context) {
 
