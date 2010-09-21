@@ -84,7 +84,7 @@ dojo.declare('cujo._UIBlocker', [cujo._Widget, cujo._Templated], {
 
     _show: function () {
         // start blocking mouse events
-        cujo.dom.setState({scope: this.domNode, state: 'hide', value: false});
+        cujo.setDomState({scope: this.domNode, state: 'hide', value: false});
         //dojo.style(this.domNode, 'display', '');
         // TODO: block keyboard events
         // show diversion later
@@ -93,13 +93,13 @@ dojo.declare('cujo._UIBlocker', [cujo._Widget, cujo._Templated], {
 
     _hide: function () {
         // unblock mouse events
-        cujo.dom.setState({scope: this.domNode, state: 'hide', value: true});
+        cujo.setDomState({scope: this.domNode, state: 'hide', value: true});
         //dojo.style(this.domNode, 'display', 'none');
         // TODO: unblock keyboard events
         // prevent diversion from popping up
         this._preventDiversion();
         // remove disabled styling
-        cujo.dom.setState({scope: this.domNode, state: 'active', value: false});
+        cujo.setDomState({scope: this.domNode, state: 'active', value: false});
         //dojo.removeClass(this.domNode, 'uiBlockerDivert');
     },
 
@@ -107,7 +107,7 @@ dojo.declare('cujo._UIBlocker', [cujo._Widget, cujo._Templated], {
         // if the diversion is not handled in the handler
         if (this.onUIDiversion && this.onUIDiversion() !== false)
             // style this as disabled
-            cujo.dom.setState({scope: this.domNode, state: 'active', value: true});
+            cujo.setDomState({scope: this.domNode, state: 'active', value: true});
             //dojo.addClass(this.domNode, 'uiBlockerDivert');
     },
 

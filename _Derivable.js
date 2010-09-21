@@ -76,7 +76,7 @@ dojo.declare('cujo._Derivable', null, {
 
     _initDerivables: function (map, sources, context) {
 
-        cujo.lang.forInAll(map, function (commands, name) {
+        cujo.forInAll(map, function (commands, name) {
             dojo.some([].concat(commands), function (command) {
                 if (command.deriver) {
                     // establish links from attributeMap's source property...

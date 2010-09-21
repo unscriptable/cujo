@@ -78,18 +78,18 @@ dojo.declare('cujo.mvc.View', [cujo._Widget, cujo._Templated], {
     },
 
     _getState: function (/* String */ state) {
-        if (state) state = cujo.lang.uncamelize(state);
-        var states = cujo.dom.getState(this.domNode, state) || '';
-        return state ? !!states : dojo.map(states.split(' '), function (s) { return cujo.lang.camelize(s); });
+        if (state) state = cujo.uncamelize(state);
+        var states = cujo.getDomState(this.domNode, state) || '';
+        return state ? !!states : dojo.map(states.split(' '), function (s) { return cujo.camelize(s); });
     },
 
     _setStateDef: function (/* cujo.__StateDef */ stateDef) {
         stateDef.scope = stateDef.scope || this.domNode;
-        var currState = cujo.dom.getState(stateDef.scope);
+        var currState = cujo.getDomState(stateDef.scope);
             rawDef = dojo.delegate(stateDef);
-        rawDef.state = cujo.lang.uncamelize(stateDef.state);
-        var result = cujo.dom.setState(rawDef);
-        if (currState != cujo.dom.getState(stateDef.scope)) {
+        rawDef.state = cujo.uncamelize(stateDef.state);
+        var result = cujo.setDomState(rawDef);
+        if (currState != cujo.getDomState(stateDef.scope)) {
             this.stateChanged(stateDef);
         }
         return result;

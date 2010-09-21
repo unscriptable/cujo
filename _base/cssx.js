@@ -116,7 +116,7 @@ cujo.cssx = cujo._base.cssx = (function () {
         // you're extremely unlikely to be using transitions and animations at the same time, so we're hijacking it
         var
             proxyProp = sniffProp('animationName', true),
-            proxyCss = cujo.lang.uncamelize(proxyProp), //'animation-name',
+            proxyCss = cujo.uncamelize(proxyProp), //'animation-name',
             proxyGet = function (val) { return val ? parseInt(val.replace(/^\D*/, '')) : void 0; },
             proxySet = function (val) { console.log('setting', val); return 'cujo-cssx-' + val; };
     }

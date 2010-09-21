@@ -68,7 +68,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
         // expand shortcut attributeMap definitions
 
         var reverse = this._reverseBindings = {};
-        cujo.lang.forInAll(this.attributeMap, function (defs, propName, map) {
+        cujo.forInAll(this.attributeMap, function (defs, propName, map) {
             if (dojo.isString(defs)) {
                 // fill-in shortcut attributeMap definitions
                 // Note: we have to auto-populate node since once we've constructed a
@@ -140,7 +140,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
     _bindDataItem: function (dataItem) {
         // update dom
-        cujo.lang.forIn(dataItem, this._bindDataProp, this);
+        cujo.forIn(dataItem, this._bindDataProp, this);
         // watch for all property changes
         if (dataItem.watch) {
             this._dataItemWatchHandle = dataItem.watch('*', dojo.hitch(this, '_dataPropUpdated')) || dataItem;
@@ -152,7 +152,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
         if (this._dataItemWatchHandle && this._dataItemWatchHandle.unwatch) {
             this._dataItemWatchHandle.unwatch();
         }
-        cujo.lang.forIn(dataItem, this._unbindDataProp, this);
+        cujo.forIn(dataItem, this._unbindDataProp, this);
     },
 
     _bindDataProp: function (value, dataAttr, dataItem) {

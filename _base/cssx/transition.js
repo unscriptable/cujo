@@ -142,7 +142,7 @@ function setVendorVariants () {
         transProp = prefix + 'Transition';
         eventName = prefix + 'TransitionEnd';
         useNative = true;
-        cssProp = cujo.lang.uncamelize(transProp);
+        cssProp = cujo.uncamelize(transProp);
     }
     else if (prefix !== null) {
         useNative = true;
@@ -177,7 +177,7 @@ function toggleClass (/* DOMNode */ node, /* String */ classes, /* Boolean? */ a
                     // split transition definition
                     values = item.split(' '),
                     // normalize property name
-                    prop = cujo.lang.camelize(values[0]),
+                    prop = cujo.camelize(values[0]),
                     // grab any current animation for this property
                     anim = node._cujo_trans && node._cujo_trans[prop],
                     // create transition definition
@@ -428,7 +428,7 @@ function fixupEasing () {
 function getEasing (timing) {
     // TODO: convert this from cubic-bezier func, if specified.
     // remove cujo- prefix
-    timing = cujo.lang.camelize((timing || '').replace(/^-?cujo-/, ''));
+    timing = cujo.camelize((timing || '').replace(/^-?cujo-/, ''));
     return timings[timing];
 }
 

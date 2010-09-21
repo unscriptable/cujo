@@ -170,7 +170,7 @@ dojo.declare('cujo._Templated', dijit._Templated, {
                 defs = dojo.map(names, function (name) { return {node: node, name: name}; });
             ancDefs = ancDefs.concat(defs);
         }, this);
-        var ancNodeMap = cujo.lang.keyMap(ancDefs, function (def) { return def.name; });
+        var ancNodeMap = cujo.keyMap(ancDefs, function (def) { return def.name; });
 
         // iterate over overrides and replace or mixin, as specified
         dojo.forEach(overrides, function (node) {

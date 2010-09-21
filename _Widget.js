@@ -173,7 +173,7 @@ dojo.declare('cujo._Widget', [dijit._Widget], {
         //  initial value on the prototype or was supplied as a constructor param.
         //  We need the _attrToDom to run for anything with two-way binding, too!
         // TODO: add watch support when dijit supports it
-        cujo.lang.forInAll(this.attributeMap, function (commands, attr) {
+        cujo.forInAll(this.attributeMap, function (commands, attr) {
             dojo.forEach(commands && [].concat(commands), function (command) {
                 if (command.event) {
                     // check for two-way binding

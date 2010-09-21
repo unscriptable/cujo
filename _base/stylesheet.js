@@ -7,7 +7,6 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
 dojo.provide('cujo._base.stylesheet');
-dojo.provide('cujo.stylesheet');
 
 (function () { // local scope
 
@@ -15,7 +14,7 @@ var _ss,
     // Firefox 3+ haaaaaaacckkkk!! (see below)
     deferrals = [],
     doingDeferrals = false,
-    doDeferrals = cujo.lang.debounce(function () {
+    doDeferrals = cujo.debounce(function () {
         doingDeferrals = true;
         dojo.forEach(deferrals, function (def) {
             cujo.stylesheet.insertRule(def.selectorText, def.cssText, def.pos, def.ss);
@@ -38,7 +37,7 @@ function head (doc) {
     return node;
 }
 
-cujo.stylesheet = cujo._base.stylesheet = {
+cujo.stylesheet = {
 
 	createStylesheet: (function () {
         //  summary: Creates a new stylesheet so rules may be added.
@@ -198,7 +197,7 @@ dojo.ready(function () {
             '.cujo-scroll-pad-t': 'padding-top: ' + sbh
         };
 
-    cujo.lang.forIn(scrollStyles, function (cssText, selector) {
+    cujo.forIn(scrollStyles, function (cssText, selector) {
         cujo.stylesheet.appendRule(selector, cssText);
     });
 

@@ -7,12 +7,11 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
 dojo.provide('cujo._base.lang');
-dojo.provide('cujo.lang');
 
 // cujo language extensions
 // the following object's members are mixed-in to the cujo.lang object
 
-cujo.lang = cujo._base.lang = (function () {
+dojo.mixin(cujo, (function () {
 
     var
         c = cujo,
@@ -126,7 +125,7 @@ cujo.lang = cujo._base.lang = (function () {
             //  o: Object - any object or literal
             // returns a capitalized string: Boolean, Number, Null, Object, RegExp, String,
             //      Undefined, Window, etc...
-            return o == null /* null or undefined */ ? cujo.lang.capitalize('' + o) : ts.call(o).slice(8, -1);
+            return o == null /* null or undefined */ ? cujo.capitalize('' + o) : ts.call(o).slice(8, -1);
         },
 
         first: function (/* Array */ array, /* Function */ finderFunc, /* Object? */ context) {
@@ -215,4 +214,4 @@ cujo.lang = cujo._base.lang = (function () {
         }
 
     }
-})();
+})());

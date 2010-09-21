@@ -152,7 +152,7 @@ cujo.CssDomParser = function (/* Object */ cb) {
                 else {
                     // Note: this regex is overly simple, but won't hurt because we'll catch invaid propery names in the next loop
                     var props = dojo.map(t.cssText.match(/([\w-]+):/g) || [], function (p) {
-                        return cujo.lang.camelize(p.substr(0, p.length - 1).toLowerCase());
+                        return cujo.camelize(p.substr(0, p.length - 1).toLowerCase());
                     });
                     dojo.every(props, function (p) {
                         var v = t[p]; // property value

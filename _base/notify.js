@@ -12,14 +12,12 @@
 */
 dojo.provide('cujo._base.notify');
 
-dojo.require('cujo._base.lang');
-
 (function () {
 
 // cujo notification extensions
 // the following object's members are mixed-in to the cujo object
 
-dojo.mixin(cujo, cujo._base.notify = {
+dojo.mixin(cujo, {
 
     post: function (/* String */ topic, /* Object|Array? */ args, /* Function? */ callback, /* Object? */ context) {
         //  summary:

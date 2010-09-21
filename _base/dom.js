@@ -13,17 +13,16 @@
 
 */
 dojo.provide('cujo._base.dom');
-dojo.provide('cujo.dom');
 
 (function () {
 
 // cujo dom extensions
 
-cujo.dom = cujo._base.dom = {
+dojo.mixin(cujo, {
 
     head: cujo._getHeadElement,
 
-    setState: function (/* cujo.__StateDef */ stateDef) {
+    setDomState: function (/* cujo.__StateDef */ stateDef) {
         //  summary:
         //      Instructs the UI / DOM to enter into the specified state. Most states are simply
         //      classNames applied to the scope node specified in stateDef, but some special-
@@ -83,7 +82,8 @@ cujo.dom = cujo._base.dom = {
 
     },
 
-    getState: function (/* DOMNode */ scope, /* String */ state) {
+    getDomState: function (/* DOMNode */ scope, /* String */ state) {
+        // TODO: get ancestor states
         var node = scope;
 
         switch (state) {
@@ -111,7 +111,7 @@ cujo.dom = cujo._base.dom = {
         
     },
 
-    toggleState: function (/* cujo.__StateDef */ stateDef) {
+    toggleDomState: function (/* cujo.__StateDef */ stateDef) {
 
         if (!stateDef.value)
             stateDef.value = !this.getState(stateDef.scope, stateDef.state);
@@ -119,7 +119,7 @@ cujo.dom = cujo._base.dom = {
 
     }
 
-}
+});
 
 /*=====
 cujo.__StateDef = {
@@ -179,7 +179,7 @@ cujo.__StateDef_Block = {
 };
 =====*/
 
-function stateToClass (c, u) { return c; } //TODO: remove: return u ? c : ('cujo' + cujo.lang.capitalize(c)) };
+function stateToClass (c, u) { return c; } //TODO: remove: return u ? c : ('cujo' + cujo.capitalize(c)) };
 
 function applyClassState (node, state, value, custom, callback, context) {
 
@@ -199,7 +199,7 @@ function applyClassStateFromSet (node, state, set, value, custom, callback, cont
     if (custom == undefined)
         custom = true;
 
-    var obj = cujo.lang.typeOf(set) != 'Array';
+    var obj = cujo.typeOf(set) != 'Array';
 
     // ensure that all other states are applied the opposite of state
     for (var p in set) {

@@ -7,7 +7,6 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
 dojo.provide('cujo._base.sniff');
-dojo.provide('cujo.sniff');
 
 (function () { // local scope
 
@@ -18,7 +17,7 @@ function _supported (propName, node) {
     return typeof (node || dojo.doc.documentElement).style[propName] == 'string';
 }
 
-cujo.sniff = cujo._base.sniff = {
+cujo.sniff = {
 
     cssProp: function (/* String */ propName, /* Boolean? */ checkVendorPrefixes, /* DOMNode? */ node) {
         //  summary: Checks if a css property is supported by the current browser
@@ -34,7 +33,7 @@ cujo.sniff = cujo._base.sniff = {
         var supported = _supported(propName, node) && propName;
         if (!supported && checkVendorPrefixes) {
             var pre = cujo.sniff.getVendorPrefix(propName, node),
-                prop = pre && (pre + cujo.lang.capitalize(propName));
+                prop = pre && (pre + cujo.capitalize(propName));
             return (pre && _supported(prop)) ? prop : void 0;
         }
         else
@@ -85,7 +84,7 @@ cujo.sniff = cujo._base.sniff = {
         else {
             var prefixes = cujo.sniff.prefixes;
             for (var pre in prefixes) {
-                if (_supported(pre + cujo.lang.capitalize(propName), node)) {
+                if (_supported(pre + cujo.capitalize(propName), node)) {
                     _vendor = pre;
                     return _vendor;
                 }
