@@ -6,7 +6,7 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
-    Works just like dojo.Stateful's get/set but translates get/set names to "private" names
+    Works just like dojo.Stateful's get/set but can translate get/set names to "private" names.
     For watch functionality, use cujo._Watchable instead.
 
     Use cujo._Settable as a mixin in a multiple-inheritance pattern. Example:

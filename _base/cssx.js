@@ -17,7 +17,7 @@ cujo.cssxOptions = {
 // TODO: merge cujoConfig options into cujo.cssxOptions
 // TODO: signal onEnd so that processors can free resources
 
-cujo.cssx = cujo._base.cssx = (function () {
+cujo.cssx = (function () {
 
     var
         // node for sniffing features. (we need this since the body won't exist until after this runs!)
@@ -405,6 +405,8 @@ cujo.cssx = cujo._base.cssx = (function () {
         },
 
         applyCssx: function (/* String */ cssxName) {
+            // TODO: why does this seem to disable _elements_ instead of stylsheets in IE6?????
+            // TODO: do we realy need this?  it's probably just causing performance problems
             assertCssxName(cssxName);
             var ss = cssxSs[cssxName];
             if (ss) {

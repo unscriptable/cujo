@@ -6,7 +6,7 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
-    TODO: deprecate this
+    TODO: deprecate this?
 
 
 */
@@ -19,7 +19,7 @@ dojo.provide('cujo._base.notify');
 
 dojo.mixin(cujo, {
 
-    post: function (/* String */ topic, /* Object|Array? */ args, /* Function? */ callback, /* Object? */ context) {
+    postMessage: function (/* String */ topic, /* Object|Array? */ args, /* Function? */ callback, /* Object? */ context) {
         //  summary:
         //    Posts a message to all listeners of the specified topic and returns true if at least
         //    one listener has been registered.  (The calling code may want to take different actions

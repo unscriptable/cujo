@@ -14,7 +14,7 @@ dojo.require('cujo._Connectable');
 
 dojo.declare('cujo.mvc.Controller', cujo._Connectable, {
 
-    // TODO:
+    // TODO: subclass for root/dispatch controllers and generic controllers
 
     init: function () {},
 

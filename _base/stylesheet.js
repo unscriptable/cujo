@@ -81,10 +81,19 @@ cujo.stylesheet = {
     },
 
     appendRule: function (/* String */ selectorText, /* String */ cssText, /* CSSStylesheet? */ ss) {
+        //  summary: appends a new rule to the end of a stylesheet
+        //  selectorText: String  the selector of the new rule
+        //  cssText: String  the css property declarations of the new rule
+        //  ss: StyleSheet?  if omitted, a default stylesheet is used
         return this.insertRule(selectorText, cssText, -1, ss);
     },
 
     insertRule: function (/* String */ selectorText, /* String */ cssText, /* Number? */ pos, /* CSSStylesheet? */ ss) {
+        //  summary: inserts a new rule into a stylesheet
+        //  selectorText: String  the selector of the new rule
+        //  cssText: String  the css property declarations of the new rule
+        //  pos: Number?  the position to insert at (or the end if omitted)
+        //  ss: StyleSheet?  if omitted, a default stylesheet is used
         // special thanks to PPK at http://www.quirksmode.org for his work on stylesheets
         ss = ss || _ss;
         if (!ss)
@@ -115,6 +124,9 @@ cujo.stylesheet = {
     },
 
     appendText: function (/* String */ cssText, /* CSSStylesheet? */ ss) {
+        //  summary: appends css rules by appending text onto a stylesheet
+        //  cssText: String, the text to append
+        //  ss: StyleSheet?  if omitted, a default stylesheet is used
         ss = ss || _ss;
         if (!ss) {
             ss = _ss = this.createStylesheet(cssText);
@@ -130,6 +142,9 @@ cujo.stylesheet = {
     },
 
     insertText: function (/* String */ cssText, /* CSSStylesheet? */ ss) {
+        //  summary: inserts css rules by prepending text onto a stylesheet
+        //  cssText: String, the text to insert
+        //  ss: StyleSheet?  if omitted, a default stylesheet is used
         ss = ss || _ss;
         if (!ss) {
             ss = _ss = this.createStylesheet(cssText);
@@ -146,6 +161,8 @@ cujo.stylesheet = {
     },
 
     common: function () {
+        //  summary: returns a common stylesheet to be used by global / common routines.
+        //  The stylesheet is created if it doesn't already exist.
         if (!_ss) {
             _ss = this.createStylesheet();
         }
@@ -153,7 +170,9 @@ cujo.stylesheet = {
     },
 
 	getScrollbarSize: function () {
-		// something like this exists in dojox, but we don't want to rely on dojox
+        //  summary: figures out the height and width of the scrollbars on this system.
+		//  something like this exists in dojox, but we don't want to rely on dojox
+        //  Returns an object with w and h properties (width and height, Number) in pixels
 		if (!sbSize) {
 			sbSize = {w: 15, h: 15}; // default
 			var testEl = dojo.create('DIV', {style: 'width:100px;height:100px;overflow:scroll;bottom:100%;right:100%;position:absolute;visibility:hidden;'}, dojo.body(), 'last');

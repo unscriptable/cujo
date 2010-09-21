@@ -66,18 +66,17 @@ dojo.declare('cujo._Connectable', null, {
 
 });
 
-var typeOf = cujo.typeOf;
 // Connect cujo event processors by hijacking dojo.connect.
 // I learned this trick from browsing the dijit._Widget source.
 // Connecting to the "private" versions allows us to ignore optional arguments
 dojo.connect(dojo, '_connect', function (o) {
-    if (o && typeOf(o._cujoConnect) == 'Function') {
+    if (o && dojo.isFunction(o._cujoConnect)) {
         o._cujoConnect.apply(o, arguments);
     }
 });
 dojo.connect(dojo, '_disconnect', function (h) {
     var o = h[0];
-    if (o && typeOf(o._cujoDisconnect) == 'Function') {
+    if (o && dojo.isFunction(o._cujoDisconnect)) {
         o._cujoDisconnect.apply(o, arguments);
     }
 });

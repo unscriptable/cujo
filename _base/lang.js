@@ -49,9 +49,14 @@ dojo.mixin(cujo, (function () {
             return forIn(obj || {}, lambda, context || $.global, true);
         },
 
-        pre: $.partial,
+        //  before: Function
+        //  summary: works just like dojo.partial. curries arguments onto a function call.
+        before: $.partial,
 
-        post: function (/* Function */ func /*, ... */) {
+        after: function (/* Function */ func /*, ... */) {
+            //  summary: works like cujo.before, but appends arguments to the end of a function call.
+            //  Word to the wise: don't mix and match cujo.before and cujo.after unless you really
+            //  know what you're doing. :)
             var args = slice.call(arguments, 1);
             return function () {
                 if (typeof func == 'string') {
@@ -61,13 +66,27 @@ dojo.mixin(cujo, (function () {
             };
         },
 
-        // TODO: return dojo.Deferred?
         soon: function (/* Function */ func, /* Object? */ context) {
-            // TODO: use window.postMessage if avaiable for better performance
+            //  summary: Executes a function after a short delay.
+            //  This method may be used to ensure that a callback function is always
+            //  returned asynchronously so that devs won't ignore the fact that it
+            //  sometimes does.  Of course, devs should probably now use dojo.when()
+            //  to handle cases when it's unknown whether the func will be async or
+            //  sync.
+            //  TODO: use window.postMessage if available for better performance
+            //  TODO: return a promise as an option?
             setTimeout(function () { func.call(context || $.global); });
         },
 
-        debounce: function (func, threshold, execAsap) {
+        debounce: function (func, threshold, fireFirst) {
+            //  summary: ensures that a function only runs once within a set period.
+            //  You can specify whether the function should execute at the beginning
+            //  of the period or at the end by setting fireFirst.
+            //  func: Function  the function to execute.
+            //  threshold: Number  the number of milliseconds in the period.
+            //  fireFirst: Boolean  set this to true to fire the function at the
+            //      beginning of the period. default is to fire at the end.
+            //  TODO: return a promise as an option?
             var timeout; // handle to setTimeout async task (detection period)
             // add a method to the original function (func) to cancel any future executions
             func.stop = function () { clearTimeout(timeout); };
@@ -79,16 +98,16 @@ dojo.mixin(cujo, (function () {
                 // this is the detection function. it will be executed if/when the threshold expires
                 function delayed () {
                     // if we're executing at the end of the detection period
-                    if (!execAsap)
+                    if (!fireFirst)
                         func.apply(obj, args); // execute now
                     // clear timeout handle
                     timeout = null;
-                };
+                }
                 // stop any current detection period
                 if (timeout)
                     clearTimeout(timeout);
                 // otherwise, if we're not already waiting and we're executing at the beginning of the detection period
-                else if (execAsap)
+                else if (fireFirst)
                     func.apply(obj, args); // execute now
                 // reset the detection period
                 timeout = setTimeout(delayed, threshold || 100);
@@ -113,6 +132,8 @@ dojo.mixin(cujo, (function () {
         },
 
         uncamelize: function (/* String */ s) {
+            //  summary: converts a camelCased string to dash-delimited.  This is useful
+            //  for converting to/from css.
             return (s || '').replace(/([A-Z])/g, function (m,c) { return '-' + c.toLowerCase(); });
         },
 

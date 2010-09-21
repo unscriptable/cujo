@@ -6,7 +6,7 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
-    TODO: move these to _TextProc so they can be done server-side or in the build
+    TODO: box-flex
     TODO: support padding for box offsets in units other than px?
     TODO: position:fixed in IE6?
     TODO: display:table and display:inline-table for IE6&7

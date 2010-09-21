@@ -6,7 +6,7 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
-    Works just like dojo.Stateful (get, set, and watch) but translates names to "private" names
+    Adds dojo.Stateful's watch to cujo._Settable
 
     Use cujo._Watchable as a mixin in a multiple-inheritance pattern. Example:
         dojo.declare('myClass', cujo._Watchable, { ... }); // mixin

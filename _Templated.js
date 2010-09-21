@@ -27,9 +27,9 @@ cujoConfig.attrOverride = cujoConfig.attrOverride || 'data-cujo-override';
 dojo.declare('cujo._Templated', dijit._Templated, {
     //  summary:
     //      Adds inheritance and configurable attribute names to templates.
-    //      Notes:
+    //      Notes: TODO
     //          entirely driven by template!
-    //          ${} tokens still work, but are slower when used with inheritance
+    //          ${} tokens still work, but slow down inheritance
     //          give examples of valid token usage
     //          custom attrs
     //          data-override (mixin, replace. with optional css3 query)
@@ -39,7 +39,7 @@ dojo.declare('cujo._Templated', dijit._Templated, {
 
     buildRendering: function () {
         // inheritance!
-        // TODO: cache dom-ified templates for a perf boost
+        // TODO: cache dom-ified templates for a much-needed perf boost
         // Note: this will break if the dom-ified template is not valid HTML. e.g: <div ${attrPairs}></div>
 
         // grab template and related info

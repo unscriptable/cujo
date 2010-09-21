@@ -11,6 +11,8 @@
     Use cujo.mvc._Bindable as a mixin in a multiple-inheritance pattern:
         dojo.declare('myClass', cujo._Bindable, { ... }); // mixin
 
+    TODO: create a decorator version of this mixin?
+
 */
 dojo.provide('cujo.mvc._Bindable');
 
@@ -97,12 +99,6 @@ dojo.declare('cujo.mvc._Bindable', null, {
         return this.inherited(arguments);
     },
 
-//    get: function (attr) {
-//        // override _Widget's get() to check for custom bindings?
-//        // the values should be synchronized at all times, so just return the inherited value
-//        return this.inherited(arguments);
-//    },
-
     postMixInProperties: function () {
         if (this.dataItem) {
             this._bindDataItem(this.dataItem);
@@ -111,7 +107,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
     },
     
     uninitialize: function () {
-        // ensure we unbind when destroyed
+        //  summary: ensure we unbind when destroyed
         this._unbindDataItem();
         return this.inherited(arguments);
     },

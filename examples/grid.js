@@ -29,7 +29,7 @@ dojo.declare('cujo.examples.grid', [cujo._Widget, cujo._Templated], {
         url: {name: 'URL', key: 'url'},
         thumb: {name: 'Pic', key: 'image_url_25x25'},
         image: {name: 'Image', key: 'image_url_430xN'},
-        created: {name: 'Created', key: 'creation_epoch', format: cujo.post('_formatCreated', {selector: 'date'})},
+        created: {name: 'Created', key: 'creation_epoch', format: cujo.after('_formatCreated', {selector: 'date'})},
         user: {name: 'Seller', key: 'user_name'}
     },
 

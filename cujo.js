@@ -16,16 +16,6 @@ if (!window.cujoConfig)
 
 (function () {
 
-/***** temp *****/
-//var origReq = dojo.require;
-//dojo.require = function (name) {
-//    console.log('before: ', name, d._loadedModules[name]);
-//    var res = origReq.apply(dojo, arguments);
-//    console.log('after: ', name, d._loadedModules[name]);
-//    return res;
-//}
-/***** temp *****/
-
 var
     d = dojo,
     toString = Object.prototype.toString,

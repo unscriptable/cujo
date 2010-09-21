@@ -83,6 +83,8 @@ dojo.mixin(cujo, {
     },
 
     getDomState: function (/* DOMNode */ scope, /* String */ state) {
+        //  summary: Returns a true or false if the given DOM Node (scope) has been
+        //  set to the specified state.
         // TODO: get ancestor states
         var node = scope;
 
@@ -112,7 +114,8 @@ dojo.mixin(cujo, {
     },
 
     toggleDomState: function (/* cujo.__StateDef */ stateDef) {
-
+        //  summary: toggles the given state for the dom node specified in the stateDef object.
+        //  See cujo.setDomState for more info.
         if (!stateDef.value)
             stateDef.value = !this.getState(stateDef.scope, stateDef.state);
         return this.setState(stateDef);

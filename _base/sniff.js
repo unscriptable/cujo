@@ -42,8 +42,15 @@ cujo.sniff = {
     },
 
     cssValue: function (/* String */ propName, /* String */ testValue, /* Boolean? */ checkVendorPrefixes, /* DOMNode? */ node) {
+        //  summary: Checks if a css value is supported by the current browser.
+        //  propName: String - the camelCased property name to check
+        //  testValue: String - the property value to test
+        //  checkVendorPrefixes: Boolean? - if true, checks for vendor-specific variations
+        //  node: DOMNode? - a dom node to test (checks the body if omitted)
+        //  returns: String - If checkVendorPrefixes is true, returns the actual property
+        //      name, if any. Otherwise, returns true if the property is supported.
         //  Also see: http://ryanmorr.com/archives/detecting-browser-css-style-support
-        // TODO: check vendor prefixes
+        // TODO: check vendor prefixes!
         var success = false;
         if (!_testRule)
             _testRule = cujo.stylesheet.appendRule('#cujo_test_rule', '');
@@ -57,8 +64,8 @@ cujo.sniff = {
     },
 
     gcsValue: function (/* String */ propName, /* String */ testValue, /* Boolean? */ checkVendorPrefixes, /* DOMNode? */ node) {
-        // returns true if the browser supports the css property in the getComputedStyle / currentStyle collections
-        // be sure to supply a testValue that is not falsy already! (TODO: fix this?)
+        //  summary: returns true if the browser supports the css property in the getComputedStyle /
+        //  currentStyle collections. be sure to supply a testValue that is not falsy already! (TODO: fix this?)
         // TODO: check vendor prefixes
         if (!node) {
             node = document.body;
@@ -76,6 +83,10 @@ cujo.sniff = {
     },
 
     getVendorPrefix: function (/* String */ propName, /* DOMNode? */ node) {
+        //  summary: obtains and returns the vendor prefix used in css extensions / futures.
+        //  This routine requires that the dev pass a css property that requires a
+        //  vendor prefix in order to extract it.  Once the vendor prefix is obtained once,
+        //  it is cached locally.
         if (_vendor != void 0)
             return _vendor;
         else if (_supported(propName)) {

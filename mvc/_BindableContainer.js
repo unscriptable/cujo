@@ -15,9 +15,6 @@
 */
 dojo.provide('cujo.mvc._BindableContainer');
 
-// wondering if we'll need this to auto-construct _Bindable widgets around the cloned dom fragments
-//dojo.require('cujo.mvc._Bindable');
-
 (function () {
 
 dojo.declare('cujo.mvc._BindableContainer', null, {

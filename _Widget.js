@@ -7,15 +7,12 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
     TODO: i18n support
-    TODO: remove event handlers inherited from dijit._Widget and create topics instead?
-            or is it okay to have dom events be sync/non-guaranteed?
-
-    TODO: widgets to create
+    TODO: css-centric widgets to create
         - Grid
         - EditGrid
         - BulkDelete button for EditGrid (simply as an example?)
         - Tooltip that hovers in a corner position instead of adjacent (which is almost always
-          a bad place) and is moveable! (but baloon pointer still points at the source node)
+          a bad place) and is moveable! (but balloon pointer still points at the source node)
         - Stack and Accordion
         - NavBar, TabBar, and MenuBar
         - Mult-view Navigator (Tree view or Finder views [icons, list, columns, cover flow])
