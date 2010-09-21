@@ -1,5 +1,5 @@
 /*
-    cujo._base.cssx.ielayout
+    cujo.cssx.ielayout
     (c) copyright 2010, unscriptable.com
     author: john
 

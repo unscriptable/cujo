@@ -1,5 +1,5 @@
 /*
-    cujo._base.cssx.ieSelector
+    cujo.cssx.ieSelector
     (c) copyright 2010, unscriptable.com
     author: john
 

@@ -10,7 +10,7 @@ dojo.provide('cujo._base.CssTextParser');
 
 (function () { // local scope
 
-cujo._base.CssTextParser = cujo.CssTextParser = function (/* Object */ cb) {
+cujo.CssTextParser = function (/* Object */ cb) {
     //  summary: A fast, flexible event-based CSS TEXT parser in under 3kB! (minified)
     //      See also the cujo.cssDomParser!
     //  cb: Object
