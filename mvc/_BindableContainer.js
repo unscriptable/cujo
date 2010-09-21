@@ -46,9 +46,9 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     boundViews: null,
 
     // hooks to catch item modifications
-    onAddItem: function (item) {},
-    onUpdateItem: function (item) {},
-    onDeleteItem: function (item) {},
+    itemAdded: function (item) {},
+    itemUpdated: function (item) {},
+    itemDeleted: function (item) {},
 
     constructor: function () {
         // create list of items
@@ -93,10 +93,10 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 
     _watchResultSet: function () {
         var rs = this.resultSet;
-        if (rs && rs.watch) {
-            var unwatch = rs.watch(dojo.hitch(this, '_handleResultSetEvent')).unwatch,
+        if (rs && rs.observe) {
+            var dismiss = rs.observe(dojo.hitch(this, '_handleResultSetEvent')).dismiss,
                 handle = this.connect(this, '_unwatchResultSet', function () {
-                    if (unwatch) unwatch();
+                    if (dismiss) dismiss();
                     this.disconnect(handle);
                 });
         }
@@ -107,16 +107,17 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         //      happens in a callback within _watchResultSet
     },
 
-    _handleResultSetEvent: function (index, id, changed) {
+    _handleResultSetEvent: function (item, oldIndex, newIndex) {
         // summary: fires when an item in result set changes
-        if (index == null) {
+        // TODO: debounce these to catch moves instead of deleting/recreating
+        if (oldIndex == -1 || newIndex == -1) {
             // TODO: ok, what to do if the dev hasn't defined a queryExecutor?
         }
-        else if (id == null) {
-            this._itemAdded(changed, index);
+        else if (newIndex >= 0) {
+            this._itemAdded(changed, newIndex);
         }
         else {
-            this._itemDeleted(id, index);
+            this._itemDeleted(item, oldIndex);
         }
     },
 
@@ -134,15 +135,15 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         var views = this.boundViews,
             widget = this._createBoundItem(item);
         views.splice(index >= 0 ? index : views.length, 0, widget);
-        this.onAddItem(widget);
+        this.itemAdded(widget);
         return widget;
     },
 
-    _itemDeleted: function (id, index) {
+    _itemDeleted: function (item, index) {
         var removed = this.boundViews.splice(index, 1)[0];
         if (removed) {
             removed.destroyRecursive();
-            this.onDeleteItem(removed);
+            this.itemDeleted(removed);
         }
     },
 

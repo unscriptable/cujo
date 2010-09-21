@@ -17,11 +17,11 @@ dojo.declare('cujo.mvc.View', [cujo._Widget, cujo._Templated], {
 
     widgetsInTemplate: false,
 
-    //  onStateChange: Function
+    //  stateChanged: Function
     //      Event hook to catch state changes. Subclasses can override this to take special
     //      actions when state changes.  Controllers can hook into this to listen in on state changes
     //      that are triggered internally (e.g. in reaction to user events or data events).
-    onStateChange: function (stateDef) {},
+    stateChanged: function (stateDef) {},
 
     state: function (/* String|cujo.__StateDef */ state, /* Boolean? */ value) {
         //  summary:
@@ -90,7 +90,7 @@ dojo.declare('cujo.mvc.View', [cujo._Widget, cujo._Templated], {
         rawDef.state = cujo.lang.uncamelize(stateDef.state);
         var result = cujo.dom.setState(rawDef);
         if (currState != cujo.dom.getState(stateDef.scope)) {
-            this.onStateChange(stateDef);
+            this.stateChanged(stateDef);
         }
         return result;
     }
