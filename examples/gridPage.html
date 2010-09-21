@@ -24,7 +24,7 @@ dojo.addOnLoad(function () {
     var head = dojo.doc.documentElement.firstChild;
     dojo.forEach(['gridView.css', 'theme1.css'], function (fName) {
         //dojo.create('link', {rel: 'stylesheet', type: 'text/css', href:fName}, head);
-        dojo.xhr('GET', { url: fName, sync: false, load: cujo.cssProc.processCss });
+        dojo.xhr('GET', { url: fName, sync: false, load: cujo.cssx.processCss });
     });
 
     // process the page

@@ -213,7 +213,7 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
     // FF 3.x and Safari 4 won't fetch the css file twice if we xhr it after creating the link element
     // TODO: test Opera, Chrome, and 3.0 browsers
 
-    var opts = dojo.mixin({}, cujo.cssProcOptions, options),
+    var opts = dojo.mixin({}, cujo.cssxOptions, options),
         path = dojo._getModuleSymbols(module).join("/") + '.css',
         //themePath = dojo.moduleUrl('', [cujo._moduleToThemePath(module, 'css'), 'css'].join('.')),
         attrs = {
@@ -231,14 +231,14 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
     cujo._getHeadElement().appendChild(link);
 
     // TODO: change this so that the dev can wait for just xhr if cssx is turned off
-    cujo.wait(['dojo._base.xhr', 'cujo._base.cssProc'], function () {
+    cujo.wait(['dojo._base.xhr', 'cujo._base.cssx'], function () {
 
         var dfd = dojo.xhr('GET', {url: path, sync: false});
 
 //        if (opts.cssx) {
             dfd
                 .addCallback(function (resp) {
-                    cujo.cssProc.processCss(resp, opts);
+                    cujo.cssx.processCss(resp, opts);
                     promise.resolve({link: link, cssText: resp});
                 })
                 .addErrback(function (err) {
@@ -325,7 +325,7 @@ dojo.require('cujo._base.sniff');
 dojo.require('cujo._base.stylesheet');
 dojo.require('cujo._base.CssTextParser');
 dojo.require('cujo._base.CssDomParser');
-dojo.require('cujo._base.cssProc');
+dojo.require('cujo._base.cssx');
 
 dojo.require('cujo._base.cssx.alpha');
 dojo.require('cujo._base.cssx.transition');

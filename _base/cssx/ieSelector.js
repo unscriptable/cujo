@@ -15,10 +15,10 @@ dojo.provide('cujo._base.cssx.ieSelector');
 (function () { // local scope
 
 var d = dojo,
-    cssProc = cujo.cssProc,
+    cssx = cujo.cssx,
     id = 0;
 
-d.declare('cujo.cssx.ieSelector.Child', cssProc._TextProc, {
+d.declare('cujo.cssx.ieSelector.Child', cssx._TextProc, {
 
     activate: d.isIE < 7, // || (d.isIE && document.compatMode == "BackCompat"),
 
@@ -35,7 +35,7 @@ d.declare('cujo.cssx.ieSelector.Child', cssProc._TextProc, {
             if (!this._props)
                 this._props = [];
             /* temp */
-            // TODO: remove after re-designing cssProc
+            // TODO: remove after re-designing cssx
             this.saveSplitSelectors(selector, ancestry);
         }
     },
@@ -95,7 +95,7 @@ d.declare('cujo.cssx.ieSelector.Child', cssProc._TextProc, {
     }
 
 });
-cssProc.register(new cujo.cssx.ieSelector.Child());
+cssx.register(new cujo.cssx.ieSelector.Child());
 
 cujo.cssx_ieSelector_checkMatch = function (child, key, levels) {
 

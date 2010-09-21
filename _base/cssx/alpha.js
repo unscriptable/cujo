@@ -13,7 +13,7 @@ dojo.provide('cujo._base.cssx.alpha');
 var
     // shorthand
     d = dojo,
-    cssProc = cujo.cssProc,
+    cssx = cujo.cssx,
     // does the browser need to use the filter property?
     filter,
     // property support
@@ -29,7 +29,7 @@ function toFilter (value) {
 }
 
 // IE6-8 don't support opacity, but do support the Alpha filter
-d.declare('cujo.cssx.alpha.Opacity', cssProc._TextProc, {
+d.declare('cujo.cssx.alpha.Opacity', cssx._TextProc, {
 
     activate: function () {
         // register the Opacity processor if browser doesn't support it, but does support a vendor-extension or filters
@@ -52,7 +52,7 @@ d.declare('cujo.cssx.alpha.Opacity', cssProc._TextProc, {
     }
 
 });
-cssProc.register(new cujo.cssx.alpha.Opacity());
+cssx.register(new cujo.cssx.alpha.Opacity());
 
 // TODO: work-around for Firefox 2 and Opera 9.5 via data uri of a PNG: http://en.wikipedia.org/wiki/Portable_Network_Graphics#Technical_details
 //                                                                                                                .................
@@ -83,7 +83,7 @@ function crc32 (buf, crc) {
     return crc ^ (-1);
 }
 
-d.declare('cujo.cssx.alpha.Rgba', cssProc._TextProc, {
+d.declare('cujo.cssx.alpha.Rgba', cssx._TextProc, {
 
     activate: function () {
         // register the Rgba processor if browser doesn't support Rgba but does support filters
@@ -112,6 +112,6 @@ d.declare('cujo.cssx.alpha.Rgba', cssProc._TextProc, {
     }
 
 });
-cssProc.register(new cujo.cssx.alpha.Rgba());
+cssx.register(new cujo.cssx.alpha.Rgba());
 
 })();

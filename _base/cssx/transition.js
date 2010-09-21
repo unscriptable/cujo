@@ -23,7 +23,7 @@ dojo.require('dojo.fx.easing');
 var
     // shorthand
     d = dojo,
-    cssProc = cujo.cssProc,
+    cssx = cujo.cssx,
 
     cssxName = 'transition',
 
@@ -38,7 +38,7 @@ var
     //      By default, we're using just a subset of the most likely properties
     inheritedProps = transConfig.inheritedProps || 'color, font-size';
 
-d.declare('cujo.cssx.transition.Check', cssProc._CssxProc, {
+d.declare('cujo.cssx.transition.Check', cssx._CssxProc, {
 
     cssxName: cssxName,
 
@@ -91,7 +91,7 @@ d.declare('cujo.cssx.transition.Check', cssProc._CssxProc, {
     }
 
 });
-cssProc.register(new cujo.cssx.transition.Check());
+cssx.register(new cujo.cssx.transition.Check());
 
 var
     // the vendor-specific prefix (if any)
@@ -152,10 +152,10 @@ function initialize () {
 }
 
 function toggleClass (/* DOMNode */ node, /* String */ classes, /* Boolean? */ adding) {
-    // TODO: decide whether to cache cross-referenced classes like the pre-cssProc cssTrans did
+    // TODO: decide whether to cache cross-referenced classes like the pre-cssx cssTrans did
 
     // turn on cssx style sheet (but just temporarily)
-    cujo.cssProc.applyCssx(cssxName);
+    cujo.cssx.applyCssx(cssxName);
 
     var defs = [],
         nodes = getAffectedNodes(node, classes);
@@ -165,7 +165,7 @@ function toggleClass (/* DOMNode */ node, /* String */ classes, /* Boolean? */ a
         // parse transition style
         // TODO: do we need to handle unit mismatches (start:em -> end:px) --> dojo.style can handle some of these
         var cs = d.getComputedStyle(node),
-            trans = cujo.cssProc.getCssxValue(cs, 'transition'),
+            trans = cujo.cssx.getCssxValue(cs, 'transition'),
             tDefs = trans && d.map(trans.split(','), function (item) {
                 var
                     // split transition definition
@@ -225,7 +225,7 @@ function toggleClass (/* DOMNode */ node, /* String */ classes, /* Boolean? */ a
     });
 
     // turn off cssx style sheet again
-    cujo.cssProc.unapplyCssx(cssxName);
+    cujo.cssx.unapplyCssx(cssxName);
 
     // create animations
     var anims = createAnimations(defs);

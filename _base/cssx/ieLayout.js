@@ -24,18 +24,18 @@ dojo.provide('cujo._base.cssx.ieLayout');
 var
     // shorthand
     d = dojo,
-    cssProc = cujo.cssProc;
+    cssx = cujo.cssx;
 
 // IE6 chokes on complementary pairs of box offsets (top/bottom, left/right)
 // Note: this same proc must also run for all ie versions in quirks mode, if cujo ever supports quirks mode.
 // TODO: somehow track if selectors have been split s owe don't have to execute this as a _DomProc
-d.declare('cujo.cssx.ieLayout.BoxOffsets', cssProc._TextProc, {
+d.declare('cujo.cssx.ieLayout.BoxOffsets', cssx._TextProc, {
 
     activate: d.isIE < 7, // || (d.isIE && document.compatMode == "BackCompat"),
 
     onProperty: function (/* String */ prop, /* String */ value, /* String */ selectors, /* CSSStyleSheet */ ss) {
         /* temp */
-        // TODO: remove after re-designing cssProc
+        // TODO: remove after re-designing cssx
         var splits = this.getSplitSelectors(selectors);
         if (!splits) splits = [selectors];
         dojo.forEach(splits, function (sel) {
@@ -65,7 +65,7 @@ d.declare('cujo.cssx.ieLayout.BoxOffsets', cssProc._TextProc, {
     }
 
 });
-cssProc.register(new cujo.cssx.ieLayout.BoxOffsets());
+cssx.register(new cujo.cssx.ieLayout.BoxOffsets());
 
 cujo.cssx_ieLayout_checkBoxHeight = function (node, bVal) {
     var style = node.currentStyle,
@@ -95,7 +95,7 @@ cujo.cssx_ieLayout_checkBoxWidth = function (node, rVal) {
         return '';
 };
 
-d.declare('cujo.cssx.ieLayout.InlineBlock', cssProc._TextProc, {
+d.declare('cujo.cssx.ieLayout.InlineBlock', cssx._TextProc, {
 
     // why do an expensive sniff for display:inline-block when we know which dead browsers are affected.
     activate: d.isIE < 8,
@@ -107,6 +107,6 @@ d.declare('cujo.cssx.ieLayout.InlineBlock', cssProc._TextProc, {
     }
 
 });
-cssProc.register(new cujo.cssx.ieLayout.InlineBlock());
+cssx.register(new cujo.cssx.ieLayout.InlineBlock());
 
 })();

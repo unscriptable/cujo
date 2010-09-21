@@ -10,7 +10,7 @@ dojo.provide('cujo._base.CssDomParser');
 
 (function () { // local scope
 
-cujo._base.CssDomParser = cujo.CssDomParser = function (/* Object */ cb) {
+cujo.CssDomParser = function (/* Object */ cb) {
     //  summary: A fast, flexible CSS event-based DOM parser in 1kB! (minified)
     //      See also the cujo.cssTextParser!
     //  cb: Object
