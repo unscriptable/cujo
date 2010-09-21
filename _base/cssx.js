@@ -1,23 +1,23 @@
 /*
-    cujo.cssProc
+    cujo.cssx
     (c) copyright 2010, unscriptable.com
     author: john
 
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-dojo.provide('cujo._base.cssProc');
-dojo.provide('cujo.cssProc');
+dojo.provide('cujo._base.cssx');
+dojo.provide('cujo.cssx');
 
-cujo.cssProcOptions = {
+cujo.cssxOptions = {
     cssx: true,
     cssTrans: true,
     followImports: true
 };
-// TODO: merge cujoConfig options into cujo.cssProcOptions
+// TODO: merge cujoConfig options into cujo.cssxOptions
 // TODO: signal onEnd so that processors can free resources
 
-cujo.cssProc = cujo._base.cssProc = (function () {
+cujo.cssx = cujo._base.cssx = (function () {
 
     var
         // node for sniffing features. (we need this since the body won't exist until after this runs!)
@@ -57,7 +57,7 @@ cujo.cssProc = cujo._base.cssProc = (function () {
 
     function assertCallback (methodName) {
         if (currText == null && currSs == null) {
-            throw new Error(methodName + ' must be called from within a cssProc callback.');
+            throw new Error(methodName + ' must be called from within a cssx callback.');
         }
     }
 
@@ -89,7 +89,7 @@ cujo.cssProc = cujo._base.cssProc = (function () {
     }
 
     /* temp to fix issue in which selectors could be split to fix unsupported selectors (IE) */
-    // TODO: remove after re-designing cssProc
+    // TODO: remove after re-designing cssx
     //var _selSplits = {};
     function saveSplitSelectors (sel, splits) {
         if (!currText._selSplits) currText._selSplits = {};
@@ -379,7 +379,7 @@ cujo.cssProc = cujo._base.cssProc = (function () {
 
         /***** public css processing registration functions *****/
 
-        register: function (/* cujo.cssProc._TextProc|cujo.cssProc._DomProc */ proc) {
+        register: function (/* cujo.cssx._TextProc|cujo.cssx._DomProc */ proc) {
             //  summary: Registers a CSS processor.
             return procs.push(proc);
         },
@@ -388,7 +388,7 @@ cujo.cssProc = cujo._base.cssProc = (function () {
             //  summary: Process a CSS file and add it to the DOM.
             //      Note: files are processed async!
 
-            options = dojo.mixin({}, cujo.cssProcOptions, options);
+            options = dojo.mixin({}, cujo.cssxOptions, options);
 
             // stylesheets can't be processed until the following modules are loaded!
             cujo.wait(['dojo._base.html', 'dojo._base.xhr'], function () {

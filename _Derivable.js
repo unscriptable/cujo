@@ -119,7 +119,7 @@ dojo.declare('cujo._Derivable', null, {
     _getDerivedValue: function (attr, command) {
         var deriver = dojo.hitch(this, command.deriver);
         if (!dojo.isFunction(deriver)) {
-            throw new Error(dojo.string.substitute(errTransformNotFound, {deriver: deriver, attr: attr}));
+            throw new Error(dojo.string.substitute(errTransformNotFound, {deriver: command.deriver, attr: attr}));
         }
         return deriver(command);
     }
