@@ -77,21 +77,20 @@ dojo.declare('cujo._Derivable', null, {
     _initDerivables: function (map, sources, context) {
 
         cujo.forInAll(map, function (commands, name) {
-            dojo.some([].concat(commands), function (command) {
+            dojo.forEach([].concat(commands), function (command) {
                 if (command.deriver) {
                     // establish links from attributeMap's source property...
-                    dojo.forEach([].concat(command.source), function (source) {
+                    dojo.forEach([].concat(command.derived), function (derived) {
                         var link = {
-                                name: name,
+                                name: derived,
                                 command: command,
-                                source: source
+                                source: name
                             };
-                        sources[source] = sources[source] || [];
-                        sources[source].push(link);
+                        sources[name] = sources[name] || [];
+                        sources[name].push(link);
+	                    // persist property
+	                    context.set(derived, context._getDerivedValue(derived, command));
                     });
-                    // persist property
-                    context.set(name, context._getDerivedValue(name, command));
-                    return true;
                 }
             });
         });
