@@ -20,7 +20,7 @@ var _ss,
             cujo.stylesheet.insertRule(def.selectorText, def.cssText, def.pos, def.ss);
         });
         doingDeferrals = false;
-    }, 0, false);
+    }, 0);
 
 function defer (ruleDef) {
     if (doingDeferrals)

@@ -49,11 +49,11 @@ dojo.mixin(cujo, (function () {
             return forIn(obj || {}, lambda, context || $.global, true);
         },
 
-        //  before: Function
+        //  pre: Function
         //  summary: works just like dojo.partial. curries arguments onto a function call.
-        before: $.partial,
+        pre: $.partial,
 
-        after: function (/* Function */ func /*, ... */) {
+        post: function (/* Function */ func /*, ... */) {
             //  summary: works like cujo.before, but appends arguments to the end of a function call.
             //  Word to the wise: don't mix and match cujo.before and cujo.after unless you really
             //  know what you're doing. :)
@@ -79,39 +79,46 @@ dojo.mixin(cujo, (function () {
         },
 
         debounce: function (func, threshold, fireFirst) {
-            //  summary: ensures that a function only runs once within a set period.
-            //  You can specify whether the function should execute at the beginning
-            //  of the period or at the end by setting fireFirst.
-            //  func: Function  the function to execute.
-            //  threshold: Number  the number of milliseconds in the period.
-            //  fireFirst: Boolean  set this to true to fire the function at the
-            //      beginning of the period. default is to fire at the end.
-            //  TODO: return a promise as an option?
-            var timeout; // handle to setTimeout async task (detection period)
-            // add a method to the original function (func) to cancel any future executions
-            func.stop = function () { clearTimeout(timeout); };
-            // return the new debounced function which executes the original function only once
-            // until the detection period expires
-            return function debounced () {
+            //  summary:  ensures that a function only runs once within a set period.
+            //      The returned function has a stop method that will stop the given
+            //      function from firing any more.
+            //  func: Function  the function to watch
+            //  threshold: Number  the minimum number of milliseconds between firings of the
+            //      returned function (period). rate = 1/threshold
+            //  fireFirst: executes the function at the beginning of each period rather
+            //      than at the end of each period.
+
+            var timeout;
+
+            function debounced () {
                 var obj = this, // reference to original context object
                     args = arguments; // arguments at execution time
                 // this is the detection function. it will be executed if/when the threshold expires
                 function delayed () {
                     // if we're executing at the end of the detection period
-                    if (!fireFirst)
+                    if (!fireFirst) {
                         func.apply(obj, args); // execute now
+                    }
                     // clear timeout handle
                     timeout = null;
                 }
                 // stop any current detection period
-                if (timeout)
+                if (timeout) {
                     clearTimeout(timeout);
                 // otherwise, if we're not already waiting and we're executing at the beginning of the detection period
-                else if (fireFirst)
+                }
+                else if (fireFirst) {
                     func.apply(obj, args); // execute now
+                }
                 // reset the detection period
                 timeout = setTimeout(delayed, threshold || 100);
-            };
+            }
+
+            // add a method to the returned function to cancel any future executions
+            debounced.stop = function () { clearTimeout(timeout); };
+
+            return debounced;
+            
         },
 
         capitalize: function (/* String */ s) {
