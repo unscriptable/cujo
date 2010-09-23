@@ -197,6 +197,8 @@ function Promise (canceler) {
     });
 }
 
+cujo.Promise = Promise;
+
 cujo.requireCss = function (/* String */ module, /* Object? */ options) {
     // TODO: work-around IE's 31 stylesheet limit
     // TODO: don't download the same resource more than once in IE (even if cache directives are missing)
