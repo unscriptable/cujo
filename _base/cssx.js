@@ -118,7 +118,7 @@ cujo.cssx = (function () {
             proxyProp = sniffProp('animationName', true),
             proxyCss = cujo.uncamelize(proxyProp), //'animation-name',
             proxyGet = function (val) { return val ? parseInt(val.replace(/^\D*/, '')) : void 0; },
-            proxySet = function (val) { console.log('setting', val); return 'cujo-cssx-' + val; };
+            proxySet = function (val) { return 'cujo-cssx-' + val; };
     }
 //    else {
 //        throw new Error('Can\'t find a proxy property for css transitions.' );
@@ -150,7 +150,7 @@ cujo.cssx = (function () {
         var ss = cssxSs[cssxName];
         if (!ss) {
             ss = cssxSs[cssxName] = cujo.stylesheet.createStylesheet();
-            ss.disabled = true;
+            //ss.disabled = true;
         }
         return ss;
     }
@@ -245,11 +245,8 @@ cujo.cssx = (function () {
         onProperty: function (/* String */ propName, /* String */ value, /* CSSStyleRule */ rule, /* CSSStyleSheet */ ss) {},
 
         appendRule: function (/* String */ selectorText, /* String */ propsText) {
-//console.log('dom appendRule', selectorText, '{', propsText, '}');
-//alert('dom appendRule' + selectorText + '{' + propsText + '}');
             assertCallback('appendRule');
             var result = cujo.stylesheet.appendRule(selectorText, propsText, currSs);
-//alert(currSs.rules[currSs.rules.length - 1].style.cssText);
             return result;
         },
 
@@ -293,13 +290,14 @@ cujo.cssx = (function () {
         procs = [];
     }
 
-    function _processCss (/* String */ rawText, /* Object */ options) {
+    function _processCss (/* String */ rawText, /* Object */ options, /* cujo.cssx._TextProc|cujo.cssx._DomProc? */ proc) {
 
         // helper function to loop through procs of a type
         function runProcs (coll, which) {
-            return !!coll[which].length && function () {
+            // if a single proc was specified, run that. otherwise run all procs
+            return function () {
                 var args = arguments;
-                dojo.forEach(coll[which], function (proc) {
+                dojo.forEach(proc ? [proc[which]] : coll[which], function (proc) {
                     proc[which].apply(proc, args);
                 });
             }
@@ -316,11 +314,9 @@ cujo.cssx = (function () {
                     // get fully-qualified url (curse you, IE!)
                     url = ss.url.substr(0, ss.url.lastIndexOf('/') + 1) + url;
                 }
-                dojo.xhr('GET', { url: url, sync: false, load: function (resp) { _processCss(resp, options); } });
+                dojo.xhr('GET', { url: url, sync: false, load: function (resp) { _processCss(resp, options, proc); } });
                 // run processors
-                if (procs) {
-                    procs.apply(null, arguments);
-                }
+                procs.apply(null, arguments);
             };
         }
 
@@ -377,14 +373,22 @@ cujo.cssx = (function () {
 
         _CssxProc: _CssxProc,
 
-        /***** public css processing registration functions *****/
+        /***** public css processing & registration functions *****/
 
         register: function (/* cujo.cssx._TextProc|cujo.cssx._DomProc */ proc) {
-            //  summary: Registers a CSS processor.
-            return procs.push(proc);
+            //  summary: Registers a CSS processor. If there are stylesheets already
+            //      loaded, then those are processed now.
+            //  TODO: process these soon instead of now? (cujo.soon())
+            procs.push(proc);
+
+            dojo.forEach(cujo._loadedCss, function (def) {
+                this.processCss(def.cssText, def.options, proc);
+            }, this);
+            
+            return this;
         },
 
-        processCss: function (/* String */ rawText, /* Object */ options) {
+        processCss: function (/* String */ rawText, /* Object */ options, /* cujo.cssx._TextProc|cujo.cssx._DomProc? */ proc) {
             //  summary: Process a CSS file and add it to the DOM.
             //      Note: files are processed async!
 
@@ -393,7 +397,7 @@ cujo.cssx = (function () {
             // stylesheets can't be processed until the following modules are loaded!
             cujo.wait(['dojo._base.html', 'dojo._base.xhr'], function () {
                 _prepareProcs();
-                _processCss(rawText, options);
+                _processCss(rawText, options, proc);
             });
 
         },
@@ -406,20 +410,20 @@ cujo.cssx = (function () {
 
         applyCssx: function (/* String */ cssxName) {
             // TODO: why does this seem to disable _elements_ instead of stylsheets in IE6?????
-            // TODO: do we realy need this?  it's probably just causing performance problems
-            assertCssxName(cssxName);
-            var ss = cssxSs[cssxName];
-            if (ss) {
-                ss.disabled = false;
-            }
+            // TODO: do we really need this?  it's probably just causing performance problems
+//            assertCssxName(cssxName);
+//            var ss = cssxSs[cssxName];
+//            if (ss) {
+//                ss.disabled = false;
+//            }
         },
 
         unapplyCssx: function (/* String */ cssxName) {
-            assertCssxName(cssxName);
-            var ss = cssxSs[cssxName];
-            if (ss) {
-                ss.disabled = true;
-            }
+//            assertCssxName(cssxName);
+//            var ss = cssxSs[cssxName];
+//            if (ss) {
+//                ss.disabled = true;
+//            }
         }
 
     };

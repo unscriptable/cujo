@@ -199,6 +199,8 @@ function Promise (canceler) {
 
 cujo.Promise = Promise;
 
+cujo._loadedCss = [];
+
 cujo.requireCss = function (/* String */ module, /* Object? */ options) {
     // TODO: work-around IE's 31 stylesheet limit
     // TODO: don't download the same resource more than once in IE (even if cache directives are missing)
@@ -216,10 +218,12 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
         promise = new Promise(function () { return 'requireCss canceled: ' + module; });
 
     // create link node
-    var link = getDoc().createElement('link');
+    var link = getDoc().createElement('link'),
+        id = 'cujoCss' + cujo._loadedCss.length;
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('type', 'text/css');
     link.setAttribute('href', path);
+    link.setAttribute('id', id);
     cujo._getHeadElement().appendChild(link);
 
     // TODO: change this so that the dev can wait for just xhr if cssx is turned off
@@ -227,16 +231,25 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
 
         var dfd = dojo.xhr('GET', {url: path, sync: false});
 
-//        if (opts.cssx) {
+        if (false !== opts.cssx) {
             dfd
                 .addCallback(function (resp) {
+                    // TODO: when can we get rid of this bulky memory waster?
+                    cujo._loadedCss[id] = cujo._loadedCss.push({
+                        id: id,
+                        node: link,
+                        module: module,
+                        options: options,
+                        cssText: resp
+                    });
                     cujo.cssx.processCss(resp, opts);
                     promise.resolve({link: link, cssText: resp});
                 })
                 .addErrback(function (err) {
+                    cujo._loadedCss[id].error = err;
                     promise.reject(err);
                 });
-//        }
+        }
 
     });
 
