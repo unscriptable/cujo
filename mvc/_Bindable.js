@@ -6,11 +6,6 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
-    A mixin for views and widgets to add functionality necessary to bind to a single item in a result set.
-
-    Use cujo.mvc._Bindable as a mixin in a multiple-inheritance pattern:
-        dojo.declare('myClass', cujo._Bindable, { ... }); // mixin
-
     TODO: create a decorator version of this mixin?
 
 */
@@ -19,6 +14,9 @@ dojo.provide('cujo.mvc._Bindable');
 (function () {
 
 dojo.declare('cujo.mvc._Bindable', null, {
+    //A mixin for views and widgets to add functionality necessary to bind to a single item in a result set.
+    //Use cujo.mvc._Bindable as a mixin in a multiple-inheritance pattern:
+    //    dojo.declare('myClass', cujo._Bindable, { ... }); // mixin
     // assumes we're mixing into a widget (or view) with uninitialize(),
     // postMixInProperties(), set(), and connect().
 

@@ -107,11 +107,14 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     _handleResultSetEvent: function (item, oldIndex, newIndex) {
         // summary: fires when an item in result set changes
         // TODO: debounce these to catch moves instead of deleting/recreating
+        //      - create a new debounced method to do the adds/deletes/moves and make 
+        //        this method accrue add/del operations.
+        //      - or will transaction() handle this better than debounce?
         if (oldIndex == -1 || newIndex == -1) {
             // TODO: ok, what to do if the dev hasn't defined a queryExecutor?
         }
         else if (newIndex >= 0) {
-            this._itemAdded(changed, newIndex);
+            this._itemAdded(item, newIndex);
         }
         else {
             this._itemDeleted(item, oldIndex);
