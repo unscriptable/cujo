@@ -28,7 +28,7 @@ dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.View, cujo.mvc._Bindable, cujo.
     attributeMap: {
         dataId: {
             data: 'id',
-            type: 'no-dom'
+            type: 'cujoBind'
         }
     },
 
