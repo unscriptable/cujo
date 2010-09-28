@@ -81,8 +81,8 @@ dojo.declare('cujo.mvc._Bindable', null, {
             }
             // grab reverse-lookups
             dojo.forEach([].concat(defs), function (def) {
-                if (def.data) {
-                    reverse[def.data] = propName;
+                if ('data' in def) {
+                    reverse[def.data || propName] = propName;
                 }
             });
         });
