@@ -68,19 +68,26 @@ dojo.declare('cujo._Derivable', null, {
     constructor: function () {
         this._deriverSources = {};
         this._derivablesPending = true;
+        this._initDerivables(this.attributeMap, this._deriverSources, this);
     },
 
     postscript: function () {
         this.inherited(arguments);
         // check if we need to initialize
-        if (this._derivablesPending) this._initDerivables(this.attributeMap, this._deriverSources, this);
+        if (this._derivablesPending) {
+            this._checkAllDerivables(this._deriverSources, this);
+        }
+//        if (this._derivablesPending) this._initDerivables(this.attributeMap, this._deriverSources, this);
         delete this._derivablesPending;
     },
 
     postMixInProperties: function () {
         this.inherited(arguments);
         // check if we need to initialize
-        if (this._derivablesPending) this._initDerivables(this.attributeMap, this._deriverSources, this);
+        if (this._derivablesPending) {
+            this._checkAllDerivables(this._deriverSources, this);
+        }
+//        if (this._derivablesPending) this._initDerivables(this.attributeMap, this._deriverSources, this);
         delete this._derivablesPending;
     },
 
@@ -88,7 +95,7 @@ dojo.declare('cujo._Derivable', null, {
 
         var inherited = this.getInherited('set', arguments);
 
-        this._setAndCheckDerivables(attr, value, inherited, this._deriverSources, this);
+        this._setAndCheckDerivables(attr, value, inherited, this._deriverSources[attr], this);
 
         return this;
 
@@ -96,23 +103,37 @@ dojo.declare('cujo._Derivable', null, {
 
     /* the following methods are context-free so they can be reused in the Derivable decorator version */
 
-    _initDerivables: function (map, sources, context) {
+    _initDerivables: function (map, allSources, context) {
 
+        function addSource (name, link) {
+            allSources[name] = allSources[name] || [];
+            allSources[name].push(link);
+        }
+
+        // TODO should we do this once on the prototype instead of once per instance?
         cujo.forInAll(map, function (commands, name) {
             dojo.forEach([].concat(commands), function (command) {
-                if (command.deriver) {
-                    // establish links from attributeMap's source property...
+                // process forward-defined derived attributes
+                if (command.derived) {
+                    // establish links from attributeMap's derived property...
                     dojo.forEach([].concat(command.derived), function (derived) {
-                        var link = {
-                                name: derived,
-                                command: command,
-                                source: name
-                            };
-                        sources[name] = sources[name] || [];
-                        sources[name].push(link);
+                        addSource(name, { name: derived, command: command, source: name });
 	                    // persist property
-	                    context.set(derived, context._getDerivedValue(derived, command));
+	                    //context.set(derived, context._getDerivedValue(derived, command));
                     });
+                }
+                // process backward-defined derived attributes
+                else if (command.source) {
+                    // establish links from attributeMap's source property...
+                    dojo.forEach([].concat(command.source), function (source) {
+                        addSource(source, { name: name, command: command, source: source });
+                    });
+                    // persist property
+                    //context.set(name, context._getDerivedValue(name, command));
+                }
+                // process attributeMap pass-throughs
+                if (!command || command.node && context.attributeMap) {
+                    context.attributeMap[name] = command;
                 }
             });
         });
@@ -126,15 +147,25 @@ dojo.declare('cujo._Derivable', null, {
         origSet.call(context, attr, value);
 
         if (currValue !== value) {
-            // handle derived properties (if this is a source attr)
-            dojo.forEach(sources[attr], function (dep) {
-                var val = context._getDerivedValue(dep.name, dep.command);
-                //  Note: don't call the inherited set because there may be
-                //  a superclass set() that needs to run, too.
-                context.set(dep.name, val);
-            });
+            context._checkDerivables(attr, sources, context);
         }
 
+    },
+
+    _checkAllDerivables: function (allSources, context) {
+        cujo.forIn(allSources, function (sources, source) {
+            context._checkDerivables(source, sources, context);
+        });
+    },
+
+    _checkDerivables: function (attr, sources, context) {
+        // handle derived properties (if this is a source attr)
+        dojo.forEach(sources, function (dep) {
+            var val = context._getDerivedValue(dep.name, dep.command);
+            //  Note: don't call the inherited set because there may be
+            //  a superclass set() that needs to run, too.
+            context.set(dep.name, val);
+        });
     },
 
     _getDerivedValue: function (attr, command) {
