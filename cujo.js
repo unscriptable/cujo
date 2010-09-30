@@ -13,6 +13,7 @@ if (!window.cujoConfig)
 
 //  cujoConfig params
 //      noCssTransExt: don't look for extensions to css transitions in css files
+//      ieHtml5Tags: the list of html5 tags to pre-define for IE
 
 (function () {
 
@@ -208,7 +209,9 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
     // TODO: test Opera, Chrome, and 3.0 browsers
 
     var opts = dojo.mixin({}, cujo.cssxOptions, options),
-        path = dojo._getModuleSymbols(module).join("/") + '.css',
+        lastDot = module.lastIndexOf('.'),
+        path = dojo.moduleUrl(module.substr(0, lastDot)) + module.substr(lastDot + 1) + '.css',
+//        path = dojo._getModuleSymbols(module).join("/") + '.css',
         //themePath = dojo.moduleUrl('', [cujo._moduleToThemePath(module, 'css'), 'css'].join('.')),
         attrs = {
             rel: 'stylesheet',
@@ -226,7 +229,7 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
     link.setAttribute('id', id);
     cujo._getHeadElement().appendChild(link);
 
-    // TODO: change this so that the dev can wait for just xhr if cssx is turned off
+    // TODO: change this so that the dev can wait for just xhr if cssx is turned off?
     cujo.wait(['dojo._base.xhr', 'cujo._base.cssx'], function () {
 
         var dfd = dojo.xhr('GET', {url: path, sync: false});
@@ -349,6 +352,6 @@ if (dojo.isIE < 9) {
 
     // Note: these files are always dynamically loaded, unless you explicitly place them into a build!
     dojo['require']('cujo._base.cssx.ieSelector');
-    dojo['require']('cujo._base.cssx.ieLayout');
+        dojo['require']('cujo._base.cssx.ieLayout');
 
 }
