@@ -390,7 +390,7 @@ cujo.cssx = (function () {
             procs.push(proc);
 
             if (docLoaded) {
-                console.warn('cssx processor loaded after document is ready');
+                console.warn('Cssx processors loaded after document is ready will not retroactively process stylesheets.');
             }
             else {
                 dojo.forEach(cujo._loadedCss, function (def) {
