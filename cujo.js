@@ -210,55 +210,67 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
 
     var opts = dojo.mixin({}, cujo.cssxOptions, options),
         lastDot = module.lastIndexOf('.'),
-        path = dojo.moduleUrl(module.substr(0, lastDot)) + module.substr(lastDot + 1) + '.css',
-//        path = dojo._getModuleSymbols(module).join("/") + '.css',
-        //themePath = dojo.moduleUrl('', [cujo._moduleToThemePath(module, 'css'), 'css'].join('.')),
-        attrs = {
-            rel: 'stylesheet',
-            type: 'text/css',
-            href: path
-        },
+        path = dojo.moduleUrl(module.substr(0, lastDot).toString()) + module.substr(lastDot + 1) + '.css',
         promise = new Promise(function () { return 'requireCss canceled: ' + module; });
 
-    // create link node
-    var link = getDoc().createElement('link'),
-        id = 'cujoCss' + cujo._loadedCss.length;
-    link.setAttribute('rel', 'stylesheet');
-    link.setAttribute('type', 'text/css');
-    link.setAttribute('href', path);
-    link.setAttribute('id', id);
-    cujo._getHeadElement().appendChild(link);
+    // check if we've already loaded this css module
+    var cssDef = cujo._loadedCss[module];
+    if (cssDef) {
+        promise.resolve(cssDef);
+    }
+    else {
 
-    // TODO: change this so that the dev can wait for just xhr if cssx is turned off?
-    cujo.wait(['dojo._base.xhr', 'cujo._base.cssx'], function () {
+        // create link node
+        var link = getDoc().createElement('link'),
+            id = 'cujoCss' + cujo._loadedCss.length;
+        link.setAttribute('rel', 'stylesheet');
+        link.setAttribute('type', 'text/css');
+        link.setAttribute('href', path);
+        link.setAttribute('id', id);
+        cujo._getHeadElement().appendChild(link);
 
-        var dfd = dojo.xhr('GET', {url: path, sync: false});
+        cssDef = cujo._loadedCss[module] = cujo._loadedCss[cujo._loadedCss.length] = {
+            id: id,
+            link: link,
+            module: module,
+            options: options
+        };
 
-        if (false !== opts.cssx) {
-            dfd
-                .addCallback(function (resp) {
-                    // TODO: when can we get rid of this bulky memory waster?
-                    cujo._loadedCss[id] = cujo._loadedCss.push({
-                        id: id,
-                        node: link,
-                        module: module,
-                        options: options,
-                        cssText: resp
+        // TODO: change this so that the dev can wait for just xhr if cssx is turned off?
+        cujo.wait(['dojo._base.xhr', 'cujo._base.cssx'], function () {
+
+            var dfd = dojo.xhr('GET', {url: path, sync: false});
+
+            if (false !== opts.cssx) {
+                dfd
+                    .addCallback(function (resp) {
+                        // save the cssText until the document is ready
+                        // no more cssx processors may load after the document is ready 
+                        cssDef.cssText = resp;
+                        cujo.cssx.processCss(resp, opts);
+                        promise.resolve(cssDef);
+                    })
+                    .addErrback(function (err) {
+                        cssDef.error = err;
+                        //console.error(err);
+                        promise.reject(cssDef);
                     });
-                    cujo.cssx.processCss(resp, opts);
-                    promise.resolve({link: link, cssText: resp});
-                })
-                .addErrback(function (err) {
-                    cujo._loadedCss[id].error = err;
-                    promise.reject(err);
-                });
-        }
+            }
 
-    });
+        });
+
+    }
 
     return promise;
 
 };
+
+dojo.addOnLoad(function () {
+    for (var i = 0, len = cujo._loadedCss.length; i < len; i++) {
+        // remove wasted memory
+        delete cujo._loadedCss[i].cssText;
+    }
+});
 
 // TODO: cujo.requireHtml
 cujo.requireHtml = function (/* String */ module, /* Object? */ options) {};

@@ -22,6 +22,8 @@ cujo.cssx = (function () {
     var
         // node for sniffing features. (we need this since the body won't exist until after this runs!)
         testNode,
+        // processors may be registered until the document is loaded
+        docLoaded = false,
         // processors waiting to be prepared
         procs = [],
         // processing callbacks
@@ -290,14 +292,14 @@ cujo.cssx = (function () {
         procs = [];
     }
 
-    function _processCss (/* String */ rawText, /* Object */ options, /* cujo.cssx._TextProc|cujo.cssx._DomProc? */ proc) {
+    function _processCss (/* String */ rawText, /* Object */ options, /* cujo.cssx._TextProc|cujo.cssx._DomProc? */ optProc) {
 
         // helper function to loop through procs of a type
         function runProcs (coll, which) {
             // if a single proc was specified, run that. otherwise run all procs
             return function () {
                 var args = arguments;
-                dojo.forEach(proc ? [proc[which]] : coll[which], function (proc) {
+                dojo.forEach(optProc ? [optProc] : coll[which], function (proc) {
                     proc[which].apply(proc, args);
                 });
             }
@@ -377,14 +379,25 @@ cujo.cssx = (function () {
 
         register: function (/* cujo.cssx._TextProc|cujo.cssx._DomProc */ proc) {
             //  summary: Registers a CSS processor. If there are stylesheets already
-            //      loaded, then those are processed now.
+            //      loaded, then those are processed now.  Note: CSS processors have to
+            //      be loaded before the document is ready or they won't be run
+            //      on any stylesheets that are loaded before the document is ready.
+            //      As long as processors are loaded before the document is ready,
+            //      they will be run against all stylesheets, regardless of whether
+            //      the stylesheets load before or after the processor.
             //  TODO: process these soon instead of now? (cujo.soon())
+
             procs.push(proc);
 
-            dojo.forEach(cujo._loadedCss, function (def) {
-                this.processCss(def.cssText, def.options, proc);
-            }, this);
-            
+            if (docLoaded) {
+                console.warn('cssx processor loaded after document is ready');
+            }
+            else {
+                dojo.forEach(cujo._loadedCss, function (def) {
+                    if (def.cssText) this.processCss(def.cssText, def.options, proc);
+                }, this);
+            }            
+
             return this;
         },
 
@@ -427,5 +440,7 @@ cujo.cssx = (function () {
         }
 
     };
+
+dojo.addOnLoad(function () { docLoaded = true; })
 
 })();
