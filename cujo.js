@@ -236,16 +236,16 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
             options: options
         };
 
-        // TODO: change this so that the dev can wait for just xhr if cssx is turned off?
-        cujo.wait(['dojo._base.xhr', 'cujo._base.cssx'], function () {
+        if (false !== opts.cssx) {
 
-            var dfd = dojo.xhr('GET', {url: path, sync: false});
+            cujo.wait(['dojo._base.xhr', 'cujo._base.cssx'], function () {
 
-            if (false !== opts.cssx) {
+                var dfd = dojo.xhr('GET', {url: path, sync: false});
+
                 dfd
                     .addCallback(function (resp) {
                         // save the cssText until the document is ready
-                        // no more cssx processors may load after the document is ready 
+                        // no more cssx processors may load after the document is ready
                         cssDef.cssText = resp;
                         cujo.cssx.processCss(resp, opts);
                         promise.resolve(cssDef);
@@ -255,9 +255,14 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
                         //console.error(err);
                         promise.reject(cssDef);
                     });
-            }
 
-        });
+            });
+
+        }
+        else {
+            // just fulfill our promise now
+            promise.resolve(cssDef);
+        }
 
     }
 
