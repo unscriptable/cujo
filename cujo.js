@@ -29,7 +29,9 @@ var
     xdIgnore = false,
     // unfortunately, dojo's xd loader doesn't allow us to determine when modules are loaded
     // so we have to track them separately:
-    loadedModules = {};
+    loadedModules = {},
+    // dojo says the document is ready
+    isReady;
 
 if (!dojo._isXDomain) {
     // if this isn't xd, we can trust that modules already in dojo._loadedModules are truly loaded
@@ -64,7 +66,7 @@ d.provide = function (/*String*/ resourceName) {
                     execWaiter(waiter);
                 }
                 else {
-                    // waiter is still sctive, add to newList
+                    // waiter is still active, add to newList
                     active[active.length] = waiter;
                 }
             }
@@ -116,7 +118,6 @@ cujo.isLoaded = function (/* Array|String */ moduleNames) {
 };
 
 cujo.wait = function (/* Array|String */ moduleNames, /* Function */ func, /* Object? */ context) {
-    // TODO: return a promise instead of taking a function and a context
     // ensure that the moduleNames argument is an array
     if (!isArray(moduleNames)) {
         moduleNames = [moduleNames];
@@ -155,14 +156,13 @@ cujo.wait = function (/* Array|String */ moduleNames, /* Function */ func, /* Ob
 function execWaiter (waiter) {
     var context = waiter.context || d.global,
         func = isString(waiter.func) ? context[waiter.func] : waiter.func;
-    // setTimeout assures that the resource has been fully defined
-    // and exceptions don't interrupt the current execution "thread"
+    // setTimeout assures that the resource has been fully defined (needed for xd)
     // TODO: catch exceptions and rethrow them with a better debugging message
     setTimeout(function () { func.call(context); }, 0);
 }
 
 function Promise (canceler) {
-    // creates a simple, promise-like interface until dojo.Deferred is available
+    //  summary: creates a simple, promise-like interface until dojo.Deferred is available
     var dfd,
         thens = [],
         resolution,
@@ -200,6 +200,26 @@ function Promise (canceler) {
 
 cujo.Promise = Promise;
 
+cujo.requireJs = function (/* Array|String */ moduleNames, /* Object? */ options) {
+    //  summary:
+    //      cujo.requireJs loads one or more javascript files via dojo.require and
+    //      returns a promise that resolves when all of the files are loaded.
+    //      The files execute in the order they are specified.
+    //  options: TBD.
+    
+    var promise = new Promise();
+
+    var names = isArray(moduleNames) ? moduleNames : [moduleNames];
+    for (var i = 0, len = names.length; i < len; i++) {
+        dojo['require'](names[i]);
+    }
+
+    cujo.wait(moduleNames, function () {
+        promise.resolve(moduleNames);
+    });
+
+};
+
 cujo._loadedCss = [];
 
 cujo.requireCss = function (/* String */ module, /* Object? */ options) {
@@ -215,54 +235,52 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
 
     // check if we've already loaded this css module
     var cssDef = cujo._loadedCss[module];
+
     if (cssDef) {
-        promise.resolve(cssDef);
+
+        // we've already loaded it
+        if (cssDef.link) promise.resolve(cssDef);
+        // oops, we already errored
+        else if (cssDef.error) promise.reject(cssDef.error);
+        // we're still waiting... here, take this promise instead
+        else promise = cssDef.promise;
+
     }
     else {
 
-        // create link node
-        var link = getDoc().createElement('link'),
-            id = 'cujoCss' + cujo._loadedCss.length;
-        link.setAttribute('rel', 'stylesheet');
-        link.setAttribute('type', 'text/css');
-        link.setAttribute('href', path);
-        link.setAttribute('id', id);
-        cujo._getHeadElement().appendChild(link);
-
         cssDef = cujo._loadedCss[module] = cujo._loadedCss[cujo._loadedCss.length] = {
-            id: id,
-            link: link,
+            id: 'cujoCss' + cujo._loadedCss.length,
+            path: path,
             module: module,
-            options: options
+            options: options,
+            promise: promise
         };
 
-        if (false !== opts.cssx) {
+        var waitList = false !== opts.cssx ? ['dojo._base.xhr', 'cujo._base.cssx'] : ['dojo._base.xhr'];
 
-            cujo.wait(['dojo._base.xhr', 'cujo._base.cssx'], function () {
+        cujo.wait(waitList, function () {
 
-                var dfd = dojo.xhr('GET', {url: path, sync: false});
+            var dfd = dojo.xhr('GET', {url: path, sync: false});
 
-                dfd
-                    .addCallback(function (resp) {
-                        // save the cssText until the document is ready
-                        // no more cssx processors may load after the document is ready
-                        cssDef.cssText = resp;
+            dfd.addCallback(function (resp) {
+                    // save the cssText until the document is ready
+                    // cssx processors don't process previously-loaded css after the document is ready
+                    if (!isReady) cssDef.cssText = resp;
+                    cssDef.link = createLinkNode(cssDef.id, cssDef.path);
+                    delete cssDef.promise;
+                    if (false !== opts.cssx) {
                         cujo.cssx.processCss(resp, opts);
-                        promise.resolve(cssDef);
-                    })
-                    .addErrback(function (err) {
-                        cssDef.error = err;
-                        //console.error(err);
-                        promise.reject(cssDef);
-                    });
+                    }
+                    promise.resolve(cssDef);
+                })
+                .addErrback(function (err) {
+                    cssDef.error = err;
+                    //console.error(err);
+                    delete cssDef.promise;
+                    promise.reject(cssDef);
+                });
 
-            });
-
-        }
-        else {
-            // just fulfill our promise now
-            promise.resolve(cssDef);
-        }
+        });
 
     }
 
@@ -270,12 +288,25 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
 
 };
 
-dojo.addOnLoad(function () {
+// TODO: release all cssDefs on load (and stop creating them, too)
+dojo.ready(function () {
+    isReady = true;
     for (var i = 0, len = cujo._loadedCss.length; i < len; i++) {
         // remove wasted memory
         delete cujo._loadedCss[i].cssText;
     }
 });
+
+function createLinkNode (id, path) {
+    // create link node
+    var link = getDoc().createElement('link');
+    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('type', 'text/css');
+    link.setAttribute('href', path);
+    link.setAttribute('id', id);
+    cujo._getHeadElement().appendChild(link);
+    return link;
+}
 
 // TODO: cujo.requireHtml
 cujo.requireHtml = function (/* String */ module, /* Object? */ options) {};
@@ -342,7 +373,6 @@ var theme = 'default',
 
 })();
 
-// Note: don't abbreviate here: the builder script will not see these without the full 'dojo.require'
 dojo.require('cujo._base.lang');
 dojo.require('cujo._base.notify');
 dojo.require('cujo._base.dom');
