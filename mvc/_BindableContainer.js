@@ -113,6 +113,9 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         if (oldIndex == -1 || newIndex == -1) {
             // TODO: ok, what to do if the dev hasn't defined a queryExecutor?
         }
+        else if (oldIndex == newIndex) {
+            // item didn't move. don't do anything
+        }
         else if (newIndex >= 0) {
             this._itemAdded(item, newIndex);
         }
@@ -133,8 +136,9 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 
     _itemAdded: function (item, index) {
         var views = this.boundViews,
-            widget = this._createBoundItem(item);
-        views.splice(index >= 0 ? index : views.length, 0, widget);
+            pos = index >= 0 ? index : views.length,
+            widget = this._createBoundItem(item, pos);
+        views.splice(pos, 0, widget);
         this.itemAdded(widget);
         return widget;
     },
@@ -167,11 +171,11 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 
     },
 
-    _createBoundItem: function (dataItem) {
+    _createBoundItem: function (dataItem, index) {
         // TODO: is there any way we can create a DataBoundView automagically if the node is not a widget?
         var node = this.itemTemplate.cloneNode(true),
             dojoType = dojo.attr(this.itemTemplate, 'dojotype');
-        dojo.place(node, this.containerNode, 'last');
+        dojo.place(node, this.containerNode, index >= 0 ? index : 'last');
         var ctor = dojo.getObject(dojoType),
             widget = new ctor({dataItem: dataItem}, node);
         return widget;

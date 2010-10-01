@@ -15,6 +15,12 @@ dojo.require("dojo.Stateful");
 /*
     The following dojo.* classes are copied from pre- dojo 1.6 trunk.
     Scroll down to find the actual cujo.mvc.DojoDataAdapter class.
+
+    TODO: report bugs
+    1. dojo.store.DataStore#put do object.hasOwnProperty(i) before doing getValue/setValue
+    2. dojo.store.Observable: leaking global 'l' [ for(i = 0, l = resultsArray.length; i < l; i++) ]
+    3. dojo.store.Observable: dojo.store.DataStore without a queryEngine: when an object is put(), it is removed from all watched resultSets
+
 */
 
 dojo.provide("dojo.store.DataStore");
@@ -35,18 +41,18 @@ dojo.declare("dojo.store.DataStore", null, {
 		// 		This is the Dojo data store
 		dojo.mixin(this, options);
 	},
-	_objectConverter: function(callback){
-		var store = this.store;
-		return function(item){
-			var object = {};
-			var attributes = store.getAttributes(item);
-			for(var i = 0; i < attributes.length; i++){
-				object[attributes[i]] = store.getValue(item, attributes[i]);
-			}
-			return callback(object);
-		}
-	},
-	get: function(id, options){
+    _objectConverter: function(callback){
+        var store = this.store;
+        return function(item){
+            var object = {};
+            var attributes = store.getAttributes(item);
+            for(var i = 0; i < attributes.length; i++){
+                object[attributes[i]] = store.getValue(item, attributes[i]);
+            }
+            return callback(object);
+        }
+    },
+    get: function(id, options){
 		//	summary:
 		// 		Retrieves an object by it's identity. This will trigger a fetchItemByIdentity
 		// id:
@@ -90,7 +96,7 @@ dojo.declare("dojo.store.DataStore", null, {
 				onItem: function(item){
 					if(item){
 						for(var i in object){
-							if(store.getValue(item, i) != object[i]){
+							if(object.hasOwnProperty(i) && store.getValue(item, i) != object[i]){
 								store.setValue(item, i, object[i]);
 							}
 						}
@@ -142,29 +148,63 @@ dojo.declare("dojo.store.DataStore", null, {
 	}
 });
 
+dojo.declare('cujo.mvc.ModelItem', dojo.Stateful, {
+
+    constructor: function (seed, storeItem) {
+        this._item = storeItem;
+    },
+
+    _item: null,
+
+    getItem: function () { return this._item; }
+
+});
+
 dojo.declare('cujo.mvc.DojoDataAdapter', dojo.store.DataStore, {
 
     queryEngine: null,
 
     constructor: function (options) {
 
+        // observe all result sets. this replaces this.query
         dojo.store.Observable(this);
+
+        // replace this.query again so we can fix Observable's behavior
+        var observableQuery = this.query;
+        this.query = function () {
+            var rs = observableQuery.apply(this, arguments),
+                self = this;
+            dojo.when(rs, function (resultSet) {
+                // listen for item changes
+                // TODO: dismiss these observations when this DojoDataAdapter destroyed?
+                rs.observe(dojo.hitch(self, '_objectUpdated', resultSet), true);
+            });
+            return rs;
+        };
 
     },
 
-    _objectConverter: function(callback){
-        //  summary:
-        //      ensures that the returned object has a watch method
-        //      (e.g. dojo.Stateful) but not the mozilla native watch method
-        //      since the mozilla watch method doesn't support the same method
-        //      signatures for watching all properties as dojo.Stateful:
-        //      o.watch(callback) // throws TypeError
-        //      o.watch('*', callback); // adds a '*' property to the object
-        function makeStatefulAndCallback (object) {
-            var stfuObj = object.watch != Object.prototype.watch ? object : new dojo.Stateful(object);
-            return callback(stfuObj);
+    _objectUpdated: function (resultSet, object, oldIndex, newIndex) {
+        var ourObject = resultSet[newIndex];
+        if (ourObject && ourObject !== object) {
+            this._objectUpdater(object.getItem(), ourObject);
         }
-        return this.inherited(arguments, [makeStatefulAndCallback]);
+    },
+
+    _objectUpdater: function(item, existing){
+        var object = existing || new cujo.mvc.ModelItem({}, item);
+        var attributes = this.store.getAttributes(item);
+        for(var i = 0; i < attributes.length; i++){
+            object.set(attributes[i], this.store.getValue(item, attributes[i]));
+        }
+        return object;
+    },
+
+    _objectConverter: function(callback){
+        var self = this;
+        return function(item){
+            return callback(self._objectUpdater(item));
+        }
     }
 
 });
@@ -253,7 +293,7 @@ dojo.store.Observable = function(store){
 		for(var i = 0, l = queryUpdaters.length; i < l; i++){
 			queryUpdaters[i](object, existingId);
 		}
-	}
+	};
 	var originalQuery = store.query;
 	store.query = function(query, options){
 		var results = originalQuery.apply(this, arguments);
@@ -266,7 +306,7 @@ dojo.store.Observable = function(store){
 					// first listener was added, create the query checker and updater
 					queryUpdaters.push(queryUpdater = function(changed, existingId){
 						dojo.when(results, function(resultsArray){
-							var i;
+							var i, l;
 							if(++queryRevision != revision){
 								throw new Error("Query is out of date, you must watch() the query prior to any data modifications");
 							}
@@ -278,25 +318,32 @@ dojo.store.Observable = function(store){
 									if(store.getIdentity(object) == existingId){
 										removedObject = object;
 										removedFrom = i;
-										resultsArray.splice(i, 1);
+										//resultsArray.splice(i, 1);
+										break;
 									}
 								}
 							}
-							if(queryExecutor){
-								// add the new one
-								if(changed &&
-										// if a matches function exists, use that (probably more efficient)
-										(queryExecutor.matches ? queryExecutor.matches(changed) : queryExecutor([changed]).length)){
-									// TODO: handle paging correctly
-									resultsArray.push(changed);
-									insertedInto = queryExecutor(resultsArray).indexOf(changed);
-								}
-							}else if(changed){
-								// we don't have a queryEngine, so we can't provide any information
-								// about where it was inserted, but we can at least indicate a new object
-								insertedInto = removedFrom || -1;
-							}
-							if((removedFrom > -1 || insertedInto > -2) &&
+                            if(changed){
+                                if(removedObject && store.getIdentity(removedObject) == store.getIdentity(changed)){
+                                    // object's properties modified
+                                    insertedInto = removedFrom;
+                                }else if(queryExecutor &&
+                                            // if a matches function exists, use that (probably more efficient)
+                                            (queryExecutor.matches ? queryExecutor.matches(changed) : queryExecutor([changed]).length)){
+                                        // TODO: handle paging correctly
+                                        insertedInto = queryExecutor(resultsArray).indexOf(changed);
+                                }else{
+                                    // we don't have a queryEngine, so we can't provide any information
+                                    // about where it was inserted, but we can at least indicate a new object
+                                    insertedInto = removedFrom = -1;
+                                }
+                            }
+                            // if the object moved (or was added or removed)
+                            if(removedFrom != insertedInto){
+                                if (removedFrom >= 0) resultsArray.splice(removedFrom, 1);
+                                if (insertedInto >= 0) resultsArray.splice(insertedInto, 0, changed);
+                            }
+							if((removedFrom > -1 || insertedInto > -1) &&
 									(includeObjectUpdates || (removedFrom != insertedInto))){
 								for(i = 0;listener = listeners[i]; i++){
 									listener(changed || removedObject, removedFrom, insertedInto);
@@ -331,7 +378,7 @@ dojo.store.Observable = function(store){
 				inMethod = true;
 				try{
 					return dojo.when(original.apply(this, arguments), function(results){
-						action(value);
+						action((typeof results == "object" && results) || value);
 						return results;
 					});
 				}finally{
