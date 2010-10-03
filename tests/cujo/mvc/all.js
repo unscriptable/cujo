@@ -1,7 +1,7 @@
-dojo.provide("cujo.tests.mvc.all");
+dojo.provide("tests.cujo.mvc.all");
 
 try {
-	dojo.require("cujo.tests.mvc.binder");
+	dojo.require("tests.cujo.mvc.binder");
 } catch(e) {
 	doh.debug(e);
 }

@@ -1,4 +1,4 @@
-dojo.provide('cujo.tests.mvc.binder');
+dojo.provide('tests.cujo.mvc.binder');
 
 dojo.require('cujo.cujo', true);
 dojo.require('cujo.mvc.binder');
@@ -8,15 +8,15 @@ function basicDeriver(binding) {
 	return true;
 }
 
-cujo.tests.mvc.testWidget = function() {};
-cujo.tests.mvc.testWidget.prototype.attributeMap = {
+tests.cujo.mvc.testWidget = function() {};
+tests.cujo.mvc.testWidget.prototype.attributeMap = {
 	prop: {
         data: 'id',
         type: 'cujoBind'
 	}
 };
 
-doh.register('cujo.mvc.tests.binder-basic',
+doh.register('cujo.mvc.binder-basic',
 [
 	function test_empty() {
 		var map = cujo.mvc.binder().map();
@@ -35,7 +35,7 @@ doh.register('cujo.mvc.tests.binder-basic',
 		doh.assertEqual({ prop: { derived: "derived", deriver: basicDeriver, type: "cujoBind"  } }, map);
 	},
 	function test_inherit() {
-		var map = cujo.mvc.binder().inherit(cujo.tests.mvc.testWidget).map();
+		var map = cujo.mvc.binder().inherit(tests.cujo.mvc.testWidget).map();
 		doh.assertEqual({ prop: { data: "id", type: "cujoBind" } }, map);
 	}
 ]);
