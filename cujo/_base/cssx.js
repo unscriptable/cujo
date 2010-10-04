@@ -350,7 +350,7 @@ cujo.cssx = (function () {
 
         textParser.parse(rawText);
 
-        currSs = cujo.stylesheet.createStylesheet(currText.join(''));
+        currSs = cujo.stylesheet.createStylesheet(currText.join(''), options.refNode, options.position);
 
         // The following hack is brought to you by Firefox 3.0+ which doesn't allow
         // DOM manipulation of stylesheets immediately after text nodes have been inserted.
@@ -422,7 +422,6 @@ cujo.cssx = (function () {
         },
 
         applyCssx: function (/* String */ cssxName) {
-            // TODO: why does this seem to disable _elements_ instead of stylsheets in IE6?????
             // TODO: do we really need this?  it's probably just causing performance problems
 //            assertCssxName(cssxName);
 //            var ss = cssxSs[cssxName];

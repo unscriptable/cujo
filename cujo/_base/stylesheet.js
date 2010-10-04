@@ -28,48 +28,45 @@ function defer (ruleDef) {
     deferrals.push(ruleDef);
 }
 
-// add stylesheet to head tag (may not be first child b/c of comments)
-function head (doc) {
-    var node = doc.documentElement.firstChild;
-    while (node && node.nodeType != 1) {
-        node = node.nextSibling;
-    }
-    return node;
-}
+head = cujo._getHeadElement;
 
 cujo.stylesheet = {
 
-	createStylesheet: (function () {
+	createStylesheet: function (cssText, refNode, position) {
         //  summary: Creates a new stylesheet so rules may be added.
-        //  cssText: The initial text content of the stylesheet (i.e. rules in text form)
-        //  Note: Do not supply cssText if you plan to add rules via the appendRule method immediately.
+        //  cssText: String  The initial text content of the stylesheet (i.e. rules in text form)
+        //  refNode: DOMNode?  A node to use to determine the placement of the new stylesheet.
+        //  position: String|Number?  The position of the new stylesheet in relation to refNode.
+        //  description: Do not supply cssText if you plan to add rules via the appendRule method immediately.
         //      Firefox 3+ temporarily removes the cssRules collection when text content is
         //      inserted.  A setTimeout is required before the cssRules are available again.
 
-        return dojo.doc.createStyleSheet ?
-            // IE (hack city)
-            function (cssText) {
-                try {
-                    var node = dojo.create('style', {type: 'text/css'}, head(dojo.doc), 'last');
-                    var ss = node.styleSheet;
+        return (createStylesheet =
+            dojo.doc.createStyleSheet ?
+                // IE (hack city)
+                function (cssText, refNode, position) {
+                    try {
+                        var node = dojo.create('style', {type: 'text/css'}, refNode || head(dojo.doc), position == null ? 'last' : position);
+                        var ss = node.styleSheet;
+                    }
+                    catch (ex) {
+                        // we must have hit 31 stylesheet limit so try the other way:
+                        ss = dojo.doc.createStyleSheet();
+                    }
+                    // IE6 needs to have cssText or the stylesheet won't get created (verify again?)
+                    cssText = cssText || '#cujo_ignore_ {}';
+                    try { ss.cssText = cssText; } catch (ex) { console.debug('Unable to create stylesheet', ex); }
+                    return ss;
+                } :
+                // w3c
+                function (cssText) {
+                    var node = dojo.create('style', {type: 'text/css'}, refNode || head(dojo.doc), position == null ? 'last' : position);
+                    if (cssText)
+                        node.appendChild(dojo.doc.createTextNode(cssText));
+                    return node.sheet;
                 }
-                catch (ex) {
-                    // we must have hit 31 stylesheet limit so try the other way:
-                    ss = dojo.doc.createStyleSheet();
-                }
-                // IE6 needs to have cssText or the stylesheet won't get created
-                cssText = cssText || '#cujo_ignore_ {}';
-                try { ss.cssText = cssText; } catch (ex) { console.debug('Unable to create stylesheet', ex); }
-                return ss;
-            } :
-            // w3c
-            function (cssText) {
-                var node = dojo.create('style', {type: 'text/css'}, head(dojo.doc), 'last');
-                if (cssText)
-                    node.appendChild(dojo.doc.createTextNode(cssText));
-                return node.sheet;
-            }
-    })(),
+        )();
+    },
 
     createLink: function (/* String */ src, /* String? */ media) {
         // summary: creates a link tag to link-in a stylesheet from a url
