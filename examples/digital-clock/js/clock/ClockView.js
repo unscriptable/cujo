@@ -89,7 +89,9 @@ dojo.require('clock.PrefsView');
 	    },
 	
 		_setTheme: function(theme, all) {
-			this.state({ state: theme, value: true, set: all });
+			// FIXME: Should not have to set state of body, but currently need to to ensure
+			// footer changes color with theme.  Need to restructure HTML/CSS to fix.
+			this.state({ state: theme, value: true, set: all, scope: dojo.body() });
 		},
 	
 		_updateTime: function() {

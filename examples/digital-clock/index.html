@@ -20,14 +20,14 @@ http://www.opensource.org/licenses/afl-3.0.php
 	<!-- This assumes a dojo 1.5+ distribution with dojo/dijit/dojox dirs as peers to the cujo dir -->
 	<script type="text/javascript" src="../../dojo/dojo.js"></script>
 	<script type="text/javascript" src="../../cujo/cujo.js"></script>
+	<script type="text/javascript">
+		dojo.require('clock.ClockView');
+	</script>
 </head>
 <body>
 	<div dojoType="clock.ClockView"></div>
 	<footer class="dimmable">
 		<p class="copyright text">Copyright &copy; 2010 <a href="http://briancavalier.com" title="Digital Clock">Brian Cavalier</a>
 		</footer>
-		<script type="text/javascript">
-			dojo.require('clock.ClockView');
-		</script>
 	</body>
 	</html>
