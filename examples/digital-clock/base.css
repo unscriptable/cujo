@@ -1,0 +1,39 @@
+/*
+(c) copyright 2010, Brian Cavalier
+
+This version of the digital clock as been donated for use in the cujojs project, and
+is dual-licensed under the MIT and AFL 3.0 licenses.
+
+LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the MIT
+License at: http://www.opensource.org/licenses/mit-license.php. or AFL License at:
+http://www.opensource.org/licenses/afl-3.0.php
+*/
+body {
+	background: #000;
+	font-size: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+div {
+	margin: 0;
+	padding: 0;
+}
+
+footer {
+	display: block;
+	margin-top: 10px;
+	position: relative;
+	z-index: 102;
+}
+
+.text.copyright {
+	display: block;
+	font-size: 9px;
+	text-align: center;
+}
+
+a, a:visited {
+	color: #0f0;
+	text-shadow: 0 0 20px #0f0;
+}

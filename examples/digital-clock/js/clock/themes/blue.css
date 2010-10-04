@@ -1,0 +1,23 @@
+/*
+(c) copyright 2010, Brian Cavalier
+
+This version of the digital clock as been donated for use in the cujojs project, and
+is dual-licensed under the MIT and AFL 3.0 licenses.
+
+LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the MIT
+License at: http://www.opensource.org/licenses/mit-license.php. or AFL License at:
+http://www.opensource.org/licenses/afl-3.0.php
+*/
+.blue.clock {
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#000), color-stop(.5, rgba(80, 160, 200, .4)), to(#000));
+	background-image: -moz-linear-gradient(top, #000, rgba(0, 200, 255, .4) 50%, #000);
+}
+.blue .bar {
+	background-color: rgb(0, 200, 255);
+	-webkit-box-shadow: 0 0 20px rgb(0, 200, 255);
+	-moz-box-shadow: 0 0 20px rgb(0, 200, 255);
+}
+.blue .text, .blue a, .blue a:visited {
+	color: rgb(0, 200, 255);
+	text-shadow: 0 0 20px rgb(0, 200, 255);
+}
