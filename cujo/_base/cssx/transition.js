@@ -42,7 +42,9 @@ var
     //      don't plan to transition these. The complete list is as follows:
     //      inheritedProps: 'border-spacing, color, font-size, font-weight, letter-spacing, line-height, text-indent, word-spacing',
     //      By default, we're using just a subset of the most likely properties
-    inheritedProps = transConfig.inheritedProps || 'color, font-size';
+    inheritedProps = transConfig.inheritedProps || 'color, font-size',
+
+    isReady;
 
 d.declare('cujo.cssx.transition.Check', cssx._CssxProc, {
 
@@ -160,83 +162,91 @@ function initialize () {
 function toggleClass (/* DOMNode */ node, /* String */ classes, /* Boolean? */ adding) {
     // TODO: decide whether to cache cross-referenced classes like the pre-cssx cssTrans did
 
-    // turn on cssx style sheet (but just temporarily)
-    cujo.cssx.applyCssx(cssxName);
+    // don't bother checking for animations until the dom is ready. especially since we're
+    // doing tons of addClass calls while creating views and widgets.
+    if (isReady) {
 
-    var defs = [],
-        nodes = getAffectedNodes(node, classes);
+        // turn on cssx style sheet (but just temporarily)
+        cujo.cssx.applyCssx(cssxName);
 
-    // collect node style and transition info
-    nodes.forEach(function (node) {
-        // parse transition style
-        // TODO: do we need to handle unit mismatches (start:em -> end:px) --> dojo.style can handle some of these
-        var cs = d.getComputedStyle(node),
-            trans = cujo.cssx.getCssxValue(cs, 'transition'),
-            tDefs = trans && d.map(trans.split(','), function (item) {
-                var
-                    // split transition definition
-                    values = item.split(' '),
-                    // normalize property name
-                    prop = cujo.camelize(values[0]),
-                    // grab any current animation for this property
-                    anim = node._cujo_trans && node._cujo_trans[prop],
-                    // create transition definition
-                    tDef = {
-                        property: prop,
-                        duration: values[1],
-                        timing: values[2],
-                        delay: values[3],
-                        // grab property and its start value while we're here
-                        start: getProp(node, cs, prop),
-                        // if there is a current animation, get the original off that
-                        orig: anim ? anim.properties[prop].orig : node.style[prop]
-                    };
-                // if there's an existing animation
-                if (anim) {
-                    // TODO: apply runtimeStyle, if available (to prevent flickering in IE)
-                    // unapply style (interferes with addClass/removeClass)
-                    d.style(node, prop, anim.orig || '');
-                    // cancel animation
-                    anim._cujo_canceled = true; // was doesnt' dojo support cancelation!?!?!
-                    anim.stop();
-                    delete node._cujo_trans[prop];
-                }
-                return tDef;
-            });
-        if (tDefs) {
-            // record this node's info
-            defs.push({node: node, tDefs: tDefs});
-        }
-    });
+        var defs = [],
+            nodes = getAffectedNodes(node, classes);
+
+        // collect node style and transition info
+        nodes.forEach(function (node) {
+            // parse transition style
+            // TODO: do we need to handle unit mismatches (start:em -> end:px) --> dojo.style can handle some of these
+            var cs = d.getComputedStyle(node),
+                trans = cujo.cssx.getCssxValue(cs, 'transition'),
+                tDefs = trans && d.map(trans.split(','), function (item) {
+                    var
+                        // split transition definition
+                        values = item.split(' '),
+                        // normalize property name
+                        prop = cujo.camelize(values[0]),
+                        // grab any current animation for this property
+                        anim = node._cujo_trans && node._cujo_trans[prop],
+                        // create transition definition
+                        tDef = {
+                            property: prop,
+                            duration: values[1],
+                            timing: values[2],
+                            delay: values[3],
+                            // grab property and its start value while we're here
+                            start: getProp(node, cs, prop),
+                            // if there is a current animation, get the original off that
+                            orig: anim ? anim.properties[prop].orig : node.style[prop]
+                        };
+                    // if there's an existing animation
+                    if (anim) {
+                        // TODO: apply runtimeStyle, if available (to prevent flickering in IE)
+                        // unapply style (interferes with addClass/removeClass)
+                        d.style(node, prop, anim.orig || '');
+                        // cancel animation
+                        anim._cujo_canceled = true; // was doesnt' dojo support cancelation!?!?!
+                        anim.stop();
+                        delete node._cujo_trans[prop];
+                    }
+                    return tDef;
+                });
+            if (tDefs) {
+                // record this node's info
+                defs.push({node: node, tDefs: tDefs});
+            }
+        });
+
+    }
 
     // apply the css change (add/remove the class) like normal dojo.addClass/removeClass
     origMethods[adding ? 'addClass' : 'removeClass'](node, classes);
 
-    // remove nodes that won't change
-    defs = d.filter(defs, function (def) {
-        // get snapshot of final state, removing any props that won't change
-        var cs = d.getComputedStyle(def.node);
-        def.tDefs = d.filter(def.tDefs, function (tDef) {
-            // record end value
-            tDef.end = getProp(def.node, cs, tDef.property);
-            // TODO: remove runtimeStyle that mayhave been applied above
-            // if property changed
-            if (tDef.start != tDef.end) {
-                // apply the start value asap (minimize flicker)
-                d.style(def.node, tDef.property, tDef.start);
-                return true;
-            }
+    if (isReady) {
+
+        // remove nodes that won't change
+        defs = d.filter(defs, function (def) {
+            // get snapshot of final state, removing any props that won't change
+            var cs = d.getComputedStyle(def.node);
+            def.tDefs = d.filter(def.tDefs, function (tDef) {
+                // record end value
+                tDef.end = getProp(def.node, cs, tDef.property);
+                // TODO: remove runtimeStyle that mayhave been applied above
+                // if property changed
+                if (tDef.start != tDef.end) {
+                    // apply the start value asap (minimize flicker)
+                    d.style(def.node, tDef.property, tDef.start);
+                    return true;
+                }
+            });
+            return def.tDefs.length > 0;
         });
-        return def.tDefs.length > 0;
-    });
 
-    // turn off cssx style sheet again
-    cujo.cssx.unapplyCssx(cssxName);
+        // turn off cssx style sheet again
+        cujo.cssx.unapplyCssx(cssxName);
 
-    // create animations
-    var anims = createAnimations(defs);
+        // create animations
+        var anims = createAnimations(defs);
 
-    return;
+    }
 
 }
 
@@ -436,5 +446,7 @@ function getEasing (timing) {
 function onEndTransition (e) {
     // note: e.elapsedTime and e.propertyName; e.type = 'webkitTransitionEnd' (or variant)
 }
+
+dojo.ready(function () { isReady = true; });
 
 })();
