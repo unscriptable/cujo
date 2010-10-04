@@ -103,6 +103,24 @@ function isString (o) {
     return toString.call(o) == '[object String]';
 }
 
+function getDoc () {
+    return dojo.doc || window['document'];
+}
+
+function getHead (/* DOMDocument? */ doc) {
+    //  summary:
+    //      Finds the HEAD element (or the body element if the head wasn't found).
+    //  doc: DOMDocument?
+    //      Searches the supplied document, or the currently-scoped dojo document if omitted.
+    doc = doc || getDoc();
+    var node = doc.documentElement.firstChild;
+    while (node && (node.nodeType != 1 || !node.tagName.match(/head|body/i))) {
+        node = node.nextSibling;
+    }
+    return node;
+}
+cujo._getHeadElement = getHead;
+
 cujo.isLoaded = function (/* Array|String */ moduleNames) {
     var result = true;
     if (!isArray(moduleNames)) {
@@ -242,7 +260,7 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
         if (cssDef.link) promise.resolve(cssDef);
         // oops, we already errored
         else if (cssDef.error) promise.reject(cssDef.error);
-        // we're still waiting... here, take this promise instead
+        // oh hai! ur waiting too? can i shares ur promise?
         else promise = cssDef.promise;
 
     }
@@ -256,29 +274,54 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
             promise: promise
         };
 
-        var waitList = false !== opts.cssx ? ['dojo._base.xhr', 'cujo._base.cssx'] : ['dojo._base.xhr'];
+        cssDef.link = createLinkNode(cssDef.path);
+        cssDef.link.setAttribute('id', cssDef.id);
+
+        /*
+            rules:
+            - we need to insert the link in order to preserve cascade order (and to preserve @import paths)
+            - we need to insert the style after the link in order to preserve order of cssx fixes
+            - link requires we use an url
+            - style requires raw text
+
+            notes:
+            - Firefox and Safari will only request the css file once under normal circumstances, i.e. no-cache
+                (or equiv) headers are not sent.
+            - FF and Safari will request the file twice (once for link and once for xhr) if the user hits F5/CMD-R.
+                The second request for the file will return a 304 instead of a full 200 response
+            - IE will only request the file once unless no-cache (or equiv) headers are sent.
+            - We can extract the cssText from a stylesheet (link or style tag) in IE, but it's IE's modified version,
+                not the original. This could have saved us from having to refetch the file if not for the modification.
+
+            options are:
+            - img/onload/canvas?
+        */
+
+        var waitList = false !== opts.cssx ? ['cujo._base.cssx', 'dojo._base.xhr'] : ['dojo._base.xhr'];
 
         cujo.wait(waitList, function () {
 
             var dfd = dojo.xhr('GET', {url: path, sync: false});
 
             dfd.addCallback(function (resp) {
+                if (false !== opts.cssx) {
                     // save the cssText until the document is ready
                     // cssx processors don't process previously-loaded css after the document is ready
                     if (!isReady) cssDef.cssText = resp;
-                    cssDef.link = createLinkNode(cssDef.id, cssDef.path);
-                    delete cssDef.promise;
-                    if (false !== opts.cssx) {
-                        cujo.cssx.processCss(resp, opts);
-                    }
-                    promise.resolve(cssDef);
-                })
-                .addErrback(function (err) {
-                    cssDef.error = err;
-                    //console.error(err);
-                    delete cssDef.promise;
-                    promise.reject(cssDef);
-                });
+                    // TODO: pass link tag into processCss so style tag can be inserted after it
+                    opts.refNode = cssDef.link;
+                    opts.position = 'after';
+                    cujo.cssx.processCss(resp, opts);
+                }
+                promise.resolve(cssDef);
+                delete cssDef.promise;
+            })
+            .addErrback(function (err) {
+                cssDef.error = err;
+                //console.error(err);
+                promise.reject(err);
+                delete cssDef.promise;
+            });
 
         });
 
@@ -288,7 +331,6 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
 
 };
 
-// TODO: release all cssDefs on load (and stop creating them, too)
 dojo.ready(function () {
     isReady = true;
     for (var i = 0, len = cujo._loadedCss.length; i < len; i++) {
@@ -297,14 +339,13 @@ dojo.ready(function () {
     }
 });
 
-function createLinkNode (id, path) {
+function createLinkNode (path) {
     // create link node
     var link = getDoc().createElement('link');
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('type', 'text/css');
     link.setAttribute('href', path);
-    link.setAttribute('id', id);
-    cujo._getHeadElement().appendChild(link);
+    getHead().appendChild(link);
     return link;
 }
 
@@ -343,23 +384,6 @@ cujo.getThemePath = cujo._moduleToThemePath = function (/* String */ module, /* 
 //    }
 //    return path + module;
 };
-
-cujo._getHeadElement = function (/* DOMDocument? */ doc) {
-    //  summary:
-    //      Finds the HEAD element (or the body element if the head wasn't found).
-    //  doc: DOMDocument?
-    //      Searches the supplied document, or the currently-scoped dojo document if omitted.
-    doc = doc || getDoc();
-    var node = doc.documentElement.firstChild;
-    while (node && (node.nodeType != 1 || !node.tagName.match(/head|body/i))) {
-        node = node.nextSibling;
-    }
-    return node;
-};
-
-function getDoc () {
-    return dojo.doc || window['document'];
-}
 
 var theme = 'default',
     defaultDef = {path: './', options: {expand: true}},
