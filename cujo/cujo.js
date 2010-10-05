@@ -20,25 +20,22 @@ if (!window.cujoConfig)
 var
     d = dojo,
     toString = Object.prototype.toString,
-    // grab a reference to the real dojo.provide and dojo._xdResourceLoaded (we're gonna hijack them!)
+    // grab a reference to the real dojo.provide (we're gonna hijack it!)
     origDojoProvide = d.provide,
-    origXdLoaded = d._xdResourceLoaded,
     // set of modules being waited for (hashmap of arrays of waiters)
     waitees = {},
-    // flag to ignore the current dojo.provide (the dojo xd loader is so messed up)
-    xdIgnore = false,
     // unfortunately, dojo's xd loader doesn't allow us to determine when modules are loaded
     // so we have to track them separately:
     loadedModules = {},
     // dojo says the document is ready
     isReady;
 
-if (!dojo._isXDomain) {
-    // if this isn't xd, we can trust that modules already in dojo._loadedModules are truly loaded
-    var m = d._loadedModules;
-    for (var p in m) {
-        loadedModules[p] = m.hasOwnProperty(p);
-    }
+var m = d._loadedModules;
+for (var p in m) {
+    // mark all previously-loaded modules as loaded unless they're still "in flight"
+    // Note: the xd loader is so effed up. it overloads the meaning of _xdInFlight depending on configuration
+    // here, we specifically want to check if the module is defined in _xdInFlight (not just for a truthy value)
+    if (!d._xdInFlight || !(p in d._xdInFlight)) loadedModules[p] = p in m;
 }
 
 /***** core cujo functions *****/
@@ -47,17 +44,25 @@ if (!dojo._isXDomain) {
 
 // hijack dojo.provide to detect loading of modules
 d.provide = function (/*String*/ resourceName) {
-    // do dojo stuff (use apply to future-proof: in case dojo adds new arguments)
+
+    // do dojo stuff
     var result = origDojoProvide.apply(d, arguments);
-    // if we're not being called by the dumb-ass dojo._xdResourceLoaded function
-    if (!xdIgnore) {
+    
+    // if we're not getting a false provide() from the xd loader (since the file is still downloading)
+    // Note: the xd loader is so effed up. it overloads the meaning of _xdInFlight depending on configuration
+    // here, we specifically want to check if the module has a truthy value
+    if (!d._xdInFlight || !d._xdInFlight[resourceName]) {
+
         loadedModules[resourceName] = true;
+
         // iterate waiters (if any)
         var waiters = waitees[resourceName];
         if (waiters) {
+
             // get the new list of active waiters (waiters are removed once executed)
             var active = [],
                 i = waiters.length;
+
             while (--i >= 0) {
                 var waiter = waiters[i];
                 // decrement waiter and see if it's no longer waiting (count == 0)
@@ -70,6 +75,7 @@ d.provide = function (/*String*/ resourceName) {
                     active[active.length] = waiter;
                 }
             }
+        
             // if there are no more waiters, remove the waitee entry from the hashmap
             if (active.length == 0) {
                 delete waitees[resourceName];
@@ -77,23 +83,13 @@ d.provide = function (/*String*/ resourceName) {
             else {
                 waitees[resourceName] = active;
             }
-        }
-    }
-    return result;
-};
 
-if (origXdLoaded) {
-    dojo._xdResourceLoaded = function () {
-        xdIgnore = true;
-        try {
-            var result = origXdLoaded.apply(dojo, arguments);
         }
-        finally {
-            xdIgnore = false;
-        }
-        return result;
     }
-}
+
+    return result;
+
+};
 
 function isArray (o) {
     return toString.call(o) == '[object Array]';
@@ -241,6 +237,7 @@ cujo.requireJs = function (/* Array|String */ moduleNames, /* Object? */ options
 cujo._loadedCss = [];
 
 cujo.requireCss = function (/* String */ module, /* Object? */ options) {
+
     // TODO: work-around IE's 31 stylesheet limit
     // TODO: don't download the same resource more than once in IE (even if cache directives are missing)
     // FF 3.x and Safari 4 won't fetch the css file twice if we xhr it after creating the link element
@@ -277,34 +274,32 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
         cssDef.link = createLinkNode(cssDef.path);
         cssDef.link.setAttribute('id', cssDef.id);
 
-        /*
-            rules:
-            - we need to insert the link in order to preserve cascade order (and to preserve @import paths)
-            - we need to insert the style after the link in order to preserve order of cssx fixes
-            - link requires we use an url
-            - style requires raw text
+        if (false !== opts.cssx) {
+            /*
+                rules:
+                - we need to insert the link in order to preserve cascade order (and to preserve @import paths)
+                - we need to insert the style after the link in order to preserve order of cssx fixes
+                - link requires we use an url
+                - style requires raw text
 
-            notes:
-            - Firefox and Safari will only request the css file once under normal circumstances, i.e. no-cache
-                (or equiv) headers are not sent.
-            - FF and Safari will request the file twice (once for link and once for xhr) if the user hits F5/CMD-R.
-                The second request for the file will return a 304 instead of a full 200 response
-            - IE will only request the file once unless no-cache (or equiv) headers are sent.
-            - We can extract the cssText from a stylesheet (link or style tag) in IE, but it's IE's modified version,
-                not the original. This could have saved us from having to refetch the file if not for the modification.
+                notes:
+                - Firefox and Safari will only request the css file once under normal circumstances, i.e. no-cache
+                    (or equiv) headers are not sent.
+                - FF and Safari will request the file twice (once for link and once for xhr) if the user hits F5/CMD-R.
+                    The second request for the file will return a 304 instead of a full 200 response
+                - IE will only request the file once unless no-cache (or equiv) headers are sent.
+                - We can extract the cssText from a stylesheet (link or style tag) in IE, but it's IE's modified version,
+                    not the original. This could have saved us from having to refetch the file if not for the modification.
 
-            options are:
-            - img/onload/canvas?
-        */
+                options are:
+                - img/onload/canvas?
+            */
 
-        var waitList = false !== opts.cssx ? ['cujo._base.cssx', 'dojo._base.xhr'] : ['dojo._base.xhr'];
+            cujo.wait(['cujo._base.cssx', 'dojo._base.xhr'], function () {
 
-        cujo.wait(waitList, function () {
+                var dfd = dojo.xhr('GET', {url: path, sync: false});
 
-            var dfd = dojo.xhr('GET', {url: path, sync: false});
-
-            dfd.addCallback(function (resp) {
-                if (false !== opts.cssx) {
+                dfd.addCallback(function (resp) {
                     // save the cssText until the document is ready
                     // cssx processors don't process previously-loaded css after the document is ready
                     if (!isReady) cssDef.cssText = resp;
@@ -312,18 +307,24 @@ cujo.requireCss = function (/* String */ module, /* Object? */ options) {
                     opts.refNode = cssDef.link;
                     opts.position = 'after';
                     cujo.cssx.processCss(resp, opts);
-                }
-                promise.resolve(cssDef);
-                delete cssDef.promise;
-            })
-            .addErrback(function (err) {
-                cssDef.error = err;
-                //console.error(err);
-                promise.reject(err);
-                delete cssDef.promise;
+                    promise.resolve(cssDef);
+                    delete cssDef.promise;
+                })
+                .addErrback(function (err) {
+                    cssDef.error = err;
+                    //console.error(err);
+                    promise.reject(err);
+                    delete cssDef.promise;
+                });
+
             });
 
-        });
+        }
+        else {
+
+            promise.resolve(cssDef);
+
+        }
 
     }
 
