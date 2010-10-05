@@ -7,7 +7,6 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
 dojo.provide('cujo._base.cssx');
-dojo.provide('cujo.cssx');
 
 cujo.cssxOptions = {
     cssx: true,
