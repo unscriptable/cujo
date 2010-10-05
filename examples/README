@@ -8,6 +8,7 @@ dijit, and dojox dirs as peers to the examples dir:
 cujo/
 ...cujo/
 ...examples/
+...templates/
 ...tests/
 ...dojo/
 ...dijit/
