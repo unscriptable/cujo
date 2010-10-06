@@ -1,0 +1,23 @@
+----------------------------------------
+How to Run Examples
+----------------------------------------
+
+1. Get a dojo distribution (http://dojotoolkit.org/downloads), and place the dojo,
+dijit, and dojox dirs as peers to the examples dir:
+
+cujo/
+...cujo/
+...examples/
+...templates/
+...tests/
+...dojo/
+...dijit/
+...dojox/
+
+2. Open any example's index.html file using your favorite browser.
+
+----------------------------------------
+Notes on Specific Examples
+----------------------------------------
+
+digital-clock - The digital-clock example currently does not run in IE 6-8.
