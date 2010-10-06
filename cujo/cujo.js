@@ -220,6 +220,9 @@ cujo.requireJs = function (/* Array|String */ moduleNames, /* Object? */ options
     //      returns a promise that resolves when all of the files are loaded.
     //      The files execute in the order they are specified.
     //  options: TBD.
+    //  EXPERIMENTAL! This method will not operate correctly during the page load
+    //      when using an XD / CDN version of dojo or when the debugAtAllCosts
+    //      config option is specified.  
     
     var promise = new Promise();
 
@@ -231,6 +234,8 @@ cujo.requireJs = function (/* Array|String */ moduleNames, /* Object? */ options
     cujo.wait(moduleNames, function () {
         promise.resolve(moduleNames);
     });
+
+    return promise;
 
 };
 
@@ -351,14 +356,13 @@ function createLinkNode (path) {
 }
 
 // TODO: cujo.requireHtml
-cujo.requireHtml = function (/* String */ module, /* Object? */ options) {};
+cujo.requireHtml = function (/* String */ module, /* Object? */ options) { cujo.getHtml(module); };
 
 cujo.getHtml = function (/* String */ module) {
     // TODO: incorporate i18n and theming
     var lastDot = module.lastIndexOf('.'),
         path = [module.substr(0, lastDot), module.substr(lastDot + 1)];
     return dojo.cache(path[0], path[1] + '.html');
-    //return dojo.cache('', [cujo._moduleToThemePath(module, 'html'), 'html'].join('.'));
 };
 
 cujo.setThemePath = function (/* String */ name, /* String */ type, /* String */ path, /* Object? */ options) {
