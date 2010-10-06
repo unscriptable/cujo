@@ -244,8 +244,6 @@ cujo._loadedCss = [];
 cujo.requireCss = function (/* String */ module, /* Object? */ options) {
 
     // TODO: work-around IE's 31 stylesheet limit
-    // TODO: don't download the same resource more than once in IE (even if cache directives are missing)
-    // FF 3.x and Safari 4 won't fetch the css file twice if we xhr it after creating the link element
     // TODO: test Opera, Chrome, and 3.0 browsers
 
     var opts = dojo.mixin({}, cujo.cssxOptions, options),
