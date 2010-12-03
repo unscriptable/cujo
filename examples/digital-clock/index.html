@@ -14,11 +14,19 @@ http://www.opensource.org/licenses/afl-3.0.php
 	<meta charset="UTF-8">
 	<title>CSS3 Digital Clock: Cujo Remix</title>
 	<link rel="stylesheet" type="text/css" href="base.css" media="screen">
+	<!-- Local Dojo: This assumes a local dojo 1.5+ distribution with dojo/dijit/dojox dirs as peers to the cujo & examples dir -->
 	<script type="text/javascript">
 	    djConfig = { parseOnLoad: true, isDebug: true, modulePaths: { "clock": "../examples/digital-clock/js/clock" } };
 	</script>
-	<!-- This assumes a dojo 1.5+ distribution with dojo/dijit/dojox dirs as peers to the cujo dir -->
 	<script type="text/javascript" src="../../dojo/dojo.js"></script>
+
+  <!-- CDN Dojo -->
+	<!-- <script type="text/javascript">
+			djConfig = { parseOnLoad: true, isDebug: true, baseUrl: "../../",
+				modulePaths: { "cujo": "cujo", "clock": "examples/digital-clock/js/clock" } };
+	</script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js"></script>	<script type="text/javascript" src="../../dojo/dojo.js"></script> -->
+
 	<script type="text/javascript" src="../../cujo/cujo.js"></script>
 	<script type="text/javascript">
 		dojo.require('clock.ClockView');
