@@ -154,7 +154,7 @@ cujo.mvc.binder = function () {
 
     function widget (name, attr, watch) {
         // create and add command
-        var cmd = {widget: name, attribute: attr, type: 'widget'},
+        var cmd = {node: name, attribute: attr, type: 'widget'},
             attrDef = addToDefs('widget', cmd);
         // set optional watch param
         if (watch) {

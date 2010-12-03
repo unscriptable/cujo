@@ -37,5 +37,25 @@ doh.register('cujo.mvc.binder-basic',
 	function test_inherit() {
 		var map = cujo.mvc.binder().inherit(tests.cujo.mvc.testWidget).map();
 		doh.assertEqual({ prop: { data: "id", type: "cujoBind" } }, map);
+	},
+	function test_node() {
+		var map = cujo.mvc.binder().bind("prop").node("node", "attr").map();
+		doh.assertEqual({ prop: { node: "node", type: "attribute", attribute: "attr" } }, map);
+	},
+	function test_nodeInnerHTML() {
+		var map = cujo.mvc.binder().bind("prop").node("node", "innerHTML").map();
+		doh.assertEqual({ prop: { node: "node", type: "innerHTML" } }, map);
+	},
+	function test_nodeInnerText() {
+		var map = cujo.mvc.binder().bind("prop").node("node", "innerText").map();
+		doh.assertEqual({ prop: { node: "node", type: "innerText" } }, map);
+	},
+	function test_nodeClass() {
+		var map = cujo.mvc.binder().bind("prop").node("node", "class").map();
+		doh.assertEqual({ prop: { node: "node", type: "class" } }, map);
+	},
+	function test_widget() {
+		var map = cujo.mvc.binder().bind("prop").widget("widgetNode", "property").map();
+		doh.assertEqual({ prop: { node: "widgetNode", type: "widget", attribute: "property" } }, map);
 	}
 ]);
