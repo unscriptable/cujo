@@ -6,7 +6,7 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-@import url(../../_UIBlocker.css);
+/*@import url(../../_UIBlocker.css);*/
 
 HTML {
     /* this is vital for IE6 to behave properly */
@@ -31,13 +31,14 @@ BODY {
     display: block !important;
 }
 
-/* page and widget layout base classes */
+/* layout base classes */
 
 .cujo-block {
     /* element stretches to fill container's width, but height is determined by contents */
     display: block;
     margin: 0;
     padding: 0;
+	position: relative;
 }
 
 .cujo-stretch {
@@ -53,10 +54,23 @@ BODY {
 
 .cujo-box-stretch {
     /* element stretches its border-box to fill container's border-box */
-    /* Note: if compatibility with IE6 is desired, use px for any padding. */
+    /* Note: if compatibility with IE6 is desired, use only px for padding. */
     position: absolute;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
+	/* IE 6 fixes */
+	_height: expression(cujo.cssx_ieLayout_checkBoxHeight(this, 0));
+	_width: expression(cujo.cssx_ieLayout_checkBoxWidth(this, 0));
 }
+
+.cujo-floated {
+	float: left;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+/* base layout-specific structural styles */
+

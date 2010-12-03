@@ -1,0 +1,50 @@
+/*
+    cujo headline-c css
+    (c) copyright 2010, unscriptable.com
+    author: john
+
+	constrained-height headline layout
+
+    LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
+    license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
+*/
+@import url(_base.css); /* do we really need this? */
+@import url(layout.css);
+
+.cujo-headline-c {
+	/* Note: a height is necessary. */
+}
+
+.cujo-headline-c > .cujo-header,
+.cujo-headline-c > .cujo-footer {
+	left: 0;
+	width: 100%;
+}
+
+.cujo-headline-c > .cujo-footer {
+    bottom: 0;
+	position: absolute;
+}
+
+.cujo-headline-c > .cujo-trailer,
+.cujo-headline-c > .cujo-leader {
+	top: 4em;
+	bottom: 1.5em;
+	position: absolute;
+	/* IE 6 fixes */
+	_bottom: expression('1.5em');
+	_height: expression(cujo.cssx_ieLayout_checkBoxHeight(this));
+}
+
+.cujo-headline-c > .cujo-body {
+	left: 4em;
+	right: 4em;
+	top: 4em;
+	bottom: 1.5em;
+	position: absolute;
+	/* IE 6 fixes */
+	_bottom: expression('1.5em');
+	_right: expression('4em');
+	_height: expression(cujo.cssx_ieLayout_checkBoxHeight(this));
+	_width: expression(cujo.cssx_ieLayout_checkBoxWidth(this));
+}

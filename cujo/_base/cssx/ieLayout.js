@@ -46,7 +46,7 @@ d.declare('cujo.cssx.ieLayout.BoxOffsets', cssx._TextProc, {
     _addProp: function (/* String */ prop, /* String */ value, /* String */ selector, /* CSSStyleSheet */ ss) {
         // create a css expression rule to fix it
         if (prop == 'bottom' && value != 'auto') {
-            // optimize common case in which bottom is in pixels already (IE always uses '0px' for '0')
+            // optimize common case in which bottom is in pixels already or is 0 (IE always uses '0px' for '0')
             var decl = value.match(/px$/)
                     ? 'height:expression(cujo.cssx_ieLayout_checkBoxHeight(this, ' + parseInt(value) + '));'
                     : 'height:expression(cujo.cssx_ieLayout_checkBoxHeight(this));bottom:expression("' + value + '");';
@@ -55,7 +55,7 @@ d.declare('cujo.cssx.ieLayout.BoxOffsets', cssx._TextProc, {
 //alert('rule appended: ' + selector + ' { ' + decl + ' } ');
         }
         else if (prop == 'right' && value != 'auto') {
-            // optimize common case in which right is in pixels already (IE always uses '0px' for '0')
+            // optimize common case in which right is in pixels already or is 0 (IE always uses '0px' for '0')
             var decl = value.match(/px$/)
                     ? 'width:expression(cujo.cssx_ieLayout_checkBoxWidth(this, ' + parseInt(value) + '));'
                     : 'width:expression(cujo.cssx_ieLayout_checkBoxWidth(this));right:expression("' + value + '");';
