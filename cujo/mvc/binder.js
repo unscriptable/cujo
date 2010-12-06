@@ -5,6 +5,9 @@ dojo.provide('cujo.mvc.binder');
 cujo.mvc.binder = function () {
 
     /*
+
+        TODO: documentation!!!!!!
+
         Valid combos:
         objAttr -> dom -> data -> source
         objAttr -> data -> dom -> source
@@ -141,7 +144,7 @@ cujo.mvc.binder = function () {
         }
         else {
             cmd.type = 'attribute';
-            cmd.attribute = attr || '';
+            cmd.attribute = attr || currAttr;
         }
         if (event) {
             cmd.event = event;
@@ -152,13 +155,13 @@ cujo.mvc.binder = function () {
         return chainWithSubMethods;
     }
 
-    function widget (name, attr, watch) {
+    function widget (name, attr, bWatch) {
         // create and add command
-        var cmd = {node: name, attribute: attr, type: 'widget'},
+        var cmd = {node: name, attribute: attr || currAttr, type: 'widget'},
             attrDef = addToDefs('widget', cmd);
         // set optional watch param
-        if (watch) {
-            cmd.watch = watch === true ? attr : watch;
+        if (bWatch) {
+            cmd.watch = bWatch === true ? attr : bWatch;
             // record if this command is bidirectional
             attrDef.bidi = [].concat(attrDef.bidi, cmd);
         }
