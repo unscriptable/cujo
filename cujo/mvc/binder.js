@@ -139,7 +139,7 @@ cujo.mvc.binder = function () {
         var cmd = {node: name},
             attrDef = addToDefs('node', cmd);
         // set defaults and optional params
-        if (attr.match(/innerHTML|innerText|class/)) {
+        if (/innerHTML|innerText|class/.test(attr)) {
             cmd.type = attr;
         }
         else {
