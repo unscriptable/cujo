@@ -172,15 +172,20 @@ dojo.declare('cujo._Widget', [dijit._Widget], {
         // TODO: add watch support when dijit supports it
         cujo.forInAll(this.attributeMap, function (commands, attr) {
             dojo.forEach(commands && [].concat(commands), function (command) {
-                if (command.event) {
-                    // check for two-way binding
-                    var node = this[command.node];
-                    if (node) {
-                        this.connect(node, command.event, function () { this._domToAttr(attr, command); });
-                    }
-                    // TODO: only process attributes that wouldn't get set by dijit_Widget's _applyAttributes
-                    this.set(attr, this[attr]);
-                }
+				if (command.watch === true) {
+					// TODO: handle watch() here
+				} else {
+					var event = dojo.isString(command.watch) ? command.watch : command.event;
+	                if (event) {
+	                    // check for two-way binding
+	                    var node = this[command.node];
+	                    if (node) {
+	                        this.connect(node, event, function () { this._domToAttr(attr, command); });
+	                    }
+	                    // TODO: only process attributes that wouldn't get set by dijit_Widget's _applyAttributes
+	                    this.set(attr, this[attr]);
+	                }
+				}
             }, this);
         }, this);
         return this.inherited(arguments);
