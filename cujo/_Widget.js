@@ -21,18 +21,15 @@
 
 
 */
-dojo.provide('cujo._Widget');
+define(['dojo', 'dijit/_Widget', 'dojo/Stateful'], function(dojo) {
 
-dojo.require('dijit._Widget');
-dojo.require('dojo.Stateful');
+// Local scope
 
 // cujo.registerPublisher('cujo.customize', 'last'); // last to register has right of first refusal
     //  other publisher types:
     //      first - first to register has right of first refusal
     //      any - keeps calling listeners until one returns a truthy value
     //      all - keeps calling listeners until one returns an explicit false
-
-(function () { // local scope
 
 dojo.declare('cujo._Widget', [dijit._Widget], {
 
@@ -193,4 +190,6 @@ dojo.declare('cujo._Widget', [dijit._Widget], {
 
 });
 
-})(); // end of local scope
+return cujo._Widget
+
+}); // end of local scope

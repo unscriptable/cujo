@@ -12,11 +12,9 @@
         dojo.declare('myClass', cujo._Watchable, { ... }); // mixin
 
 */
-dojo.provide('cujo._Watchable');
+define(['dojo', 'dojo/Stateful', 'cujo/_Watchable'], function(dojo) {
 
-dojo.require('cujo._Settable');
-
-(function () { // local scope
+// local scope
 
 var stfu = dojo.Stateful.prototype;
 
@@ -28,4 +26,6 @@ dojo.declare('cujo._Watchable', cujo._Settable, {
 
 });
 
-})(); // end of local scope
+return cujo._Watchable;
+
+}); // end of local scope

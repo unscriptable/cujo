@@ -13,12 +13,8 @@
         dojo.declare('myClass', cujo._Settable, { ... }); // mixin
 
 */
-dojo.provide('cujo._Settable');
-
-dojo.require('dojo.Stateful');
-dojo.require('dojo.string');
-
-(function () { // local scope
+define(['dojo', 'dojo/Stateful', 'dojo/string'], function(dojo) {
+// local scope
 
 var stfu = dojo.Stateful.prototype;
 
@@ -78,4 +74,8 @@ dojo.declare('cujo._Settable', null, {
 var
     errUnsettable = 'Attempt to set an unsettable property: ${name}',
     errDirectWrite = 'Detected a direct write (i.e. not via set()) on a settable property: ${name}.';
-})(); // end of local scope
+
+
+return cujo._Settable;
+
+}); // end of local scope

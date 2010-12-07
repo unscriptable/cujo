@@ -6,9 +6,8 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-dojo.provide('cujo._Derivable');
-
-(function () {
+define(['dojo'], function(dojo) {
+// local scope
 
 dojo.declare('cujo._Derivable', null, {
     //  summary:
@@ -180,4 +179,6 @@ dojo.declare('cujo._Derivable', null, {
 
 var errTransformNotFound = 'Deriver function (${deriver}) not found for ${attr}.';
 
-})();
+return cujo._Derivable;
+
+});

@@ -11,11 +11,8 @@
     TODO: keep track of status messages and zIndexes
 
 */
-dojo.provide('cujo._UIBlocker');
-
-dojo.require('cujo._Widget');
-dojo.require('cujo._Templated');
-
+define(['dojo', 'cujo/_Widget', 'cujo/_Templated'], function(dojo) {
+	
 // cujo.registerPublisher('cujo.dom.block.visualization.start', 'all');
 
 dojo.declare('cujo._UIBlocker', [cujo._Widget, cujo._Templated], {
@@ -146,3 +143,8 @@ dojo.declare('cujo._UIBlocker', [cujo._Widget, cujo._Templated], {
     }
 
 });
+
+return cujo._UIBlocker;
+
+});
+

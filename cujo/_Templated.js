@@ -13,8 +13,7 @@
     - remove data-cujoattrs or detect if they're different in the ancestors!!!
 
 */
-dojo.provide('cujo._Templated');
-dojo.require('dijit._Templated');
+define(['dojo', 'dijit._Templated'], function(dojo) {
 
 cujoConfig = cujoConfig || {};
 
@@ -154,7 +153,7 @@ dojo.declare('cujo._Templated', dijit._Templated, {
             // translate property from html5 data-* or custom name
             return getAttrFunc(node, map[name]) || getAttrFunc(node, name);
         }
-        
+
         return this.inherited('_attachTemplateNodes', arguments, [rootNode, getDataAttr]);
     },
 
@@ -248,5 +247,9 @@ dojo.declare('cujo._Templated', dijit._Templated, {
         }
 
     }
+
+});
+
+return cujo._Templated;
 
 });

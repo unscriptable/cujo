@@ -7,14 +7,8 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
 */
-dojo.provide('cujo._Connectable');
-
-(function () { // local scope
-
-// some common use cases
-cujo._Connectable.any = function () { return true };
-cujo._Connectable.publicOnly = function (name) { return name.match(/^[^_]/); };
-cujo._Connectable.eventsOnly = function (name) { return name.match(/^on/); };
+define(['dojo'], function(dojo) {
+// local scope
 
 dojo.declare('cujo._Connectable', null, {
 
@@ -66,6 +60,11 @@ dojo.declare('cujo._Connectable', null, {
 
 });
 
+// some common use cases
+cujo._Connectable.any = function () { return true };
+cujo._Connectable.publicOnly = function (name) { return name.match(/^[^_]/); };
+cujo._Connectable.eventsOnly = function (name) { return name.match(/^on/); };
+
 // Connect cujo event processors by hijacking dojo.connect.
 // I learned this trick from browsing the dijit._Widget source.
 // Connecting to the "private" versions allows us to ignore optional arguments
@@ -81,4 +80,6 @@ dojo.connect(dojo, '_disconnect', function (h) {
     }
 });
 
-})(); // end of local scope
+return cujo._Connectable;
+
+}); // end of local scope

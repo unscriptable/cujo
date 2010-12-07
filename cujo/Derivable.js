@@ -7,10 +7,8 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
 */
-dojo.provide('cujo.Derivable');
-
-dojo.require('cujo._Derivable');
-
+define(['dojo'], function(dojo) {
+// local scope
 
 cujo.Derivable = function (/* Object */ object, /* Object */ derivedAttrDefs) {
     //  summary:
@@ -51,3 +49,7 @@ cujo.Derivable = function (/* Object */ object, /* Object */ derivedAttrDefs) {
     return object;
 
 };
+
+return cujo.Derivable;
+
+});
