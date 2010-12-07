@@ -12,14 +12,10 @@
         cujoListBound - the view is bound to a result set that is not empty
 
 */
-dojo.provide('cujo.mvc.DataListView');
+define(['dojo', 'cujo/mvc/View', 'cujo/mvc/_BindableContainer'], function(dojo, View, BindableContainer) {
+// local scope
 
-dojo.require('cujo.mvc.View');
-dojo.require('cujo.mvc._BindableContainer');
-
-(function () { // local scope
-
-dojo.declare('cujo.mvc.DataListView', [cujo.mvc.View, cujo.mvc._BindableContainer], {
+dojo.declare('cujo.mvc.DataListView', [View, BindableContainer], {
 
     postCreate: function () {
         this._refreshDataState();
@@ -53,4 +49,7 @@ var dataStates = cujo.mvc.DataListView.dataStates = {
         );
     };
 
-})(); // end of local scope
+
+return cujo.mvc.DataListView;
+
+}); // end of local scope

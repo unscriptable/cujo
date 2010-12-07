@@ -8,9 +8,6 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-dojo.provide('cujo.mvc.DojoDataAdapter');
-
-dojo.require("dojo.Stateful");
 
 /*
     The following dojo.* classes are copied from pre- dojo 1.6 trunk.
@@ -23,10 +20,8 @@ dojo.require("dojo.Stateful");
 
 */
 
-dojo.provide("dojo.store.DataStore");
-dojo.provide("dojo.store.util.QueryResults");
-dojo.provide("dojo.store.util.SimpleQueryEngine");
-dojo.provide("dojo.store.Observable");
+define(['dojo', 'dojo/Stateful'], function(dojo, Stateful) {
+// local scope
 
 dojo.declare("dojo.store.DataStore", null, {
 	target: "",
@@ -50,7 +45,7 @@ dojo.declare("dojo.store.DataStore", null, {
                 object[attributes[i]] = store.getValue(item, attributes[i]);
             }
             return callback(object);
-        }
+        };
     },
     get: function(id, options){
 		//	summary:
@@ -62,7 +57,7 @@ dojo.declare("dojo.store.DataStore", null, {
 		this.store.fetchItemByIdentity({
 			identity: id,
 			onItem: this._objectConverter(function(object){
-				deferred.resolve(returnedObject = object)
+				deferred.resolve(returnedObject = object);
 			}),
 			onError: function(error){
 				deferred.reject(returnedError = error);
@@ -128,7 +123,7 @@ dojo.declare("dojo.store.DataStore", null, {
 		var returnedObject, returnedError;
 		var deferred = new dojo.Deferred();
 		deferred.total = new dojo.Deferred();
-		var converter = this._objectConverter(function(object){return object});
+		var converter = this._objectConverter(function(object){return object;});
 		this.store.fetch(dojo.mixin({
 			query: query,
 			onBegin: function(count){
@@ -204,7 +199,7 @@ dojo.declare('cujo.mvc.DojoDataAdapter', dojo.store.DataStore, {
         var self = this;
         return function(item){
             return callback(self._objectUpdater(item));
-        }
+        };
     }
 
 });
@@ -221,7 +216,7 @@ dojo.store.util.QueryResults = function(results){
 					Array.prototype.unshift.call(args, results);
 					return dojo[method].apply(dojo, args);
 				});
-			}
+			};
 		}
 	}
 	addIterativeMethod("forEach");
@@ -229,7 +224,7 @@ dojo.store.util.QueryResults = function(results){
 	addIterativeMethod("map");
 	if(!results.total){
 		results.total = dojo.when(results, function(results){
-			return results.length
+			return results.length;
 		});
 	}
 	return results;
@@ -361,7 +356,7 @@ dojo.store.Observable = function(store){
 							queryUpdaters.splice(dojo.indexOf(queryUpdaters, queryUpdater), 1);
 						}
 					}
-				}
+				};
 			};
 		}
 		return results;
@@ -398,3 +393,7 @@ dojo.store.Observable = function(store){
 
 	return store;
 };
+
+return cujo.mvc.DojoDataAdapter;
+
+});

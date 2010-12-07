@@ -6,13 +6,10 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-dojo.provide('cujo.mvc.Controller');
+define(['dojo', 'cujo/_Connectable'], function(dojo, Connectable) {
+// local scope
 
-dojo.require('cujo._Connectable');
-
-(function () { // local scope
-
-dojo.declare('cujo.mvc.Controller', cujo._Connectable, {
+dojo.declare('cujo.mvc.Controller', Connectable, {
 
     // TODO: subclass for root/dispatch controllers and generic controllers
 
@@ -22,4 +19,6 @@ dojo.declare('cujo.mvc.Controller', cujo._Connectable, {
 
 });
 
-})(); // end of local scope
+return cujo.mvc.Controller;
+
+});

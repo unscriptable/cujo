@@ -6,14 +6,10 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-dojo.provide('cujo.mvc.View');
+define(['dojo', 'cujo/_Widget', 'cujo/_Templated'], function(dojo, Widget, Templated) {
+// local scope
 
-dojo.require('cujo._Widget');
-dojo.require('cujo._Templated');
-
-(function () { // local scope
-
-dojo.declare('cujo.mvc.View', [cujo._Widget, cujo._Templated], {
+dojo.declare('cujo.mvc.View', [Widget, Templated], {
 
     //  widgetsInTemplate: Boolean
     //  summary: set this to true if there are widgets in this view's template. Otherwise
@@ -100,4 +96,6 @@ dojo.declare('cujo.mvc.View', [cujo._Widget, cujo._Templated], {
 
 });
 
-})(); // end of local scope
+return cujo.mvc.View;
+
+}); // end of local scope

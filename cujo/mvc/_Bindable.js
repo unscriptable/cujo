@@ -9,9 +9,8 @@
     TODO: create a decorator version of this mixin?
 
 */
-dojo.provide('cujo.mvc._Bindable');
-
-(function () {
+define(['dojo'], function(dojo) {
+// local scope
 
 dojo.declare('cujo.mvc._Bindable', null, {
     //A mixin for views and widgets to add functionality necessary to bind to a single item in a result set.
@@ -197,4 +196,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
 });
 
-})();
+
+return cujo.mvc._Bindable;
+
+});

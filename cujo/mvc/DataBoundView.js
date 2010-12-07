@@ -12,15 +12,10 @@
         cujoDataBound - the view is bound to a data item
 
 */
-dojo.provide('cujo.mvc.DataBoundView');
+define(['dojo', 'cujo/mvc/View', 'cujo/mvc/_Bindable', 'cujo/_Derivable'], function(dojo, View, Bindable, Derivable) {
+// local scope
 
-dojo.require('cujo.mvc.View');
-dojo.require('cujo.mvc._Bindable');
-dojo.require('cujo._Derivable');
-
-(function () { // local scope
-
-dojo.declare('cujo.mvc.DataBoundView', [cujo.mvc.View, cujo.mvc._Bindable, cujo._Derivable], {
+dojo.declare('cujo.mvc.DataBoundView', [View, Bindable, Derivable], {
 
     //  attributeMap: Object
     //      Since virtually all data items have an 'id' property, we need to map it from a
@@ -92,4 +87,7 @@ var dataStates = cujo.mvc.DataBoundView.dataStates = {
         );
     };
 
-})(); // end of local scope
+
+return cujo.mvc.DataBoundView;
+
+}); // end of local scope

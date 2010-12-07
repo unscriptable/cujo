@@ -13,9 +13,8 @@
         dojo.declare('myClass', cujo._BindableContainer, { ... }); // mixin
 
 */
-dojo.provide('cujo.mvc._BindableContainer');
-
-(function () {
+define(['dojo'], function(dojo) {
+// local scope
 
 dojo.declare('cujo.mvc._BindableContainer', null, {
 
@@ -183,4 +182,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 
 });
 
-})();
+
+return cujo.mvc._BindableContainer;
+
+});
