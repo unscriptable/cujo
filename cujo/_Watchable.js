@@ -12,13 +12,13 @@
         dojo.declare('myClass', cujo._Watchable, { ... }); // mixin
 
 */
-define(['dojo', 'dojo/Stateful', 'cujo/_Watchable'], function(dojo) {
+define(['dojo', 'dojo/Stateful', 'cujo/_Settable'], function(dojo, Stateful, Settable) {
 
 // local scope
 
-var stfu = dojo.Stateful.prototype;
+var stfu = Stateful.prototype;
 
-dojo.declare('cujo._Watchable', cujo._Settable, {
+dojo.declare('cujo._Watchable', Settable, {
 
     watch: function (name, callback) {
         return stfu.watch.call(this, '_' + name, callback);

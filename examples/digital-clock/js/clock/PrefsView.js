@@ -8,11 +8,17 @@ LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to t
 License at: http://www.opensource.org/licenses/mit-license.php. or AFL License at:
 http://www.opensource.org/licenses/afl-3.0.php
 */
-dojo.provide('clock.PrefsView');
+define(
+[
+	'dojo',
+	'dojo/Stateful',
+	'cujo/mvc/View',
+	'text!clock/PrefsView.html'
+],
+function(dojo, Stateful, View, template) {
+// local scope
 
-dojo.require('cujo.mvc.View');
-
-dojo.declare('clock.StorageModel', [dojo.Stateful],
+dojo.declare('clock.StorageModel', Stateful,
 {
 	store: null,
 	
@@ -42,9 +48,9 @@ dojo.declare('clock.StorageModel', [dojo.Stateful],
 	}
 });
 
-dojo.declare('clock.PrefsView', [cujo.mvc.View],
+dojo.declare('clock.PrefsView', View,
 {
-	templateString: cujo.getHtml("clock.PrefsView"),
+	templateString: template,
 	
 	themes: null,
 	
@@ -83,7 +89,11 @@ dojo.declare('clock.PrefsView', [cujo.mvc.View],
 	_updateHideSeconds: function(hide) {
 		this._updatePref("hide-seconds", hide);
 	}
-	
+
 });
+
+return clock.PrefsView;
+
+});	
 
 

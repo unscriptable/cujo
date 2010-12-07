@@ -400,17 +400,18 @@ var theme = 'default',
 
 })();
 
-dojo.require('cujo._base.lang');
-dojo.require('cujo._base.notify');
-dojo.require('cujo._base.dom');
-dojo.require('cujo._base.sniff');
-dojo.require('cujo._base.stylesheet');
-dojo.require('cujo._base.CssTextParser');
-dojo.require('cujo._base.CssDomParser');
-dojo.require('cujo._base.cssx');
-
-dojo.require('cujo._base.cssx.alpha');
-dojo.require('cujo._base.cssx.transition');
+require(['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'])
+// dojo.require('cujo._base.lang');
+// dojo.require('cujo._base.notify');
+// dojo.require('cujo._base.dom');
+// dojo.require('cujo._base.sniff');
+// dojo.require('cujo._base.stylesheet');
+// dojo.require('cujo._base.CssTextParser');
+// dojo.require('cujo._base.CssDomParser');
+// dojo.require('cujo._base.cssx');
+// 
+// dojo.require('cujo._base.cssx.alpha');
+// dojo.require('cujo._base.cssx.transition');
 
 /* IE shims */
 // Note: it *IS* ok to sniff for older versions of IE.  Only a noob would claim otherwise.

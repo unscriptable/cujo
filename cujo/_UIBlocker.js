@@ -11,11 +11,11 @@
     TODO: keep track of status messages and zIndexes
 
 */
-define(['dojo', 'cujo/_Widget', 'cujo/_Templated'], function(dojo) {
+define(['dojo', 'cujo/_Widget', 'cujo/_Templated'], function(dojo, Widget, Templated) {
 	
 // cujo.registerPublisher('cujo.dom.block.visualization.start', 'all');
 
-dojo.declare('cujo._UIBlocker', [cujo._Widget, cujo._Templated], {
+dojo.declare('cujo._UIBlocker', [Widget, Templated], {
     //  summary:
     //      cujo._UIBlocker is meant for internal use by cujo's dom library. If you are trying to
     //      use it directly, *you are likely doing something wrong*. There are some overrideable

@@ -1,6 +1,7 @@
 define(['dojo'], function(dojo) {
 // local scope
 
+// Just in case, so that the following line works
 dojo.getObject('mvc', true, cujo);
 
 cujo.mvc.binder = function () {

@@ -13,7 +13,7 @@
     - remove data-cujoattrs or detect if they're different in the ancestors!!!
 
 */
-define(['dojo', 'dijit._Templated'], function(dojo) {
+define(['dojo', 'dijit/_Templated'], function(dojo, Templated) {
 
 cujoConfig = cujoConfig || {};
 
@@ -23,7 +23,7 @@ cujoConfig.attrEvent = cujoConfig.attrEvent || 'data-dojo-event';
 cujoConfig.attrCujo = cujoConfig.attrCujo || 'data-cujo-cfg';
 cujoConfig.attrOverride = cujoConfig.attrOverride || 'data-cujo-override';
 
-dojo.declare('cujo._Templated', dijit._Templated, {
+dojo.declare('cujo._Templated', Templated, {
     //  summary:
     //      Adds inheritance and configurable attribute names to templates.
     //      Notes: TODO

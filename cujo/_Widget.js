@@ -21,7 +21,7 @@
 
 
 */
-define(['dojo', 'dijit/_Widget', 'dojo/Stateful'], function(dojo) {
+define(['dojo', 'dijit/_Widget', 'dojo/Stateful'], function(dojo, Widget, Stateful) {
 
 // Local scope
 
@@ -31,7 +31,7 @@ define(['dojo', 'dijit/_Widget', 'dojo/Stateful'], function(dojo) {
     //      any - keeps calling listeners until one returns a truthy value
     //      all - keeps calling listeners until one returns an explicit false
 
-dojo.declare('cujo._Widget', [dijit._Widget], {
+dojo.declare('cujo._Widget', Widget, {
 
     // most cujo images should reside here:
     imagesPath: dojo.moduleUrl('cujo', 'theme/img'),
@@ -134,7 +134,7 @@ dojo.declare('cujo._Widget', [dijit._Widget], {
     },
 
     // TODO: remove for dojo 1.6 which will have watch() already
-    watch: dojo.Stateful.prototype.watch,
+    watch: Stateful.prototype.watch,
 
     _attrToDom: function (/*String*/ attr, /*String*/ value) {
         // handles child widgets that dijit._Widget does not and hooks up bi-directional bindings
@@ -190,6 +190,6 @@ dojo.declare('cujo._Widget', [dijit._Widget], {
 
 });
 
-return cujo._Widget
+return cujo._Widget;
 
 }); // end of local scope

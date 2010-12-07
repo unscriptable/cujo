@@ -14,11 +14,27 @@ http://www.opensource.org/licenses/afl-3.0.php
 	<meta charset="UTF-8">
 	<title>CSS3 Digital Clock: Cujo Remix</title>
 	<link rel="stylesheet" type="text/css" href="base.css" media="screen">
-	<!-- Local Dojo: This assumes a local dojo 1.5+ distribution with dojo/dijit/dojox dirs as peers to the cujo & examples dir -->
+	<!-- Local Dojo: This assumes a local dojo 1.6+ distribution with dojo/dijit/dojox dirs, and a requirejs 0.15 dist
+	     as peers to the cujo & examples dir -->
 	<script type="text/javascript">
-	    djConfig = { parseOnLoad: true, isDebug: true, modulePaths: { "clock": "../examples/digital-clock/js/clock" } };
+	    djConfig = {
+			isDebug: true,
+			modulePaths: { "clock": "../../examples/digital-clock/js/clock" }
+		};
+		
+		require = {
+			baseUrl: '../../',
+			paths: {
+				'dojo': 'dojo-pre1.6/dojo',
+				'dijit': 'dojo-pre1.6/dijit',
+				'require': 'require-0.15/require',
+				'clock': 'examples/digital-clock/js/clock'
+			}
+		};
 	</script>
-	<script type="text/javascript" src="../../dojo/dojo.js"></script>
+
+	<script type="text/javascript" src="../../require-0.15/require.js"></script>
+	<script type="text/javascript" src="../../dojo-pre1.6/dojo/dojo.js"></script>
 
   <!-- CDN Dojo -->
 	<!-- <script type="text/javascript">
@@ -28,8 +44,19 @@ http://www.opensource.org/licenses/afl-3.0.php
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js"></script>	<script type="text/javascript" src="../../dojo/dojo.js"></script> -->
 
 	<script type="text/javascript" src="../../cujo/cujo.js"></script>
+	
 	<script type="text/javascript">
-		dojo.require('clock.ClockView');
+		// dojo.require('dojo.Stateful');
+		// dojo.require('dijit._Widget');
+		// dojo.require('dijit._Templated');
+		
+		// define('dojo', function() { return dojo; });
+		// define('dijit', function() { return dojo; });
+		
+		require(['clock/ClockView'], function(ClockView) {
+			console.log(arguments);
+			dojo.parser.parse();
+		});
 	</script>
 </head>
 <body>
