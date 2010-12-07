@@ -6,12 +6,14 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-dojo.provide('cujo._base.lang');
+define(['dojo'], function(dojo) {
+// local scope
 
 // cujo language extensions
 // the following object's members are mixed-in to the cujo.lang object
 
-dojo.mixin(cujo, (function () {
+dojo.mixin(cujo,
+(function () {
 
     var
         c = cujo,
@@ -123,7 +125,7 @@ dojo.mixin(cujo, (function () {
 
         capitalize: function (/* String */ s) {
             // summary: returns the given string, s, with the first char capitalized.
-            return (s || '').replace(/./, function (c) { return c.toUpperCase(); })
+            return (s || '').replace(/./, function (c) { return c.toUpperCase(); });
         },
 
         camelize: function (/* String, String, ... */) {
@@ -241,5 +243,9 @@ dojo.mixin(cujo, (function () {
             return $.map(keepers, function (pos) { return array[pos]; });
         }
 
-    }
-})());
+    };
+})()); // end and invoke immediate function
+
+return cujo;
+
+});

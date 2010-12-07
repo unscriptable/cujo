@@ -12,9 +12,8 @@
     TODO: don't force async since we're using promises now
 
 */
-dojo.provide('cujo._base.dom');
-
-(function () {
+define(['dojo'], function(dojo) {
+// local scope
 
 // cujo dom extensions
 
@@ -223,9 +222,10 @@ function applyClassStateFromSet (node, state, set, value, custom, callback, cont
 function blockNode (node, isBlocking, callback, context, params) {
     // TODO: keep track of previous status messages (here or in widget?)
 
+    var uib;
     // reuse an existing one if it exists
     if (node._cujo_uiBlocker) {
-        var uib = node._cujo_uiBlocker;
+        uib = node._cujo_uiBlocker;
         //if (params.message) // TODO: do this here or in the widget?
             uib.attr('statusMessage', params.message);
         if (isBlocking)
@@ -241,7 +241,7 @@ function blockNode (node, isBlocking, callback, context, params) {
 
     // no need to create a UIBlocker if we're unblocking and one doesn't exist (should never happen)
     else if (isBlocking) {
-        var uib = node._cujo_uiBlocker = new cujo._UIBlocker(params);
+        uib = node._cujo_uiBlocker = new cujo._UIBlocker(params);
         dojo.place(uib.domNode, node, 'last');
         uib.block();
     }
@@ -252,4 +252,6 @@ function blockNode (node, isBlocking, callback, context, params) {
 
 }
 
-})();
+return cujo;
+
+});

@@ -10,9 +10,8 @@
 
 
 */
-dojo.provide('cujo._base.notify');
-
-(function () {
+define(['dojo'], function(dojo) {
+// local scope
 
 // cujo notification extensions
 // the following object's members are mixed-in to the cujo object
@@ -121,4 +120,6 @@ function _surveyResult (/* Object */ seed) {
     this.indeterminate = nays + yays != total;
 }
 
-})();
+return cujo;
+
+});
