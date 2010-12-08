@@ -8,7 +8,6 @@ LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to t
 License at: http://www.opensource.org/licenses/mit-license.php. or AFL License at:
 http://www.opensource.org/licenses/afl-3.0.php
 */
-// TODO: Should use css plugin instead
 
 define(
 [
