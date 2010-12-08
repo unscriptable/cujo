@@ -8,19 +8,20 @@
 */
 // dojo.provide('cujo');
 
-define('cujo', ['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'], function() {
-	
-if (!window.cujoConfig)
-    window.cujoConfig = {};
+if (typeof cujo == 'undefined') {
+	var cujo = {};
+}
 
 //  cujoConfig params
 //      noCssTransExt: don't look for extensions to css transitions in css files
 //      ieHtml5Tags: the list of html5 tags to pre-define for IE
 
-var cujo = window.cujo = {};
+if (typeof cujoConfig == 'undefined') {
+	var cujoConfig = {};
+}
 
-// (function () {
-
+define('cujo', ['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'], function() {
+	
 var
     d = dojo,
 	op = Object.prototype,
@@ -413,25 +414,7 @@ var theme = 'default',
         }
     };
 
-// })();
-
-
-// require(['cujo/_base/lang']);
-
-// dojo.require('cujo._base.lang');
-// dojo.require('cujo._base.notify');
-// dojo.require('cujo._base.dom');
-// dojo.require('cujo._base.sniff');
-// dojo.require('cujo._base.stylesheet');
-// dojo.require('cujo._base.CssTextParser');
-// dojo.require('cujo._base.CssDomParser');
-// dojo.require('cujo._base.cssx');
-// 
-// dojo.require('cujo._base.cssx.alpha');
-// dojo.require('cujo._base.cssx.transition');
-
 /* IE shims */
-// Note: it *IS* ok to sniff for older versions of IE.  Only a noob would claim otherwise.
 
 if (dojo.isIE < 9) {
 
@@ -447,9 +430,6 @@ if (dojo.isIE < 9) {
 	dojo['require']('cujo._base.cssx.ieLayout');
 
 }
-
-// In case cujo is required as 'cujo/cujo'
-define('cujo/cujo', [], cujo);
 
 return cujo;
 
