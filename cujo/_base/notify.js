@@ -13,10 +13,32 @@
 define(['dojo'], function(dojo) {
 // local scope
 
+function _surveyExec (listeners, args, result) {
+    // TODO: raise an exception if handler is not found in the specified context
+    dojo.forEach(listeners, function (l) {
+        var func = cujo.typeOf(l.handler) == 'Function' ? l.handler : l.context[l.handler],
+            r = func.apply(l.context, args);
+        if (r) result.yays++;
+        if (r === false) result.nays++;
+        result.total++;
+    });
+}
+
+function _surveyResult (/* Object */ seed) {
+    var yays = seed.yays || 0,
+        nays = seed.nays || 0,
+        total = seed.total || 0;
+    this.error = seed.error;
+    this.all = yays == total;
+    this.none = nays == total;
+    this.any = yays > 0;
+    this.indeterminate = nays + yays != total;
+}
+
 // cujo notification extensions
 // the following object's members are mixed-in to the cujo object
 
-dojo.mixin(cujo, {
+return {
 
     postMessage: function (/* String */ topic, /* Object|Array? */ args, /* Function? */ callback, /* Object? */ context) {
         //  summary:
@@ -96,30 +118,6 @@ dojo.mixin(cujo, {
 
     _listeners: {}
 
-});
-
-function _surveyExec (listeners, args, result) {
-    // TODO: raise an exception if handler is not found in the specified context
-    dojo.forEach(listeners, function (l) {
-        var func = cujo.typeOf(l.handler) == 'Function' ? l.handler : l.context[l.handler],
-            r = func.apply(l.context, args);
-        if (r) result.yays++;
-        if (r === false) result.nays++;
-        result.total++;
-    });
-}
-
-function _surveyResult (/* Object */ seed) {
-    var yays = seed.yays || 0,
-        nays = seed.nays || 0,
-        total = seed.total || 0;
-    this.error = seed.error;
-    this.all = yays == total;
-    this.none = nays == total;
-    this.any = yays > 0;
-    this.indeterminate = nays + yays != total;
-}
-
-return cujo;
+};
 
 });

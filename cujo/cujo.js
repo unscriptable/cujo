@@ -6,8 +6,10 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-dojo.provide('cujo');
+// dojo.provide('cujo');
 
+define('cujo', ['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'], function() {
+	
 if (!window.cujoConfig)
     window.cujoConfig = {};
 
@@ -15,7 +17,9 @@ if (!window.cujoConfig)
 //      noCssTransExt: don't look for extensions to css transitions in css files
 //      ieHtml5Tags: the list of html5 tags to pre-define for IE
 
-(function () {
+var cujo = {};
+
+// (function () {
 
 var
     d = dojo,
@@ -398,9 +402,11 @@ var theme = 'default',
         }
     };
 
-})();
+// })();
 
-require(['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'])
+
+// require(['cujo/_base/lang']);
+
 // dojo.require('cujo._base.lang');
 // dojo.require('cujo._base.notify');
 // dojo.require('cujo._base.dom');
@@ -430,3 +436,5 @@ if (dojo.isIE < 9) {
         dojo['require']('cujo._base.cssx.ieLayout');
 
 }
+
+});

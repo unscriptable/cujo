@@ -13,7 +13,7 @@
     - remove data-cujoattrs or detect if they're different in the ancestors!!!
 
 */
-define(['dojo', 'dijit/_Templated'], function(dojo, Templated) {
+define(['dojo', 'cujo', 'dijit/_Templated'], function(dojo, cujo, Templated) {
 
 cujoConfig = cujoConfig || {};
 

@@ -19,7 +19,7 @@ http://www.opensource.org/licenses/afl-3.0.php
 	<script type="text/javascript">
 	    djConfig = {
 			isDebug: true,
-			modulePaths: { "clock": "../../examples/digital-clock/js/clock" }
+			modulePaths: { "clock": "../../examples/digital-clock/js/clock", "cujo": "../../cujo" }
 		};
 		
 		require = {
@@ -46,6 +46,7 @@ http://www.opensource.org/licenses/afl-3.0.php
 	<script type="text/javascript" src="../../cujo/cujo.js"></script>
 	
 	<script type="text/javascript">
+	// dojo.require('cujo._base.dom');
 		// dojo.require('dojo.Stateful');
 		// dojo.require('dijit._Widget');
 		// dojo.require('dijit._Templated');
@@ -53,7 +54,7 @@ http://www.opensource.org/licenses/afl-3.0.php
 		// define('dojo', function() { return dojo; });
 		// define('dijit', function() { return dojo; });
 		
-		require(['clock/ClockView'], function(ClockView) {
+		require(['dojo', 'cujo', 'clock/ClockView'], function(ClockView) {
 			console.log(arguments);
 			dojo.parser.parse();
 		});

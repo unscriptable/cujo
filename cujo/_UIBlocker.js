@@ -11,7 +11,7 @@
     TODO: keep track of status messages and zIndexes
 
 */
-define(['dojo', 'cujo/_Widget', 'cujo/_Templated'], function(dojo, Widget, Templated) {
+define(['dojo', 'cujo', 'cujo/_Widget', 'cujo/_Templated'], function(dojo, cujo, Widget, Templated) {
 	
 // cujo.registerPublisher('cujo.dom.block.visualization.start', 'all');
 

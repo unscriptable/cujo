@@ -13,10 +13,10 @@
         dojo.declare('myClass', cujo._Settable, { ... }); // mixin
 
 */
-define(['dojo', 'dojo/Stateful', 'dojo/string'], function(dojo) {
+define(['dojo', 'cujo', 'dojo/Stateful', 'dojo/string'], function(dojo, cujo) {
 // local scope
 
-var stfu = dojo.Stateful.prototype;
+var stfu = Stateful.prototype;
 
 // Anything that uses _Settable as a mixin should also ensure that any mixin properties passed to the
 // constructor (don't confuse these with mixin classes) are converted to the correct property name using

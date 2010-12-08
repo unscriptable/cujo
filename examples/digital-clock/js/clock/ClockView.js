@@ -13,6 +13,7 @@ http://www.opensource.org/licenses/afl-3.0.php
 define(
 [
 	'dojo',
+	'cujo',
 	'dojo/Stateful',
 	'cujo/mvc/binder',
 	'cujo/mvc/DataBoundView',
@@ -20,7 +21,7 @@ define(
 	'text!clock/ClockView.html',
 	'css!clock/ClockView.css'
 ],
-function(dojo, Stateful, binder, DataBoundView, PrefsView, template) {
+function(dojo, cujo, Stateful, binder, DataBoundView, PrefsView, template) {
 // local scope
 
 dojo.declare('clock.ClockModel', Stateful,

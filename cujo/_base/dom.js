@@ -14,114 +14,7 @@
 */
 define(['dojo'], function(dojo) {
 // local scope
-
-// cujo dom extensions
-
-dojo.mixin(cujo, {
-
-    head: cujo._getHeadElement,
-
-    setDomState: function (/* cujo.__StateDef */ stateDef) {
-        //  summary:
-        //      Instructs the UI / DOM to enter into the specified state. Most states are simply
-        //      classNames applied to the scope node specified in stateDef, but some special-
-        //      purpose states, such as 'cujo-block' and 'cujo-capture' invoke behavior. All state changes
-        //      are asynchronous, even when applying classNames (CSS Transitions). Therefore, be
-        //      sure to supply a callback function to be notified when the state change is complete
-        //      or use the returned promise.
-        //      For normal, className, states and cujo-capture, the promise executes the progress() and then()
-        //      paths once the className(s) are applied.  For cujo-block, the progress() path executes
-        //      once the UI is blocked, but only executes the then() once any visual indication of
-        //      blocking appears (spinner, text).
-        //  stateDef: cujo.__StateDef | cujo.__StateDef_Block | other, future __StateDef types
-        //      Specifies the scope, state, and parameters of the state change.
-        //  returns dojo.Deferred (aka a promise)
-
-        var node = stateDef.scope,
-            state = stateDef.state,
-            value = stateDef.value == undefined ? true : stateDef.value,
-            context = stateDef.context || dojo.global,
-            promise = new dojo.Deferred(),
-            handles = [],
-            release = function () { dojo.forEach(handles, dojo.disconnect); };
-
-        // connect promise to error callback
-        handles.push(dojo.connect(stateDef, 'onError', function () { promise.reject(); release(); }));
-
-        switch (state) {
-
-            case 'cujo-block': // ui blocking
-                if (!node)
-                    node = dojo.body();
-                handles.push(dojo.connect(stateDef, 'onChanged', function () { promise.progress(); }));
-                handles.push(dojo.connect(stateDef, 'onVisible', function () { promise.resolve(); release(); }));
-                blockNode(node, value, stateDef.onChanged, context, stateDef);
-                break;
-
-            case 'cujo-capture': // TODO: ui input capturing
-                // create a set of capturing events that block (preventDefault and stopPropagation)
-                // everything but the specified nodes. If an optional onCapture callback is defined
-                // check it's result to decide whether to block. The dev may specify a list of
-                // event types to capture. If omitted, these are used: mousedown, mouseup, keydown,
-                // keyup, focus.
-                break;
-
-            default: // assume we're applying class state
-                if (!node)
-                    node = dojo.doc.documentElement;
-                handles.push(dojo.connect(stateDef, 'onChanged', function () { promise.progress(); promise.resolve(); release(); }));
-                if (stateDef.set)
-                    applyClassStateFromSet(node, state, stateDef.set, value, stateDef.custom,
-                        stateDef.onChanged, context);
-                else
-                    applyClassState(node, state, value, stateDef.custom, stateDef.onChanged, context);
-        }
-
-        return promise;
-
-    },
-
-    getDomState: function (/* DOMNode */ scope, /* String */ state) {
-        //  summary: Returns a true or false if the given DOM Node (scope) has been
-        //  set to the specified state.
-        // TODO: get ancestor states
-        var node = scope;
-
-        switch (state) {
-
-            case 'cujo-block':
-                if (!node)
-                    node = dojo.body();
-                return !!node._cujo_uiBlocker;
-
-            case 'cujo-capture':
-                // TODO:
-                return false;
-
-            default:
-                if (!node)
-                    node = dojo.doc.documentElement;
-                if (state) {
-                    return dojo.hasClass(node, state);
-                }
-                else {
-                    return dojo.attr(node, 'class');    
-                }
-
-        }
-        
-    },
-
-    toggleDomState: function (/* cujo.__StateDef */ stateDef) {
-        //  summary: toggles the given state for the dom node specified in the stateDef object.
-        //  See cujo.setDomState for more info.
-        if (!stateDef.value)
-            stateDef.value = !this.getState(stateDef.scope, stateDef.state);
-        return this.setState(stateDef);
-
-    }
-
-});
+var tos = Object.prototype.toString;
 
 /*=====
 cujo.__StateDef = {
@@ -201,7 +94,8 @@ function applyClassStateFromSet (node, state, set, value, custom, callback, cont
     if (custom == undefined)
         custom = true;
 
-    var obj = cujo.typeOf(set) != 'Array';
+    var obj = tos.call(set) != '[object Array]';
+    // var obj = cujo.typeOf(set) != 'Array';
 
     // ensure that all other states are applied the opposite of state
     for (var p in set) {
@@ -218,40 +112,151 @@ function applyClassStateFromSet (node, state, set, value, custom, callback, cont
         setTimeout(function () { callback.call(context); }, 0);
 
 }
+// cujo dom extensions
 
-function blockNode (node, isBlocking, callback, context, params) {
-    // TODO: keep track of previous status messages (here or in widget?)
+return {
 
-    var uib;
-    // reuse an existing one if it exists
-    if (node._cujo_uiBlocker) {
-        uib = node._cujo_uiBlocker;
-        //if (params.message) // TODO: do this here or in the widget?
-            uib.attr('statusMessage', params.message);
-        if (isBlocking)
-            uib.block();
-        else
-            uib.unblock();
-        // if we're no longer blocking, remove the node
-        if (!uib.isBlocking()) {
-            uib.destroy();
-            delete node._cujo_uiBlocker;
+	// FIXME: Circular dep with cujo
+    // head: cujo._getHeadElement,
+
+    setDomState: function (/* cujo.__StateDef */ stateDef) {
+        //  summary:
+        //      Instructs the UI / DOM to enter into the specified state. Most states are simply
+        //      classNames applied to the scope node specified in stateDef, but some special-
+        //      purpose states, such as 'cujo-block' and 'cujo-capture' invoke behavior. All state changes
+        //      are asynchronous, even when applying classNames (CSS Transitions). Therefore, be
+        //      sure to supply a callback function to be notified when the state change is complete
+        //      or use the returned promise.
+        //      For normal, className, states and cujo-capture, the promise executes the progress() and then()
+        //      paths once the className(s) are applied.  For cujo-block, the progress() path executes
+        //      once the UI is blocked, but only executes the then() once any visual indication of
+        //      blocking appears (spinner, text).
+        //  stateDef: cujo.__StateDef | cujo.__StateDef_Block | other, future __StateDef types
+        //      Specifies the scope, state, and parameters of the state change.
+        //  returns dojo.Deferred (aka a promise)
+
+        var node = stateDef.scope,
+            state = stateDef.state,
+            value = stateDef.value == undefined ? true : stateDef.value,
+            context = stateDef.context || dojo.global,
+            promise = new dojo.Deferred(),
+            handles = [],
+            release = function () { dojo.forEach(handles, dojo.disconnect); };
+
+        // connect promise to error callback
+        handles.push(dojo.connect(stateDef, 'onError', function () { promise.reject(); release(); }));
+
+        switch (state) {
+
+            case 'cujo-block': // ui blocking
+                if (!node)
+                    node = dojo.body();
+                handles.push(dojo.connect(stateDef, 'onChanged', function () { promise.progress(); }));
+                handles.push(dojo.connect(stateDef, 'onVisible', function () { promise.resolve(); release(); }));
+				// FIXME: Uses _UIBlocker, need to remove circular dep
+                // blockNode(node, value, stateDef.onChanged, context, stateDef);
+                break;
+
+            case 'cujo-capture': // TODO: ui input capturing
+                // create a set of capturing events that block (preventDefault and stopPropagation)
+                // everything but the specified nodes. If an optional onCapture callback is defined
+                // check it's result to decide whether to block. The dev may specify a list of
+                // event types to capture. If omitted, these are used: mousedown, mouseup, keydown,
+                // keyup, focus.
+                break;
+
+            default: // assume we're applying class state
+                if (!node)
+                    node = dojo.doc.documentElement;
+                handles.push(dojo.connect(stateDef, 'onChanged', function () { promise.progress(); promise.resolve(); release(); }));
+                if (stateDef.set)
+                    applyClassStateFromSet(node, state, stateDef.set, value, stateDef.custom,
+                        stateDef.onChanged, context);
+                else
+                    applyClassState(node, state, value, stateDef.custom, stateDef.onChanged, context);
         }
+
+        return promise;
+
+    },
+
+    getDomState: function (/* DOMNode */ scope, /* String */ state) {
+        //  summary: Returns a true or false if the given DOM Node (scope) has been
+        //  set to the specified state.
+        // TODO: get ancestor states
+        var node = scope;
+
+        switch (state) {
+
+            case 'cujo-block':
+                if (!node)
+                    node = dojo.body();
+                return !!node._cujo_uiBlocker;
+
+            case 'cujo-capture':
+                // TODO:
+                return false;
+
+            default:
+                if (!node)
+                    node = dojo.doc.documentElement;
+                if (state) {
+                    return dojo.hasClass(node, state);
+                }
+                else {
+                    return dojo.attr(node, 'class');    
+                }
+
+        }
+        
+    },
+
+    toggleDomState: function (/* cujo.__StateDef */ stateDef) {
+        //  summary: toggles the given state for the dom node specified in the stateDef object.
+        //  See cujo.setDomState for more info.
+        if (!stateDef.value)
+            stateDef.value = !this.getState(stateDef.scope, stateDef.state);
+        return this.setState(stateDef);
+
     }
 
-    // no need to create a UIBlocker if we're unblocking and one doesn't exist (should never happen)
-    else if (isBlocking) {
-        uib = node._cujo_uiBlocker = new cujo._UIBlocker(params);
-        dojo.place(uib.domNode, node, 'last');
-        uib.block();
-    }
+};
 
-    // callback is always async
-    if (callback)
-        setTimeout(function () { callback.call(context); }, 0);
 
-}
+// FIXME: Uses _UIBlocker, need to remove circular dep
+// function blockNode (node, isBlocking, callback, context, params) {
+//     // TODO: keep track of previous status messages (here or in widget?)
+// 
+//     var uib;
+//     // reuse an existing one if it exists
+//     if (node._cujo_uiBlocker) {
+//         uib = node._cujo_uiBlocker;
+//         //if (params.message) // TODO: do this here or in the widget?
+//             uib.attr('statusMessage', params.message);
+//         if (isBlocking)
+//             uib.block();
+//         else
+//             uib.unblock();
+//         // if we're no longer blocking, remove the node
+//         if (!uib.isBlocking()) {
+//             uib.destroy();
+//             delete node._cujo_uiBlocker;
+//         }
+//     }
+// 
+//     // no need to create a UIBlocker if we're unblocking and one doesn't exist (should never happen)
+//     else if (isBlocking) {
+//         uib = node._cujo_uiBlocker = new cujo._UIBlocker(params);
+//         dojo.place(uib.domNode, node, 'last');
+//         uib.block();
+//     }
+// 
+//     // callback is always async
+//     if (callback)
+//         setTimeout(function () { callback.call(context); }, 0);
+// 
+// }
 
-return cujo;
+// return cujo;
 
 });

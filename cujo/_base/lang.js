@@ -12,11 +12,10 @@ define(['dojo'], function(dojo) {
 // cujo language extensions
 // the following object's members are mixed-in to the cujo.lang object
 
-dojo.mixin(cujo,
-(function () {
+return (function () {
 
     var
-        c = cujo,
+        // c = cujo,
         $ = dojo,
         join = Array.prototype.join,
         slice = Array.prototype.slice,
@@ -244,8 +243,8 @@ dojo.mixin(cujo,
         }
 
     };
-})()); // end and invoke immediate function
+})(); // end and invoke immediate function
 
-return cujo;
+// return cujo;
 
 });

@@ -11,6 +11,7 @@ http://www.opensource.org/licenses/afl-3.0.php
 define(
 [
 	'dojo',
+	'cujo',
 	'dojo/Stateful',
 	'cujo/mvc/View',
 	'text!clock/PrefsView.html'

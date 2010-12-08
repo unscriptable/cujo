@@ -21,7 +21,7 @@
 
 
 */
-define(['dojo', 'dijit/_Widget', 'dojo/Stateful'], function(dojo, Widget, Stateful) {
+define(['dojo', 'cujo' 'dijit/_Widget', 'dojo/Stateful', 'cujo/_base/dom'], function(dojo, cujo, Widget, Stateful) {
 
 // Local scope
 

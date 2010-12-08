@@ -12,7 +12,7 @@
         dojo.declare('myClass', cujo._Watchable, { ... }); // mixin
 
 */
-define(['dojo', 'dojo/Stateful', 'cujo/_Settable'], function(dojo, Stateful, Settable) {
+define(['dojo', 'cujo', 'dojo/Stateful', 'cujo/_Settable'], function(dojo, cujo, Stateful, Settable) {
 
 // local scope
 

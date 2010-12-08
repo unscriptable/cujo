@@ -6,7 +6,7 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-define(['dojo', 'cujo/_Widget', 'cujo/_Templated'], function(dojo, Widget, Templated) {
+define(['dojo', 'cujo', 'cujo/_Widget', 'cujo/_Templated'], function(dojo, cujo, Widget, Templated) {
 // local scope
 
 dojo.declare('cujo.mvc.View', [Widget, Templated], {
