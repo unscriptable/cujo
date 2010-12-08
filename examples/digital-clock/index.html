@@ -18,8 +18,7 @@ http://www.opensource.org/licenses/afl-3.0.php
 	     as peers to the cujo & examples dir -->
 	<script type="text/javascript">
 	    djConfig = {
-			isDebug: true,
-			modulePaths: { "clock": "../../examples/digital-clock/js/clock", "cujo": "../../cujo" }
+			isDebug: true
 		};
 		
 		require = {
@@ -34,7 +33,7 @@ http://www.opensource.org/licenses/afl-3.0.php
 	</script>
 
 	<script type="text/javascript" src="../../require-0.15/require.js"></script>
-	<script type="text/javascript" src="../../dojo-pre1.6/dojo/dojo.js"></script>
+	<script type="text/javascript" src="../../dojo-pre1.6/dojo-min.js"></script>
 
   <!-- CDN Dojo -->
 	<!-- <script type="text/javascript">
@@ -46,15 +45,14 @@ http://www.opensource.org/licenses/afl-3.0.php
 	<script type="text/javascript" src="../../cujo/cujo.js"></script>
 	
 	<script type="text/javascript">
-	// dojo.require('cujo._base.dom');
+		// dojo.require('cujo._base.dom');
 		// dojo.require('dojo.Stateful');
 		// dojo.require('dijit._Widget');
 		// dojo.require('dijit._Templated');
 		
 		// define('dojo', function() { return dojo; });
 		// define('dijit', function() { return dojo; });
-		
-		require(['dojo', 'cujo', 'clock/ClockView'], function(ClockView) {
+		require(['clock/ClockView'], function() {
 			console.log(arguments);
 			dojo.parser.parse();
 		});
