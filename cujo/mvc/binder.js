@@ -1,8 +1,6 @@
-define(['dojo'], function(dojo) {
-// local scope
+dojo.provide('cujo.mvc.binder');
 
-// Just in case, so that the following line works
-dojo.getObject('mvc', true, cujo);
+(function () {
 
 cujo.mvc.binder = function () {
 
@@ -172,7 +170,7 @@ cujo.mvc.binder = function () {
     }
 
     function data (attr) {
-        addToDefs('data', {data: attr || '', type: 'cujoBind'});
+        addToDefs('data', {data: attr || currAttr, type: 'cujoBind'});
         // return fully-decorated chain
         return chainWithSubMethods;
     }
@@ -286,7 +284,5 @@ function logError (message, attr) {
     console.error('cujo.mvc.binder: ' + attr + '. ' + message);
 }
 
-return cujo.mvc.binder;
-
-});
+})();
 
