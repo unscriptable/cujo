@@ -1,6 +1,8 @@
-dojo.provide('cujo.mvc.binder');
+define(['dojo'], function(dojo) {
+// local scope
 
-(function () {
+// Just in case, so that the following line works
+dojo.getObject('mvc', true, cujo);
 
 cujo.mvc.binder = function () {
 
@@ -284,5 +286,7 @@ function logError (message, attr) {
     console.error('cujo.mvc.binder: ' + attr + '. ' + message);
 }
 
-})();
+return cujo.mvc.binder;
+
+});
 
