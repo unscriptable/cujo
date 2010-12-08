@@ -16,7 +16,7 @@ define(
 	'cujo/mvc/View',
 	'text!clock/PrefsView.html'
 ],
-function(dojo, Stateful, View, template) {
+function(dojo, cujo, Stateful, View, template) {
 // local scope
 
 dojo.declare('clock.StorageModel', Stateful,

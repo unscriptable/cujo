@@ -18,14 +18,16 @@ http://www.opensource.org/licenses/afl-3.0.php
 	     as peers to the cujo & examples dir -->
 	<script type="text/javascript">
 	    djConfig = {
-			isDebug: true
+			isDebug: true,
+		    baseUrl: '../../dojo/',
+			modulePaths: {
+				'clock': '../examples/digital-clock/js/clock' // Needed by cujo.requireCss to load clock themes
+			}
 		};
-		
+
 		require = {
 			baseUrl: '../../',
 			paths: {
-				'dojo': 'dojo-pre1.6/dojo',
-				'dijit': 'dojo-pre1.6/dijit',
 				'require': 'require-0.15/require',
 				'clock': 'examples/digital-clock/js/clock'
 			}
@@ -33,30 +35,17 @@ http://www.opensource.org/licenses/afl-3.0.php
 	</script>
 
 	<script type="text/javascript" src="../../require-0.15/require.js"></script>
-	<script type="text/javascript" src="../../dojo-pre1.6/dojo-min.js"></script>
+	<script type="text/javascript" src="../../dojo/dojo-min.js"></script>
 
-  <!-- CDN Dojo -->
-	<!-- <script type="text/javascript">
-			djConfig = { parseOnLoad: true, isDebug: true, baseUrl: "../../",
-				modulePaths: { "cujo": "cujo", "clock": "examples/digital-clock/js/clock" } };
-	</script>
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js"></script>	<script type="text/javascript" src="../../dojo/dojo.js"></script> -->
 
-	<script type="text/javascript" src="../../cujo/cujo.js"></script>
-	
 	<script type="text/javascript">
-		// dojo.require('cujo._base.dom');
-		// dojo.require('dojo.Stateful');
-		// dojo.require('dijit._Widget');
-		// dojo.require('dijit._Templated');
-		
-		// define('dojo', function() { return dojo; });
-		// define('dijit', function() { return dojo; });
-		require(['clock/ClockView'], function() {
-			console.log(arguments);
-			dojo.parser.parse();
+		require(['cujo/cujo', 'clock/ClockView'], function() {
+			require.ready(function() {
+				dojo.parser.parse();
+			})
 		});
 	</script>
+
 </head>
 <body>
 	<div dojoType="clock.ClockView"></div>

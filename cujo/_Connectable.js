@@ -7,7 +7,7 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
 */
-define(['dojo', 'cujo'], function(dojo, cujo) {
+define(['dojo'], function(dojo) {
 // local scope
 
 dojo.declare('cujo._Connectable', null, {

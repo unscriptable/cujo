@@ -8,7 +8,7 @@
 */
 // dojo.provide('cujo');
 
-define('cujo/cujo', ['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'], function() {
+define('cujo', ['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'], function() {
 	
 if (!window.cujoConfig)
     window.cujoConfig = {};
@@ -37,9 +37,10 @@ var
 
 // mix-in all _base module properties/methods
 for (var i = 0, len = arguments.length; i < len; i++) {
-	for (var p in arguments[i]) {
+	var a = arguments[i];
+	for (var p in a) {
 		if (!(p in op)) {
-			cujo[p] = arguments[i][p];
+			cujo[p] = a[p];
 		}
 	}
 }
@@ -446,6 +447,9 @@ if (dojo.isIE < 9) {
 	dojo['require']('cujo._base.cssx.ieLayout');
 
 }
+
+// In case cujo is required as 'cujo/cujo'
+define('cujo/cujo', [], cujo);
 
 return cujo;
 
