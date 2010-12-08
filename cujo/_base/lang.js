@@ -10,9 +10,6 @@ define(['dojo'], function(dojo) {
 // local scope
 
 // cujo language extensions
-// the following object's members are mixed-in to the cujo.lang object
-
-return (function () {
 
     var
         // c = cujo,
@@ -33,6 +30,8 @@ return (function () {
         return true;
     }
 
+// the following object's members are mixed-in to the cujo.lang object
+	
     return {
 
         forIn: function (/* Object */ obj, /* Function */ lambda, /* Object? */ context) {
@@ -243,8 +242,5 @@ return (function () {
         }
 
     };
-})(); // end and invoke immediate function
-
-// return cujo;
 
 });

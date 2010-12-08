@@ -8,7 +8,7 @@
 */
 // dojo.provide('cujo');
 
-define('cujo', ['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'], function() {
+define('cujo/cujo', ['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'], function() {
 	
 if (!window.cujoConfig)
     window.cujoConfig = {};
@@ -17,13 +17,14 @@ if (!window.cujoConfig)
 //      noCssTransExt: don't look for extensions to css transitions in css files
 //      ieHtml5Tags: the list of html5 tags to pre-define for IE
 
-var cujo = {};
+var cujo = window.cujo = {};
 
 // (function () {
 
 var
     d = dojo,
-    toString = Object.prototype.toString,
+	op = Object.prototype,
+    toString = op.toString,
     // grab a reference to the real dojo.provide (we're gonna hijack it!)
     origDojoProvide = d.provide,
     // set of modules being waited for (hashmap of arrays of waiters)
@@ -33,6 +34,15 @@ var
     loadedModules = {},
     // dojo says the document is ready
     isReady;
+
+// mix-in all _base module properties/methods
+for (var i = 0, len = arguments.length; i < len; i++) {
+	for (var p in arguments[i]) {
+		if (!(p in op)) {
+			cujo[p] = arguments[i][p];
+		}
+	}
+}
 
 var m = d._loadedModules;
 for (var p in m) {
@@ -433,8 +443,10 @@ if (dojo.isIE < 9) {
 
     // Note: these files are always dynamically loaded, unless you explicitly place them into a build!
     dojo['require']('cujo._base.cssx.ieSelector');
-        dojo['require']('cujo._base.cssx.ieLayout');
+	dojo['require']('cujo._base.cssx.ieLayout');
 
 }
+
+return cujo;
 
 });

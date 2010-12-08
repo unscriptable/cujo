@@ -204,11 +204,11 @@ return {
                     return dojo.hasClass(node, state);
                 }
                 else {
-                    return dojo.attr(node, 'class');    
+                    return dojo.attr(node, 'class');
                 }
 
         }
-        
+
     },
 
     toggleDomState: function (/* cujo.__StateDef */ stateDef) {
@@ -256,7 +256,5 @@ return {
 //         setTimeout(function () { callback.call(context); }, 0);
 // 
 // }
-
-// return cujo;
 
 });
