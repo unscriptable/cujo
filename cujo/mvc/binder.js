@@ -170,7 +170,7 @@ cujo.mvc.binder = function () {
     }
 
     function data (attr) {
-        addToDefs('data', {data: attr || '', type: 'cujoBind'});
+        addToDefs('data', {data: attr || currAttr, type: 'cujoBind'});
         // return fully-decorated chain
         return chainWithSubMethods;
     }
