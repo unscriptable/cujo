@@ -1,5 +1,11 @@
-Head over to the wiki for an introduction before diggin in.
+Head over to the wiki for an introduction before digging in.
 
 [[cujo.js wiki|http://github.com/unscriptable/cujo/wiki]]
 
 Note: cujo.js requires dojo 1.5.0 or higher
+
+We're moving over to AMD-style modules in the amd branch.  This will very likely be the future of cujo.js.
+
+You will need an async loader to use cujo in the amd branch.  We're testing with a fork of [[RequireJS 0.15 https://github.com/unscriptable/requirejs]], but will be switching to its spider branch soon.  This means that you could also use any other CommonJS loader that uses the [[LoaderPlugin proposed API http://wiki.commonjs.org/wiki/Modules/LoaderPlugin]], for instance, the [[backdraft Loader http://bdframework.org/docs/loader/loader.html]].
+
+You need to configure several paths for any AMD impementation to work.  More details to follow very shortly.
