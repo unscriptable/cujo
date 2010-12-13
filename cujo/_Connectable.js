@@ -61,7 +61,7 @@ dojo.declare('cujo._Connectable', null, {
 });
 
 // some common use cases
-cujo._Connectable.any = function () { return true };
+cujo._Connectable.any = function () { return true; };
 cujo._Connectable.publicOnly = function (name) { return name.match(/^[^_]/); };
 cujo._Connectable.eventsOnly = function (name) { return name.match(/^on/); };
 
