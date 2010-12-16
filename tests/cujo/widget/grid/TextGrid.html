@@ -1,0 +1,131 @@
+<!DOCTYPE HTML>
+<html class="cujo-stretch">
+<head>
+
+<title>TextGrid Tester</title>
+
+<script type="text/javascript">
+
+	(function () {
+
+		var
+			baseUrl = '../../../../',
+			paths = {
+				'dojo': 'dojo',
+				'dijit': 'dijit',
+				'cujo': 'cujo',
+				'require': 'require'
+			};
+
+		djConfig = {
+			isDebug: true,
+			debugAtAllCosts: true,
+			baseUrl: baseUrl,
+			modulePaths: paths
+		};
+
+		require = {
+			baseUrl: baseUrl,
+			paths: paths
+		};
+
+	})();
+
+</script>
+
+<!-- the following two files are needed for unit tests -->
+<script src="../../../../util/doh/runner.js"></script>
+<script src="../../../../util/doh/_browserRunner.js"></script>
+<script src="../../../../require.js" type="text/javascript"></script>
+<script src="../../../../dojo.js" type="text/javascript"></script>
+<script src="../../../../cujo.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+	require(['cujo/widget/grid/TextGrid', 'dijit']);
+
+	require.ready(function () {
+		/* testing code */
+		dojo.parser.parse();
+		var
+			grid = dijit.byId('grid1'),
+			dataSet1 = [
+				{ id: 1, selected: false, fileName: 'file/me/under/please-just-work.hope' },
+				{ id: 2, selected: false, fileName: 'whats/up.doc' }
+			],
+			dataSet2 = [
+				{ id: 3, selected: true, fileName: 'foo/bar.html', checked: 'checked' },
+				{ id: 4, selected: false, fileName: 'whats/up2.doc' },
+				{ id: 27, selected: false, fileName: 'this.html' }
+			],
+			colDefs1 = {
+				selected: {
+					name: 'selected',
+					title: '',
+					colClass: 'test-class'
+				},
+				fileName: { name: 'fileName', title: 'Wahtzit' }
+			},
+			colDefs2 = {
+				selected: {
+					name: 'selected',
+					title: '',
+					colClass: 'test-class',
+					bodyCellTemplate: '<td class="my-custom-class"><input type="checkbox" ${checked}/></td>',
+					headerCellTemplate: '<th${colClassAttr}><input type="checkbox" ${checked}/></th>',
+					footerCellTemplate: '<td${colClassAttr}><input type="checkbox" ${checked}/></td>'
+				},
+				fileName: { name: 'fileName', title: 'File Name' }
+			};
+		grid.set('colDefs', colDefs1);
+		// TODO: make checked a derived property using cujo._Derivable
+		grid.set('dataSet', dataSet1);
+		setTimeout(function () {
+			grid.set('dataSet', dataSet2);
+		}, 1000);
+		setTimeout(function () {
+			grid.set('colDefs', colDefs2);
+		}, 2000);
+	});
+
+</script>
+
+<link href="../../../../dijit/themes/dijit.css" rel="stylesheet" type="text/css"/>
+<link href="../../../../cujo/common/headline-c.css" rel="stylesheet" type="text/css"/>
+
+<style>
+	.mainapp {
+		height: 100%;
+	}
+</style>
+
+</head>
+
+<body class="cujo-stretch">
+
+<!-- the root template node -->
+<section class="cujo-stretch cujo-headline-c">
+
+	<!-- optional header section -->
+	<header class="cujo-header page-header">
+	</header>
+
+	<section class="cujo-body page-main">
+
+		<section class="cujo-cont mainapp">
+
+			<!-- put your html here -->
+			<div data-dojo-type="li.widget.grid.TextGrid" id="grid1"></div>
+
+		</section>
+
+	</section>
+
+	<!-- optional footer section -->
+	<footer class="cujo-footer page-footer">
+	</footer>
+
+</section>
+
+</body>
+</html>
