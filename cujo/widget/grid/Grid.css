@@ -1,0 +1,40 @@
+.cujo-grid {
+
+}
+
+.cujo-grid-table {
+	table-layout: fixed;
+	/* default, necessary width. override this as needed */
+	width: 100%;
+}
+
+.cujo-gridrow > td,
+.cujo-gridrow > th {
+	text-align: left;
+	/* default, necessary width. override this as needed */
+	width: 1%;
+}
+
+.cujo-grid > .cujo-body {
+	/* cujo-headline-c overrides */
+	left: 0;
+	right: auto;
+	width: 100%;
+	overflow-y: scroll;
+}
+
+.cujo-grid > .cujo-header > table,
+.cujo-grid > .cujo-footer > table {
+	/* coordinates header and footer with scrollbar in body. TODO: rtl */
+	padding-right: -cujo-scroll-width;
+}
+
+/* footerless rules */
+
+.cujo-grid-nofooter > .cujo-footer {
+	display: none;
+}
+
+.cujo-grid-nofooter > .cujo-body {
+	bottom: 0;
+}
