@@ -10,6 +10,7 @@
 
 .cujo-gridrow > td,
 .cujo-gridrow > th {
+	overflow: hidden;
 	text-align: left;
 	/* default, necessary width. override this as needed */
 	width: 1%;
