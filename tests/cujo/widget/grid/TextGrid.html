@@ -71,9 +71,9 @@
 					name: 'selected',
 					title: '',
 					colClass: 'test-class',
-					bodyCellTemplate: '<td class="my-custom-class"><input type="checkbox" ${checked}/></td>',
-					headerCellTemplate: '<th${colClassAttr}><input type="checkbox" ${checked}/></th>',
-					footerCellTemplate: '<td${colClassAttr}><input type="checkbox" ${checked}/></td>'
+					bodyCellTemplate: '<td class="my-custom-class"><input type="checkbox" ${checked}/> check</td>',
+					headerCellTemplate: '<th${colClassAttr}><input type="checkbox" ${checked}/> check</th>',
+					footerCellTemplate: '<td${colClassAttr}><input type="checkbox" ${checked}/> check</td>'
 				},
 				fileName: { name: 'fileName', title: 'File Name' }
 			};
@@ -97,6 +97,10 @@
 	.mainapp {
 		height: 100%;
 	}
+
+	.my-custom-class, .test-class {
+		text-transform: uppercase;
+	}
 </style>
 
 </head>
@@ -115,7 +119,7 @@
 		<section class="cujo-cont mainapp">
 
 			<!-- put your html here -->
-			<div data-dojo-type="li.widget.grid.TextGrid" id="grid1"></div>
+			<div data-dojo-type="cujo.widget.grid.TextGrid" id="grid1"></div>
 
 		</section>
 
