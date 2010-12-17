@@ -23,7 +23,7 @@ define(
 
 		var undef;
 
-		return lang.declare('li.widget.grid.TextGrid', [Widget, Templated], {
+		return lang.declare('cujo.widget.grid.TextGrid', [Widget, Templated], {
 
 			/**
 			 * colDefs properties:
