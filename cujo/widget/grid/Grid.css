@@ -8,15 +8,15 @@
 	width: 100%;
 }
 
-.cujo-gridrow > td,
-.cujo-gridrow > th {
+.cujo-gridrow td,
+.cujo-gridrow th {
 	overflow: hidden;
 	text-align: left;
 	/* default, necessary width. override this as needed */
 	width: 1%;
 }
 
-.cujo-grid > .cujo-body {
+.cujo-grid .cujo-body {
 	/* cujo-headline-c overrides */
 	left: 0;
 	right: auto;
@@ -24,18 +24,18 @@
 	overflow-y: scroll;
 }
 
-.cujo-grid > .cujo-header > table,
-.cujo-grid > .cujo-footer > table {
+.cujo-grid .cujo-header .cujo-grid-table,
+.cujo-grid .cujo-footer .cujo-grid-table {
 	/* coordinates header and footer with scrollbar in body. TODO: rtl */
 	padding-right: -cujo-scroll-width;
 }
 
 /* footerless rules */
 
-.cujo-grid-nofooter > .cujo-footer {
+.cujo-grid-nofooter .cujo-footer {
 	display: none;
 }
 
-.cujo-grid-nofooter > .cujo-body {
+.cujo-grid-nofooter .cujo-body {
 	bottom: 0;
 }

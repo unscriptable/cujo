@@ -23,10 +23,10 @@ define(
 
 		var undef;
 
-		return lang.declare('cujo.widget.grid.TextGrid', [Widget, Templated], {
+		return lang.declare('li.widget.grid.TextGrid', [Widget, Templated], {
 
 			/**
-			 * colDefs properties:
+			 * colDefs is an array of objects whose properties have the following:
 			 * name - the column name/id
 			 * title - the display name
 			 * colClass - a custom class name for the cells, 'gridrow' and 'gridrow-even' (or odd) are also added
@@ -46,6 +46,8 @@ define(
 			bodyCellTemplate: '<td${colClassAttr}>${_value}</td>',
 
 			footerCellTemplate: '<td${colClassAttr}>${_value}</td>',
+
+			gridClass: 'cujo-textgrid',
 
 			rowClass: 'cujo-gridrow',
 
@@ -219,6 +221,7 @@ define(
 
 			postCreate: function () {
 				this.inherited('postCreate', arguments);
+				dom.addClass(this.domNode, this.gridClass);
 				if (!this.hasFooter) {
 					dom.addClass(this.domNode, 'cujo-grid-nofooter');
 				}
@@ -246,14 +249,14 @@ define(
 				var colTmpl = this[rowType + 'CellTemplate'] || '',
 					rowTmpl = '';
 				if (this.colDefs) {
-					for (var p in this.colDefs) {
-						var def = this.colDefs[p],
+					for (var i = 0, len = this.colDefs.length; i < len; i++) {
+						var def = this.colDefs[i],
 							cellTmpl = def[rowType + 'CellTemplate'] || colTmpl,
 							info = lang.delegate(def, {
-								colClassAttr: def.colClass == undef ? '' : ' class="' + def.colClass + '"',
+								colClassAttr: this._makeColClassAttr(def),
 								_value: '${' + def.name + '}'
 							});
-						rowTmpl += strings.substitute(cellTmpl, info, this._passthruTransform);
+						rowTmpl += strings.substitute(cellTmpl, info, def.transform || this._passthruTransform);
 					}
 				}
 				var map = {
@@ -261,6 +264,10 @@ define(
 						cells: rowTmpl
 					};
 				return strings.substitute(this._rowTemplate, map);
+			},
+
+			_makeColClassAttr: function (colDef, colNum) {
+				return colDef.colClass == undef ? '' : ' class="' + colDef.colClass + '"';
 			},
 
 			// strings.substitute transforms
