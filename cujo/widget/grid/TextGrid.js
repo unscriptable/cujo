@@ -10,7 +10,7 @@
 define(
 	[
 		'text!./TextGrid.html', // template
-		'css!./TextGrid.css', // styles
+		'cssx/css!./TextGrid.css', // styles
 		'dijit/_Widget',
 		'dijit/_Templated',
 		'dojo/string',
@@ -33,6 +33,7 @@ define(
 			 * bodyCellTemplate - optional template of the entire body cell
 			 * headerCellTemplate - optional template of the entire header cell
 			 * footerCellTemplate - optional template of the entire footer cell
+			 * transform - a function to transform the value before inserting into the bodyCellTemplate. e.g. function (val) { return val; }
 			 */
 			colDefs: null,
 
@@ -235,7 +236,6 @@ define(
 				if (rowData) {
 					var rowClasses = [ this.evenRowClass, this.oddRowClass ],
 						map = {
-
 							rowAuxClasses: rowNum  == undef ? '' : ' ' + rowClasses[rowNum % 2],
 							rowNum: rowNum
 						};
@@ -254,9 +254,9 @@ define(
 							cellTmpl = def[rowType + 'CellTemplate'] || colTmpl,
 							info = lang.delegate(def, {
 								colClassAttr: this._makeColClassAttr(def),
-								_value: '${' + def.name + '}'
+								_value: '${' + def.name + (def.tranform ? ':' + def.tranform : '') + '}'
 							});
-						rowTmpl += strings.substitute(cellTmpl, info, def.transform || this._passthruTransform);
+						rowTmpl += strings.substitute(cellTmpl, info, this._passthruTransform);
 					}
 				}
 				var map = {
