@@ -9,7 +9,7 @@
     TODO: create a decorator version of this mixin?
 
 */
-define(['dojo'], function(dojo) {
+define(['dojo', 'cujo'], function(dojo, cujo) {
 // local scope
 
 dojo.declare('cujo.mvc._Bindable', null, {

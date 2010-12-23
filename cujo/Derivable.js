@@ -7,7 +7,7 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
 */
-define(['dojo'], function(dojo) {
+define(['cujo', 'cujo._Derivable'], function(cujo, _Derivable) {
 // local scope
 
 cujo.Derivable = function (/* Object */ object, /* Object */ derivedAttrDefs) {
@@ -29,7 +29,7 @@ cujo.Derivable = function (/* Object */ object, /* Object */ derivedAttrDefs) {
     //          var d = new cujo.Derivable(obj, defs);
     //          var d = cujo.Derivable(obj, defs);
 
-    var cdp = cujo._Derivable.prototype; // we're gonna borrow some methods from cujo._Derivable!
+    var cdp = _Derivable.prototype; // we're gonna borrow some methods from cujo._Derivable!
 
     var deriverSources = {},
         origSet = object.set;

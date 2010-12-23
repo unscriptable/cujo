@@ -13,7 +13,7 @@
         dojo.declare('myClass', cujo._Settable, { ... }); // mixin
 
 */
-define(['dojo', 'dojo/Stateful', 'dojo/string'], function(dojo) {
+define(['dojo', 'cujo', 'dojo/Stateful', 'dojo/string'], function(dojo, cujo, Stateful, string) {
 // local scope
 
 var stfu = Stateful.prototype;
@@ -51,7 +51,7 @@ dojo.declare('cujo._Settable', null, {
         var oName = this.settableXform ? this.settableXform(name) : name,
             value = stfu.get.call(this, oName);
         if (this.detectDirectWrite && (name in this._settableCache) && value !== this._settableCache[name]) {
-            throw new Error(dojo.string.substitute(errDirectWrite, {name: name}));
+            throw new Error(string.substitute(errDirectWrite, {name: name}));
         }
         return value;
     },
@@ -60,10 +60,10 @@ dojo.declare('cujo._Settable', null, {
         var oName = this.settableXform ? this.settableXform(name) : name,
             curr = stfu.get.call(this, oName);
         if (this.detectDirectWrite && (name in this._settableCache) && curr !== this._settableCache[name]) {
-            throw new Error(dojo.string.substitute(errDirectWrite, {name: name}));
+            throw new Error(string.substitute(errDirectWrite, {name: name}));
         }
         if (this.settables && !this.settables(name)) {
-            throw new Error(dojo.string.substitute(errUnsettable, {name: name}));
+            throw new Error(string.substitute(errUnsettable, {name: name}));
         }
         this._settableCache[name] = value;
         return stfu.set.call(this, oName, value);
