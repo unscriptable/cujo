@@ -8,9 +8,6 @@
 
     Adds dojo.Stateful behavior to objects without the dojo.declare turds and overhead
 
-    Use cujo._Stateful as a mixin in a multiple-inheritance pattern. Example:
-        dojo.declare('myClass', cujo._Stateful, { ... }); // mixin
-
 */
 define(/* cujo/Stateful, */ ['cujo'], function(cujo) {
 
