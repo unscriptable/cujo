@@ -30,12 +30,12 @@ dojo.declare('cujo.mvc.View', [Widget, Templated], {
         //      There are three function signatures. See the examples for details.
         //  description:
         //      States are converted from camelCase strings to valid HTML-strict class names, e.g.:
-        //      myView.state('bulkDelete') returns true if myView's domNode has the class 'bulk-delete'. 
+        //      myView.state('bulk-delete') returns true if myView's domNode has the class 'bulk-delete'.
         //      TODO: finish documenting all of the possible parameter combos and returns
         //      Example 1 -- Simple setter:
-        //          myView.state('bulkDelete', false); // turn off 'bulkDelete' mode
+        //          myView.state('bulk-delete', false); // turn off 'bulkDelete' mode
         //      Example 2 -- Sniff for a specific state (getter):
-        //          myView.state('bulkDelete'); // boolean
+        //          myView.state('bulk-delete'); // boolean
         //      Example 3 -- Return all states (getter):
         //          var array = myView.state();
         //      Example 4 -- Complex setter:
@@ -77,17 +77,19 @@ dojo.declare('cujo.mvc.View', [Widget, Templated], {
     },
 
     _getState: function (/* String */ state) {
-        if (state) state = cujo.uncamelize(state);
+        //if (state) state = cujo.uncamelize(state);
         var states = cujo.getDomState(this.domNode, state) || '';
-        return state ? !!states : dojo.map(states.split(' '), function (s) { return cujo.camelize(s); });
+//        return state ? !!states : dojo.map(states.split(' '), function (s) { return cujo.camelize(s); });
+        return state ? !!states : states.split(' ');
     },
 
     _setStateDef: function (/* cujo.__StateDef */ stateDef) {
         stateDef.scope = stateDef.scope || this.domNode;
-        var currState = cujo.getDomState(stateDef.scope);
-            rawDef = dojo.delegate(stateDef);
-        rawDef.state = cujo.uncamelize(stateDef.state);
-        var result = cujo.setDomState(rawDef);
+        var currState = cujo.getDomState(stateDef.scope)/*,
+            rawDef = dojo.delegate(stateDef)*/;
+//        rawDef.state = cujo.uncamelize(stateDef.state);
+//        var result = cujo.setDomState(rawDef);
+        var result = cujo.setDomState(stateDef);
         if (currState != cujo.getDomState(stateDef.scope)) {
             this.stateChanged(stateDef);
         }

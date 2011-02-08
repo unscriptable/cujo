@@ -36,9 +36,9 @@ dojo.declare('cujo.mvc.DataListView', [View, BindableContainer], {
 });
 
 var dataStates = cujo.mvc.DataListView.dataStates = {
-        unknown: 'cujoListUnbound',
-        empty: 'cujoListEmpty',
-        bound: 'cujoListBound'
+        unknown: 'cujo-list-unbound',
+        empty: 'cujo-list-empty',
+        bound: 'cujo-list-bound'
         // TODO: add a state to indicate list is only partially loaded?
     },
     dataStateMapper = function (resultSet) {
