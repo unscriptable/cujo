@@ -20,7 +20,7 @@ if (typeof cujoConfig == 'undefined') {
 	var cujoConfig = {};
 }
 
-define('cujo', ['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'], function() {
+define(['cujo/_base/lang', 'cujo/_base/notify', 'cujo/_base/dom'], function() {
 	
 var
     d = dojo,
