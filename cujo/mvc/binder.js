@@ -1,10 +1,12 @@
 define(
 	[
-		'dojo', // for language functions
-		'dojo', // for array functions
-		'cujo' // TEMP: for cujo namespace
+		'dojo', // for language and array functions
+		'cujo' // for hashMap functions
 	],
-	function (lang, array, cujo) {
+	function (dojo, hashMap) {
+
+		var lang = dojo,
+			array = dojo;
 
 		return function () {
 
@@ -219,7 +221,7 @@ define(
 				}
 
 				// apply all attributes
-				cujo.forIn(defs, function (attrDef, attr) {
+				hashMap.forIn(defs, function (attrDef, attr) {
 
 					// only allow one data-binding definition
 					if (attrDef.data.length > 1) {
@@ -262,7 +264,9 @@ define(
 
 					// merge any definitions that are left
 					var max = 0;
-					cujo.forIn(attrDef, function (def, op) { if (op != 'bidi') max = Math.max(max, def.length); });
+					hashMap.forIn(attrDef, function (def, op) {
+						if (op != 'bidi') max = Math.max(max, def.length);
+					});
 					for (var i = 0; i < max; i++) {
 						// TODO: this does not look cpu-friendly. investigate other options
 						var def = lang.mixin({},
