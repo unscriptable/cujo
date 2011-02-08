@@ -21,40 +21,39 @@ dojo.declare('cujo.mvc.DataBoundView', [View, Bindable, Derivable], {
     //      Since virtually all data items have an 'id' property, we need to map it from a
     //      different widget property.  The convention is to use 'dataId' as the widget property.
     attributeMap: {
-        dataId: {
-            data: 'id',
-            type: 'cujoBind'
-        }
+        dataId: { data: 'id', type: 'cujoBind' }
     },
 
-    applyTemplate: function (/* Object */ args) {
-        //  summary: applies a template defined by propName to the current widget (this).
-        //      The template uses dojo standard string formatting (see dojo.string.substitute).
-        //      You'd typically use this to format a read-only derived property, but there are
-        //      many other potential uses. Examples of typical templates:
+    applyTemplate: function (args) {
+	    // TODO: move this to _Widget or View
+        //  summary: applies a template defined by propName to the current
+	    //      widget (this). The template uses dojo standard string formatting
+	    //      (see dojo.string.substitute). You'd typically use this to format
+	    //      a read-only derived property, but there are many other potential
+	    //      uses. Examples of typical templates:
         //          displayName: '${lastName}, ${firstName}',
         //          salutation: 'Hello ${firstName}!',
         //          startDate: '${$value:_myFormatFunction}'
         //      See the documentation for dojo.string.substitute for
         //      a description of how to apply format functions in templates.
-        //      Note: if you need more complex formatting (e.g. branching or looping) on a
-        //      derived property, write your own custom transform() function in the attributeMap
-        //      definition.  This method is for the simple cases. :)
-        var template = args.template || args.templateName && dojo.getObject(args.templateName, false, this),
-            transform = args.transform && dojo.hitch(this, args.transform);
+        //      Note: if you need more complex formatting (e.g. branching or
+	    //      looping) on a derived property, write your own custom transform()
+	    //      function in the attributeMap definition.  This method is for the
+	    //      simple cases. :)
+	    //      If the args.transform function is missing, a "safe"
+	    //      function is used: a blank is inserted if the token
+	    //      is not found as a property in the current view.
+        var template = args.template || args.templateName &&
+	            dojo.getObject(args.templateName, false, this),
+            transform = args.transform && dojo.hitch(this, args.transform) ||
+	            function (v, p) { return v == null ? '' : v; };
         return this.formatString(template, this, transform);
     },
 
     formatString: function (/* String */ template, /* Object? */ map, /* Function? */ transform) {
         //  summary: formats a string using dojo.string.substitute, but inserts the current
         //      view instance for the hash map (and source of format functions) for convenience.
-        try {
             return dojo.string.substitute(template, map || this, transform, this);
-        }
-        catch (ex) {
-            // TODO: figure out how to intelligently handle when a property isn't yet available
-            return '';
-        }
     },
 
     postCreate: function () {
@@ -75,9 +74,9 @@ dojo.declare('cujo.mvc.DataBoundView', [View, Bindable, Derivable], {
 });
 
 var dataStates = cujo.mvc.DataBoundView.dataStates = {
-        unknown: 'cujoDataUnknown',
-        empty: 'cujoDataEmpty',
-        bound: 'cujoDataBound'
+        unknown: 'cujo-data-unknown',
+        empty: 'cujo-data-empty',
+        bound: 'cujo-data-bound'
     },
     dataStateMapper = function (dataItem) {
         return (
