@@ -56,6 +56,10 @@ define(
 
 			evenRowClass: 'cujo-gridrow-even',
 
+			firstColClass: 'cujo-gridcol-first',
+
+			lastColClass: 'cujo-gridcol-last',
+
 			headerRowTemplate: null,
 
 			bodyRowTemplate: null,
@@ -197,11 +201,13 @@ define(
 			_makeHeader: function () {
 				var html = this._makeRow(this.headerRowTemplate, this._makeHeaderTitles());
 				dom.attr(this.headerRowsContainer, 'innerHTML', html);
+				dom.addClass(this.headerScrollspace, this.lastColClass);
 			},
 
 			_makeFooter: function () {
 				var html = this._makeRow(this.footerRowTemplate, this._makeFooterTitles());
 				dom.attr(this.footerRowsContainer, 'innerHTML', html);
+				dom.addClass(this.footerScrollspace, this.lastColClass);
 			},
 
 			_makeBodyRow: function (dataItem, index) {
@@ -230,6 +236,7 @@ define(
 				if (this.dataSet) {
 					this._resultsLoaded(this.dataSet);
 				}
+				this._setScrollbarWidth();
 			},
 
 			_makeRow: function (template, rowData, rowNum) {
@@ -240,7 +247,7 @@ define(
 							rowNum: rowNum
 						};
 					rowData = lang.delegate(rowData, map);
-					template = strings.substitute(template, rowData, this._squelchTransform);
+					template = strings.substitute(template, rowData, this._squelchTransform, this);
 				}
 				return template;
 			},
@@ -253,10 +260,10 @@ define(
 						var def = this.colDefs[i],
 							cellTmpl = def[rowType + 'CellTemplate'] || colTmpl,
 							info = lang.delegate(def, {
-								colClassAttr: this._makeColClassAttr(def),
-								_value: '${' + def.name + (def.tranform ? ':' + def.tranform : '') + '}'
+								colClassAttr: this._makeColClassAttr(def, i, rowType),
+								_value: '${' + def.name + (def.transform && 'body' === rowType ? ':' + def.transform : '') + '}'
 							});
-						rowTmpl += strings.substitute(cellTmpl, info, this._passthruTransform);
+						rowTmpl += strings.substitute(cellTmpl, info, this._passthruTransform, this);
 					}
 				}
 				var map = {
@@ -266,8 +273,15 @@ define(
 				return strings.substitute(this._rowTemplate, map);
 			},
 
-			_makeColClassAttr: function (colDef, colNum) {
-				return colDef.colClass == undef ? '' : ' class="' + colDef.colClass + '"';
+			_makeColClassAttr: function (colDef, colNum, rowType) {
+				var colClass = colDef.colClass;
+				if (colNum === 0) {
+					colClass = (colClass || '') + ' ' + this.firstColClass;
+				}
+				if ('body' === rowType && colNum === this.colDefs.length - 1) {
+					colClass = (colClass || '') + ' ' + this.lastColClass;
+				}
+				return colClass == undef ? '' : ' class="' + colClass + '"';
 			},
 
 			// strings.substitute transforms
@@ -277,15 +291,39 @@ define(
 			_makeHeaderTitles: function () {
 				// returns an object that looks like a data object, but has column titles
 				var titles = {};
-				for (var p in this.colDefs) {
-					titles[p] = this.colDefs[p].title;
-				}
+				for (var p in this.colDefs) (function (def, p){
+					titles[def.name] = def.title;
+				}(this.colDefs[p], p));
 				return titles;
 			},
 
 			_makeFooterTitles: function () {
 				return this._makeHeaderTitles();
+			},
+
+			// TODO: remove this TEMP code when cssx/cssx is working
+			_setScrollbarWidth: (function () {
+				function getSbSize () {
+					var sbSize = {w: 15, h: 15}; // default
+					var testEl = dom.create('DIV', {style: 'width:100px;height:100px;overflow:scroll;bottom:100%;right:100%;position:absolute;visibility:hidden;'}, dojo.body(), 'last');
+					try {
+						sbSize = {
+							w: testEl.offsetWidth - Math.max(testEl.clientWidth, testEl.scrollWidth),
+							h: testEl.offsetHeight - Math.max(testEl.clientHeight, testEl.scrollHeight)
+						};
+						getSbSize = function () { return sbSize; }
+						dom.destroy(testEl);
 			}
+					catch (ex) {
+						// squelch
+					}
+					return sbSize;
+				}
+				return function () {
+					dom.query('.cujo-grid-scrollspace', this.domNode)
+						.style('width', getSbSize().w + 'px');
+				};
+			}())
 
 		});
 

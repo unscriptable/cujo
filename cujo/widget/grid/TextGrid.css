@@ -1,1 +1,11 @@
 @import url(Grid.css);
+
+.cujo-grid .cujo-header {
+	/* to match the height of the cells in the header TODO: use a constant in the Table.scss file */
+	height: 40px;
+}
+
+.cujo-grid .cujo-body {
+	/* to match the height of the cells in the header TODO: use a constant in the Table.scss file */
+	top: 40px;
+}

@@ -1,5 +1,5 @@
 .cujo-grid {
-
+	position: relative;
 }
 
 .cujo-grid-table {
@@ -16,16 +16,31 @@
 	width: 1%;
 }
 
+.cujo-grid .cujo-header,
+.cujo-grid .cujo-footer {
+	overflow: hidden;	
+}
+
 .cujo-grid .cujo-body {
 	/* cujo-headline-c overrides */
 	left: 0;
 	right: auto;
 	width: 100%;
 	overflow-y: scroll;
+	overflow-x: hidden;
 }
 
-.cujo-grid .cujo-header .cujo-grid-table,
-.cujo-grid .cujo-footer .cujo-grid-table {
+/* scrollbar compensation */
+
+.cujo-grid-scrollspace {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: -cujo-scroll-width;
+}
+
+.scroll-comp > .cujo-grid-scrollspace,
+.scroll-comp > .cujo-grid-table {
 	/* coordinates header and footer with scrollbar in body. TODO: rtl */
 	padding-right: -cujo-scroll-width;
 }
