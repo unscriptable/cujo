@@ -8,16 +8,14 @@
 */
 /*@import url(../../_UIBlocker.css);*/
 
-HTML {
+HTML.cujo-stretch,
+BODY.cujo-stretch {
     /* this is vital for IE6 to behave properly */
+	/* anything but visible will prevent infinite loops on css expressions */
     overflow: hidden;
     border: 0 none;
-}
-
-BODY {
-    /* this is vital for IE6 to behave properly */
-    overflow-y: scroll; /* anything but visible will prevent infinite loops on css expressions */
-    border: 0 none;
+	margin: 0;
+	padding: 0;
 }
 
 .cujo-hide {
