@@ -7,7 +7,7 @@
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 
 */
-define(['cujo', 'cujo._Derivable'], function(cujo, _Derivable) {
+define(['cujo', 'cujo/_Derivable'], function(cujo, _Derivable) {
 // local scope
 
 cujo.Derivable = function (/* Object */ object, /* Object */ derivedAttrDefs) {
