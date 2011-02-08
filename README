@@ -1,3 +1,49 @@
+cujo is being totally reworked for version 0.2.
+
+For easier adoption and increased flexibility, we have two new goals:
+
+1) break the most important cujo modules into separate micro-libraries
+2) remove dependencies on dojo
+
+cujo 0.2 micro-libraries
+
+We're pulling out the following modules in cujo and creating individual repositories for them. The cujo repo will consist mainly of git submodules that link to these repos, as well as some minor modules, some css files, and some html templates.
+
+curl.js - the CUjo Resource Loader (a CommonJS AMD-compliant async loader)
+https://github.com/unscriptable/curl
+
+If you're familiar with RequireJS or LABjs, you already know what an async loader is. Like RequireJS, curl.js is compliant with the proposed CommonJS standard Async Module Definition format. This means you have the freedom to choose from any AMD-compliant loader and can even mix-and-match loader plugins (such as a css plugin). curl has some bonus features that are available when used with other cujo micro-libraries.
+
+cssx.js - the Cujo Style Sheet eXtender
+https://github.com/unscriptable/
+
+Cssx.js is an AMD plugin that fixes css 2.1 deficiencies in IE6-7 as well as normalizing and/or augmenting current browsers to support standard css3 properties. Cssx comes with css.js, a simple css AMD plugin that can be used without cssx to just load css using an AMD loader. Both cssx.js and css.js are compatible with RequireJS (as well as any other AMD loader).
+
+cram - the Cujo Resource AsseMbler
+
+No async loader would be complete without an accompanying build tool. Cram is still in the design phase. When it is complete, it will allow you to define bundles of modules and resources (css, templates, etc.), concatenate them into files, and run them through a compression tool such as Google Closure Compiler.
+
+We're also working on some other micro-libraries to help simplify:
+
+* data binding and data modeling
+* MVC
+* application configuration & bootstrap
+
+None of these libraries will have direct dependencies on dojo or dijit. They will, of course, work great with dojo and dijit, and will feel a lot like dojo in some cases since dojo sets a good role model for us to follow. (Nobody does data models like dojo 1.6!)
+
+Just to be clear: we don't hate dojo. When we first embarked on cujo, it seemed clear that we needed to leverage an existing toolkit / framework to get started. dojo was the absolute best choice because of its completeness and maturity. But now that we've got the AMD version  of cujo running (see the amd branch), the following became clear:
+
+1) CommonJS is clearing the path to framework interoperability
+2) Lots of cujo's core principles can (and should) be applied to any framework
+
+Speaking of CommonJS, check out the Promises/A proposal (http://wiki.commonjs.org/wiki/Promises/A). We're using promises throughout cujo 0.2. Promises are vastly simplifying our code and improving the APIs! Why isn't everybody using promises?
+
+Check out the curent micro-libraries and follow unscriptable https://github.com/unscriptable and briancavalier https://github.com/briancavalier to keep up to date with cujo 0.2.
+
+------------------------------------------------------------
+
+Notes for cujo.js version 1:
+
 Head over to the wiki for an introduction before digging in.
 
 [[cujo.js wiki|http://github.com/unscriptable/cujo/wiki]]
