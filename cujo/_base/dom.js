@@ -94,12 +94,12 @@ function applyClassStateFromSet (node, state, set, value, custom, callback, cont
     if (custom == undefined)
         custom = true;
 
-    var obj = tos.call(set) != '[object Array]';
+    //var obj = tos.call(set) != '[object Array]';
     // var obj = cujo.typeOf(set) != 'Array';
 
     // ensure that all other states are applied the opposite of state
     for (var p in set) {
-        var itemState = (obj ? p : set[p]);
+        var itemState = set[p]; //(obj ? p : set[p]);
         if (itemState != state)
             dojo.toggleClass(node, stateToClass(itemState, custom), !value);
     }
