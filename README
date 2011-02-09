@@ -15,7 +15,7 @@ https://github.com/unscriptable/curl
 If you're familiar with RequireJS or LABjs, you already know what an async loader is. Like RequireJS, curl.js is compliant with the proposed CommonJS standard Async Module Definition format. This means you have the freedom to choose from any AMD-compliant loader and can even mix-and-match loader plugins (such as a css plugin). curl has some bonus features that are available when used with other cujo micro-libraries.
 
 cssx.js - the Cujo Style Sheet eXtender
-https://github.com/unscriptable/
+https://github.com/unscriptable/cssx
 
 Cssx.js is an AMD plugin that fixes css 2.1 deficiencies in IE6-7 as well as normalizing and/or augmenting current browsers to support standard css3 properties. Cssx comes with css.js, a simple css AMD plugin that can be used without cssx to just load css using an AMD loader. Both cssx.js and css.js are compatible with RequireJS (as well as any other AMD loader).
 
