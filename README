@@ -7,7 +7,7 @@ For easier adoption and increased flexibility, we have two new goals:
 
 cujo 0.2 micro-libraries
 
-We're pulling out the following modules in cujo and creating individual repositories for them. The cujo repo will consist mainly of git submodules that link to these repos, as well as some minor modules, some css files, and some html templates.
+We're pulling out the following modules in cujo and creating individual repositories for them. The cujo repo will consist mainly of git submodules that link to these repos, as well as some minor modules, some css files, and some html templates. The goal is to create a collection of modules that exemplify best practices and have been crafted to work well together.
 
 curl.js - the CUjo Resource Loader (a CommonJS AMD-compliant async loader)
 https://github.com/unscriptable/curl
