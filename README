@@ -3,7 +3,7 @@ cujo is being totally reworked for version 0.2.
 For easier adoption and increased flexibility, we have two new goals:
 
 1) break the most important cujo modules into separate micro-libraries
-2) remove dependencies on dojo
+2) remove dependencies on dojo 1.x*
 
 cujo 0.2 micro-libraries
 
@@ -29,12 +29,13 @@ We're also working on some other micro-libraries to help simplify:
 * MVC
 * application configuration & bootstrap
 
-None of these libraries will have direct dependencies on dojo or dijit. They will, of course, work great with dojo and dijit, and will feel a lot like dojo in some cases since dojo sets a good role model for us to follow. (Nobody does data models like dojo 1.6!)
+The plan is for none of these libraries to have direct dependencies on dojo or dijit. In some cases, we will have to create adapters or wrappers.  In other cases, we're just leveraging convenience functions in dojo. The libraries will, of course, work great with dojo and dijit, and will feel a lot like dojo in some cases since dojo sets a good role model for us to follow. (Nobody does data models like dojo 1.6!) 
 
-Just to be clear: we don't hate dojo. When we first embarked on cujo, it seemed clear that we needed to leverage an existing toolkit / framework to get started. dojo was the absolute best choice because of its completeness and maturity. But now that we've got the AMD version  of cujo running (see the amd branch), the following became clear:
+*Just to be clear: we don't hate dojo. When we first embarked on cujo, it seemed clear that we needed to leverage an existing toolkit / framework to get started. dojo was the absolute best choice because of its completeness and maturity. But now that we've got the AMD version  of cujo running (see the amd branch), the following became clear:
 
-1) CommonJS is clearing the path to framework interoperability
+1) dojo 2.0 is going to break some APIs
 2) Lots of cujo's core principles can (and should) be applied to any framework
+3) CommonJS is clearing the path to framework interoperability
 
 Speaking of CommonJS, check out the Promises/A proposal (http://wiki.commonjs.org/wiki/Promises/A). We're using promises throughout cujo 0.2. Promises are vastly simplifying our code and improving the APIs! Why isn't everybody using promises?
 
