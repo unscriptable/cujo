@@ -72,6 +72,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         // unsubscribe from any previous resultSet
         if (this.resultSet) {
             this._unwatchResultSet();
+	        this._removeAllItems();
         }
         // save result set and initialize
         this.resultSet = rs || null;
@@ -145,9 +146,18 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     _itemDeleted: function (item, index) {
         var removed = this.boundViews.splice(index, 1)[0];
         if (removed) {
+	        this.itemDeleted(removed);
             removed.destroyRecursive();
-            this.itemDeleted(removed);
         }
+    },
+
+	_removeAllItems: function () {
+		for (var i = 0; i < this.boundViews.length; i++) {
+			var removed = this.boundViews[i];
+            this.itemDeleted(removed);
+			removed.destroyRecursive();
+        }
+		this.boundViews = [];
     },
 
     _attachTemplateNodes: function (rootNode, getAttrFunc) {
