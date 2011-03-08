@@ -14,7 +14,7 @@ dojo.declare('cujo.mvc.View', [Widget, Templated], {
     //  widgetsInTemplate: Boolean
     //  summary: set this to true if there are widgets in this view's template. Otherwise
     //  it'll skip over these, but load faster, of course.
-    widgetsInTemplate: false,
+    widgetsInTemplate: true,
 
     //  stateChanged: Function
     //      Event hook to catch state changes. Subclasses can override this to take special

@@ -124,18 +124,16 @@ dojo.declare('cujo.mvc._Bindable', null, {
                 this._unbindDataItem(currDataItem);
             }
             // bind
-            if (item) {
                 this._bindDataItem(item);
                 this.dataItem = item;
             }
-        }
     },
 
     _bindDataItem: function (dataItem) {
         // update dom
         cujo.forIn(dataItem, this._bindDataProp, this);
         // watch for all property changes
-        if (dataItem.watch) {
+        if (dataItem && dataItem.watch) {
             this._dataItemWatchHandle = dataItem.watch('*', dojo.hitch(this, '_dataPropUpdated')) || dataItem;
         }
     },

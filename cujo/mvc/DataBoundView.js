@@ -63,8 +63,9 @@ dojo.declare('cujo.mvc.DataBoundView', [View, Bindable, Derivable], {
 
     _setDataItemAttr: function (item) {
         //  summary: overrides cujo.mvc._Bindable's _setDataItem to toggle state
+        var result = this.inherited(arguments);
         this._refreshDataState();
-        return this.inherited(arguments);
+	    return result;
     },
 
     _refreshDataState: function () {

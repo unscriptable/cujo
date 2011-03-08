@@ -12,10 +12,22 @@
         cujoListBound - the view is bound to a result set that is not empty
 
 */
-define(['dojo', 'cujo/mvc/View', 'cujo/mvc/_BindableContainer'], function(dojo, View, BindableContainer) {
-// local scope
+define(
+	[
+		'dojo',
+		'cujo/mvc/View',
+		'cujo/mvc/binder',
+		'cujo/mvc/DataBoundView',
+		'cujo/mvc/_BindableContainer'
+	],
+	function(dojo, View, binder, DataBoundView, BindableContainer) {
 
 dojo.declare('cujo.mvc.DataListView', [View, BindableContainer], {
+
+			// itemAttributeMap: specifies the data bindings for the bound items
+			// if they don't have a dojotype. If they do have a dojotype, they
+			// are assumed to be descendants of DataBoundView.
+			itemAttributeMap: null,
 
     postCreate: function () {
         this._refreshDataState();
@@ -31,7 +43,29 @@ dojo.declare('cujo.mvc.DataListView', [View, BindableContainer], {
 
     _refreshDataState: function () {
         this.state({state: dataStateMapper(this.resultSet), set: dataStates});
+			},
+
+			_createBoundClass: function (templateNode) {
+				var ctor = this.inherited(arguments);
+				if (!ctor) {
+					var html = this._getOuterHTML(templateNode),
+						prototype = { templateString: html };
+					if (this.itemAttributeMap) {
+						prototype.attributeMap = this.itemAttributeMap;
     }
+					ctor = dojo.declare(DataBoundView, prototype);
+				}
+				return ctor;
+			},
+
+			_getOuterHTML: function (node) {
+				// TODO: put this in a common module
+				return node.outerHTML || (function (clone) {
+					var parent = clone.ownerDocument.createElement('div');
+					parent.appendChild(clone);
+					return parent.innerHTML;
+				}(node.cloneNode(true)));
+			}
 
 });
 
@@ -52,4 +86,6 @@ var dataStates = cujo.mvc.DataListView.dataStates = {
 
 return cujo.mvc.DataListView;
 
-}); // end of local scope
+	}
+
+); // end of local scope
