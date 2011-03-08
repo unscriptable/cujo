@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html class="cujo-stretch">
+<head>
+
+<title>Navihint Test Harness</title>
+
+<script type="text/javascript">
+
+	(function (global) {
+
+		var
+			baseUrl = '../../../../',
+			paths = {
+				'dojo': 'dojo',
+				'dijit': 'dijit',
+				'cujo': 'cujo',
+				'require': 'require',
+				'li': 'li',
+				cssx: 'require'
+			};
+
+		global.djConfig = {
+			baseUrl: baseUrl,
+			modulePaths: paths
+		};
+
+		global.require = {
+			baseUrl: baseUrl,
+			paths: paths
+		};
+
+	})(window);
+
+</script>
+
+<!-- needed for unit tests -->
+<script src="../../../../util/doh/runner.js"></script>
+
+<script src="../../../../require.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+		require(
+			[
+				'dojo/parser',
+				'cujo/widget/navihint/Navihint'
+			],
+			function (parser) {
+				require.ready(function () {
+
+					parser.parse();
+					
+				});
+
+			}
+		);
+
+
+</script>
+
+<link href="../../../../dijit/themes/dijit.css" rel="stylesheet" type="text/css"/>
+<link href="../../../../cujo/common/headline-c.css" rel="stylesheet" type="text/css"/>
+<style>
+	/*.naviglide-top { display:none; }*/
+</style>
+</head>
+<body class="cujo-stretch">
+
+	<!-- the root template node -->
+	<section class="cujo-root cujo-stretch cujo-headline-c">
+
+		<!-- optional header section -->
+		<header class="cujo-block cujo-header li-header">
+		</header>
+
+		<section class="cujo-main li-main-area cujo-body">
+
+			<!-- put your html here -->
+			<div id="test" dojotype="cujo.widget.Navihint" anchorQuery=">h1,>h2,>h3,>h4,>h5,>h6">
+				<h2 abbr="one">title one</h2>
+				<div>
+					<p>Thunder, thunder, thundercats, Ho! Thundercats are on the move, Thundercats are loose. Feel the magic, hear the roar, Thundercats are loose. Thunder, thunder, thunder, Thundercats! Thunder, thunder, thunder, Thundercats! Thunder, thunder, thunder, Thundercats! Thunder, thunder, thunder, Thundercats! Thundercats!</p>
+					<p>Children of the sun, see your time has just begun, searching for your ways, through adventures every day. Every day and night, with the condor in flight, with all your friends in tow, you search for the Cities of Gold. Ah-ah-ah-ah-ah... wishing for The Cities of Gold. Ah-ah-ah-ah-ah... some day we will find The Cities of Gold. Do-do-do-do ah-ah-ah, do-do-do-do, Cities of Gold. Do-do-do-do, Cities of Gold. Ah-ah-ah-ah-ah... some day we will find The Cities of Gold.</p>
+					<p>There's a voice that keeps on calling me. Down the road, that's where I'll always be. Every stop I make, I make a new friend. Can't stay for long, just turn around and I'm gone again. Maybe tomorrow, I'll want to settle down, Until tomorrow, I'll just keep moving on.</p>
+				</div>
+				<h2 abbr="two">title two</h2>
+				<div>
+					<p>Mutley, you snickering, floppy eared hound. When courage is needed, you're never around. Those medals you wear on your moth-eaten chest should be there for bungling at which you are best. So, stop that pigeon, stop that pigeon, stop that pigeon, stop that pigeon, stop that pigeon, stop that pigeon, stop that pigeon. Howwww! Nab him, jab him, tab him, grab him, stop that pigeon now.</p>
+					<p>Ulysses, Ulysses - Soaring through all the galaxies. In search of Earth, flying in to the night. Ulysses, Ulysses - Fighting evil and tyranny, with all his power, and with all of his might. Ulysses - no-one else can do the things you do. Ulysses - like a bolt of thunder from the blue. Ulysses - always fighting all the evil forces bringing peace and justice to all.</p>
+					<p>Ten years ago a crack commando unit was sent to prison by a military court for a crime they didn't commit. These men promptly escaped from a maximum security stockade to the Los Angeles underground. Today, still wanted by the government, they survive as soldiers of fortune. If you have a problem and no one else can help, and if you can find them, maybe you can hire the A-team.</p>
+					<p>Hey there where ya goin', not exactly knowin', who says you have to call just one place home. He's goin' everywhere, B.J. McKay and his best friend Bear. He just keeps on movin', ladies keep improvin', every day is better than the last. New dreams and better scenes, and best of all I don't pay property tax. Rollin' down to Dallas, who's providin' my palace, off to New Orleans or who knows where. Places new and ladies, too, I'm B.J. McKay and this is my best friend Bear.</p>
+					<p>There's a voice that keeps on calling me. Down the road, that's where I'll always be. Every stop I make, I make a new friend. Can't stay for long, just turn around and I'm gone again. Maybe tomorrow, I'll want to settle down, Until tomorrow, I'll just keep moving on.</p>
+				</div>
+				<h2 abbr="three">title three</h2>
+				<div>
+					<p>Hey there where ya goin', not exactly knowin', who says you have to call just one place home. He's goin' everywhere, B.J. McKay and his best friend Bear. He just keeps on movin', ladies keep improvin', every day is better than the last. New dreams and better scenes, and best of all I don't pay property tax. Rollin' down to Dallas, who's providin' my palace, off to New Orleans or who knows where. Places new and ladies, too, I'm B.J. McKay and this is my best friend Bear.</p>
+					<p>There's a voice that keeps on calling me. Down the road, that's where I'll always be. Every stop I make, I make a new friend. Can't stay for long, just turn around and I'm gone again. Maybe tomorrow, I'll want to settle down, Until tomorrow, I'll just keep moving on.</p>
+					<p>Thunder, thunder, thundercats, Ho! Thundercats are on the move, Thundercats are loose. Feel the magic, hear the roar, Thundercats are loose. Thunder, thunder, thunder, Thundercats! Thunder, thunder, thunder, Thundercats! Thunder, thunder, thunder, Thundercats! Thunder, thunder, thunder, Thundercats! Thundercats!</p>
+					<p>Mutley, you snickering, floppy eared hound. When courage is needed, you're never around. Those medals you wear on your moth-eaten chest should be there for bungling at which you are best. So, stop that pigeon, stop that pigeon, stop that pigeon, stop that pigeon, stop that pigeon, stop that pigeon, stop that pigeon. Howwww! Nab him, jab him, tab him, grab him, stop that pigeon now.</p>
+					<p>Ulysses, Ulysses - Soaring through all the galaxies. In search of Earth, flying in to the night. Ulysses, Ulysses - Fighting evil and tyranny, with all his power, and with all of his might. Ulysses - no-one else can do the things you do. Ulysses - like a bolt of thunder from the blue. Ulysses - always fighting all the evil forces bringing peace and justice to all.</p>
+					<p>Ten years ago a crack commando unit was sent to prison by a military court for a crime they didn't commit. These men promptly escaped from a maximum security stockade to the Los Angeles underground. Today, still wanted by the government, they survive as soldiers of fortune. If you have a problem and no one else can help, and if you can find them, maybe you can hire the A-team.</p>
+					<p>Children of the sun, see your time has just begun, searching for your ways, through adventures every day. Every day and night, with the condor in flight, with all your friends in tow, you search for the Cities of Gold. Ah-ah-ah-ah-ah... wishing for The Cities of Gold. Ah-ah-ah-ah-ah... some day we will find The Cities of Gold. Do-do-do-do ah-ah-ah, do-do-do-do, Cities of Gold. Do-do-do-do, Cities of Gold. Ah-ah-ah-ah-ah... some day we will find The Cities of Gold.</p>
+					<p>There's a voice that keeps on calling me. Down the road, that's where I'll always be. Every stop I make, I make a new friend. Can't stay for long, just turn around and I'm gone again. Maybe tomorrow, I'll want to settle down, Until tomorrow, I'll just keep moving on.</p>
+				</div>
+			</div>
+
+		</section>
+
+		<!-- optional footer section -->
+		<footer class="cujo-block cujo-footer">
+		</footer>
+
+	</section>
+
+</body>
+</html>
