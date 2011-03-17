@@ -39,8 +39,8 @@
 	width: -cujo-scroll-width;
 }
 
-.scroll-comp > .cujo-grid-scrollspace,
-.scroll-comp > .cujo-grid-table {
+.cujo-header > .cujo-grid-table,
+.cujo-footer > .cujo-grid-table {
 	/* coordinates header and footer with scrollbar in body. TODO: rtl */
 	padding-right: -cujo-scroll-width;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Life Image, Inc. All rights reserved.
+ * Copyright (c) 2010, unscriptable.com.
  *
  * TextGrid widget.  The simplest of grids.
  *
@@ -14,16 +14,16 @@ define(
 		'dijit/_Widget',
 		'dijit/_Templated',
 		'dojo/string',
-		'dojo', // for dojo's language functions
-		'dojo', // for dojo's dom functions
-		'dojo' // for dojo's array functions
+		'dojo'
 	],
 
-	function (template, styleSheet, Widget, Templated, strings, lang, dom, array) {
+	function (template, styleSheet, Widget, Templated, strings, dojo) {
+
+		var lang = dojo, dom = dojo, array = dojo;
 
 		var undef;
 
-		return lang.declare('li.widget.grid.TextGrid', [Widget, Templated], {
+		return lang.declare('cujo.widget.grid.TextGrid', [Widget, Templated], {
 
 			/**
 			 * colDefs is an array of objects whose properties have the following:
@@ -40,7 +40,7 @@ define(
 			/**
 			 * An array of objects or the resultSet returned from a dojo.store query.
 			 */
-			dataSet: null,
+			resultSet: null,
 
 			headerCellTemplate: '<th${colClassAttr}>${_value}</th>',
 
@@ -68,53 +68,62 @@ define(
 
 			hasFooter: false,
 
+			// onRowClick: function (tr, dataItem, e)
+			//      onRowClick is called whenever a user clicks within a row.
+			//      tr: the DOMNode of the row clicked within
+			//      dataItem: if this grid is data-bound, the object this row
+			//          is bound to.
+			//      e: the original event, which has the element actually
+			//          clicked in e.target
+			onRowClick: function (row, dataItem, e) {},
+
 			templateString: template,
 
 			_isReady: false,
 
 			_rowTemplate: '<tr class="${rowClass}">${cells}</tr>',
 
-			_setDataSetAttr: function (data) {
+			_setResultSetAttr: function (data) {
 				// unsubscribe from any previous resultSet
-				if (this.dataSet) {
-				    this._unwatchDataSet();
+				if (this.resultSet) {
+				    this._unwatchResultSet();
 					this._removeAllRows();
 				}
 				// save result set and initialize
-				this.dataSet = data || null;
-				this._initDataSet();
+				this.resultSet = data || null;
+				this._initResultSet();
 			},
 
-			_getDataSetAttr: function () {
-				return this.dataSet;
+			_getResultSetAttr: function () {
+				return this.resultSet;
 			},
 
-			_initDataSet: function () {
+			_initResultSet: function () {
 				// subscribe to onAdd, onUpdate, and onRemove
-				if (this.dataSet) {
+				if (this.resultSet) {
 					// TODO: cujo.Promise.when as a common.Promise.when
-				    lang.when(this.dataSet, lang.hitch(this, '_resultsLoaded'), lang.hitch(this, '_resultsError'), lang.hitch(this, '_itemAdded'));
-				    this._watchDataSet();
+				    lang.when(this.resultSet, lang.hitch(this, '_resultsLoaded'), lang.hitch(this, '_resultsError'), lang.hitch(this, '_itemAdded'));
+				    this._watchResultSet();
 				}
 			},
 
-			_watchDataSet: function () {
-				var data = this.dataSet;
+			_watchResultSet: function () {
+				var data = this.resultSet;
 				if (data && data.observe) {
-				    var dismiss = data.observe(lang.hitch(this, '_handleDataSetEvent')).dismiss,
-				        handle = this.connect(this, '_unwatchDataSet', function () {
+				    var dismiss = data.observe(lang.hitch(this, '_handleResultSetEvent')).dismiss,
+				        handle = this.connect(this, '_unwatchResultSet', function () {
 				            if (dismiss) dismiss();
 				            this.disconnect(handle);
 				        });
 				}
 			},
 
-			_unwatchDataSet: function () {
+			_unwatchResultSet: function () {
 				//  summary: this gets called when the result set is unwatched but unwatching
-				//      happens in a callback within _watchDataSet
+				//      happens in a callback within _watchResultSet
 			},
 
-			_handleDataSetEvent: function (item, oldIndex, newIndex) {
+			_handleResultSetEvent: function (item, oldIndex, newIndex) {
 				// summary: fires when an item in result set changes
 				// TODO: debounce these to catch moves instead of deleting/recreating
 				//      - create a new debounced method to do the adds/deletes/moves and make
@@ -154,10 +163,7 @@ define(
 
 			_itemDeleted: function (item, index) {
 				if (this._isReady) {
-					var row = this.bodyRowsContainer.rows[index];
-					if (row) {
-						dom.destroy(row);
-					}
+					this._destroyBodyRow(index);
 				}
 			},
 
@@ -176,9 +182,9 @@ define(
 				if (this.hasFooter) {
 					this._makeFooter();
 				}
-				if (this._isReady && this.dataSet) {
+				if (this._isReady && this.resultSet) {
 					this._removeAllRows();
-					this._resultsLoaded(this.dataSet);
+					this._resultsLoaded(this.resultSet);
 				}
 			},
 
@@ -212,11 +218,25 @@ define(
 
 			_makeBodyRow: function (dataItem, index) {
 				var pos = index === undef ? this.bodyRowsContainer.rows.length : index,
-					html = this._makeRow(this.bodyRowTemplate, dataItem, pos);
-				dom.place(html, this.bodyRowsContainer, index == undef ? 'last' : index);
+					html = this._makeRow(this.bodyRowTemplate, dataItem, pos),
+					node = dom.place(html, this.bodyRowsContainer, index == undef ? 'last' : index),
+					dataIndex = this._dataIndex = (this._dataIndex || -1) + 1;
+				node.setAttribute('data-cujo-dataindex', dataIndex);
+				this._dataIndexes[dataIndex] = dataItem;
+				return node;
+			},
+
+			_destroyBodyRow: function (index) {
+				var row = this.bodyRowsContainer.rows[index];
+				if (row) {
+					var dataIndex = row.getAttribute('data-cujo-dataindex');
+					delete this._dataIndexes[dataIndex];
+					dom.destroy(row);
+				}
 			},
 
 			postMixInProperties: function () {
+				this._dataIndexes = {};
 				this.inherited('postMixInProperties', arguments);
 				this._hasCustomHeader = !!this.headerRowTemplate;
 				this._hasCustomFooter = !!this.footerRowTemplate;
@@ -233,10 +253,11 @@ define(
 					dom.addClass(this.domNode, 'cujo-grid-nofooter');
 				}
 				this._isReady = true;
-				if (this.dataSet) {
-					this._resultsLoaded(this.dataSet);
+				if (this.resultSet) {
+					this._resultsLoaded(this.resultSet);
 				}
 				this._setScrollbarWidth();
+				this.connect(this.bodyRowsContainer, 'click', '_handleRowClick')
 			},
 
 			_makeRow: function (template, rowData, rowNum) {
@@ -301,6 +322,24 @@ define(
 				return this._makeHeaderTitles();
 			},
 
+			_handleRowClick: function (e) {
+				var node = e.target, row;
+				// find row node
+				do {
+					if (node.tagName == 'TR') {
+						row = node;
+					}
+					node = node == this.domNode ? null : node.parentNode;
+				}
+				while (node && !row);
+				// if this really was a click within a row, continue
+				if (row) {
+					// find the data associated with this row (if any, could be undefined)
+					var dataIndex = row.getAttribute('data-cujo-dataindex');
+					this.onRowClick(row, this._dataIndexes[dataIndex], e);
+				}
+			},
+
 			// TODO: remove this TEMP code when cssx/cssx is working
 			_setScrollbarWidth: (function () {
 				function getSbSize () {
@@ -311,9 +350,9 @@ define(
 							w: testEl.offsetWidth - Math.max(testEl.clientWidth, testEl.scrollWidth),
 							h: testEl.offsetHeight - Math.max(testEl.clientHeight, testEl.scrollHeight)
 						};
-						getSbSize = function () { return sbSize; }
+						getSbSize = function () { return sbSize; };
 						dom.destroy(testEl);
-			}
+					}
 					catch (ex) {
 						// squelch
 					}
@@ -322,6 +361,8 @@ define(
 				return function () {
 					dom.query('.cujo-grid-scrollspace', this.domNode)
 						.style('width', getSbSize().w + 'px');
+					dom.query('.cujo-header > .cujo-grid-table, .cujo-footer > .cujo-grid-table', this.domNode)
+						.style('paddingRight', getSbSize().w + 'px');
 				};
 			}())
 
