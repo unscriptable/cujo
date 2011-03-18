@@ -77,6 +77,11 @@ define(
 			//          clicked in e.target
 			onRowClick: function (row, dataItem, e) {},
 
+			// hooks to catch item modifications
+			itemAdded: function (item, index, row) {},
+			itemUpdated: function (item, index, row) {},
+			itemDeleted: function (item, index, row) {},
+
 			templateString: template,
 
 			_isReady: false,
@@ -130,7 +135,7 @@ define(
 				//        this method accrue add/del operations.
 				//      - or will transaction() handle this better than debounce?
 				if (oldIndex == newIndex) {
-					this.itemUpdated(item);
+					this._itemUpdated(item, newIndex);
 				}
 				else if (newIndex >= -1) {
 					this._itemAdded(item, newIndex);
@@ -154,13 +159,22 @@ define(
 
 			_itemAdded: function (item, index) {
 				if (this._isReady) {
-					this._makeBodyRow(item, index);
+					var node = this._makeBodyRow(item, index);
+					this.itemAdded(item , index, node);
 				}
 			},
 
 			_itemDeleted: function (item, index) {
 				if (this._isReady) {
-					this._destroyBodyRow(index);
+					var node = this._destroyBodyRow(index);
+					this.itemDeleted(item , index, node);
+				}
+			},
+
+			_itemUpdated: function (item, index) {
+				if (this._isReady) {
+					var node = this.bodyRowsContainer.rows[index];
+					this.itemUpdated(item , index, node);
 				}
 			},
 
@@ -234,6 +248,7 @@ define(
 					delete this._dataIndexes[dataIndex];
 					dom.destroy(row);
 				}
+				return row;
 			},
 
 			postMixInProperties: function () {
@@ -293,11 +308,11 @@ define(
 							grid: this,
 							col: lang.delegate(def, { classes: classes }),
 							value: '${' + def.name + (def.transform && 'body' === rowType ? ':' + def.transform : '') + '}'
-						}
+                        };
 
 						cellTmpl = def[rowType + 'CellTemplate'] || colTmpl;
 						cells += strings.substitute(cellTmpl, info, this._passthruTransform, this);
-					}
+                    }
 				}
 
 				var map = {
@@ -307,7 +322,7 @@ define(
 				return strings.substitute(this._rowTemplate, map);
 			},
 
-			_makeColClassAttr: function(colDef, colNum, rowType) {
+			_makeColClassAttr: function (colDef, colNum, rowType) {
 				// Concatenate the colDef classes with generated aux classes.
 
 				var auxClasses = this._makeColAuxClasses(colDef, colNum, rowType);
