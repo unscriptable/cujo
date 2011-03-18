@@ -29,7 +29,7 @@ define(
 			 * colDefs is an array of objects whose properties have the following:
 			 * name - the column name/id
 			 * title - the display name
-			 * colClass - a custom class name for the cells, 'gridrow' and 'gridrow-even' (or odd) are also added
+			 * classes - a custom class name for the cells, 'gridrow' and 'gridrow-even' (or odd) are also added
 			 * bodyCellTemplate - optional template of the entire body cell
 			 * headerCellTemplate - optional template of the entire header cell
 			 * footerCellTemplate - optional template of the entire footer cell
@@ -42,11 +42,11 @@ define(
 			 */
 			resultSet: null,
 
-			headerCellTemplate: '<th${colClassAttr}>${_value}</th>',
+			headerCellTemplate: '<th class="${col.classes}">${value}</th>',
 
-			bodyCellTemplate: '<td${colClassAttr}>${_value}</td>',
+			bodyCellTemplate: '<td class="${col.classes}">${value}</td>',
 
-			footerCellTemplate: '<td${colClassAttr}>${_value}</td>',
+			footerCellTemplate: '<td class="${col.classes}">${value}</td>',
 
 			gridClass: 'cujo-textgrid',
 
@@ -70,7 +70,7 @@ define(
 
 			// onRowClick: function (tr, dataItem, e)
 			//      onRowClick is called whenever a user clicks within a row.
-			//      tr: the DOMNode of the row clicked within
+			//      row: the DOMNode of the row clicked within
 			//      dataItem: if this grid is data-bound, the object this row
 			//          is bound to.
 			//      e: the original event, which has the element actually
@@ -129,17 +129,14 @@ define(
 				//      - create a new debounced method to do the adds/deletes/moves and make
 				//        this method accrue add/del operations.
 				//      - or will transaction() handle this better than debounce?
-				if (oldIndex == -1 || newIndex == -1) {
-				    // TODO: ok, what to do if the dev hasn't defined a queryExecutor?
+				if (oldIndex == newIndex) {
+					this.itemUpdated(item);
 				}
-				else if (oldIndex == newIndex) {
-				    // item didn't move. don't do anything
-				}
-				else if (newIndex >= 0) {
-				    this._itemAdded(item, newIndex);
+				else if (newIndex >= -1) {
+					this._itemAdded(item, newIndex);
 				}
 				else {
-				    this._itemDeleted(item, oldIndex);
+					this._itemDeleted(item, oldIndex);
 				}
 			},
 
@@ -217,12 +214,16 @@ define(
 			},
 
 			_makeBodyRow: function (dataItem, index) {
-				var pos = index === undef ? this.bodyRowsContainer.rows.length : index,
-					html = this._makeRow(this.bodyRowTemplate, dataItem, pos),
-					node = dom.place(html, this.bodyRowsContainer, index == undef ? 'last' : index),
-					dataIndex = this._dataIndex = (this._dataIndex || -1) + 1;
+				var pos, html, node, dataIndex;
+
+				pos = index === undef ? this.bodyRowsContainer.rows.length : index;
+				html = this._makeRow(this.bodyRowTemplate, dataItem, pos);
+				node = dom.place(html, this.bodyRowsContainer, index == undef ? 'last' : index);
+				dataIndex = this._dataIndex = (this._dataIndex >= 0 ? this._dataIndex + 1 : 0);
+
 				node.setAttribute('data-cujo-dataindex', dataIndex);
 				this._dataIndexes[dataIndex] = dataItem;
+
 				return node;
 			},
 
@@ -274,35 +275,61 @@ define(
 			},
 
 			_makeTemplate: function (rowType) {
-				var colTmpl = this[rowType + 'CellTemplate'] || '',
-					rowTmpl = '';
+				var colTmpl, cells;
+				
+				colTmpl = this[rowType + 'CellTemplate'] || '';
+				cells = '';
+
 				if (this.colDefs) {
+
 					for (var i = 0, len = this.colDefs.length; i < len; i++) {
-						var def = this.colDefs[i],
-							cellTmpl = def[rowType + 'CellTemplate'] || colTmpl,
-							info = lang.delegate(def, {
-								colClassAttr: this._makeColClassAttr(def, i, rowType),
-								_value: '${' + def.name + (def.transform && 'body' === rowType ? ':' + def.transform : '') + '}'
-							});
-						rowTmpl += strings.substitute(cellTmpl, info, this._passthruTransform, this);
+						var def, cellTmpl, info, classes;
+
+						def = this.colDefs[i];
+						classes = this._makeColClassAttr(def, i, rowType);
+
+						// Info is the template map, passed to strings.substitute below
+						info = {
+							grid: this,
+							col: lang.delegate(def, { classes: classes }),
+							value: '${' + def.name + (def.transform && 'body' === rowType ? ':' + def.transform : '') + '}'
+						}
+
+						cellTmpl = def[rowType + 'CellTemplate'] || colTmpl;
+						cells += strings.substitute(cellTmpl, info, this._passthruTransform, this);
 					}
 				}
+
 				var map = {
 						rowClass: this.rowClass + '${rowAuxClasses}',
-						cells: rowTmpl
+						cells: cells
 					};
 				return strings.substitute(this._rowTemplate, map);
 			},
 
-			_makeColClassAttr: function (colDef, colNum, rowType) {
-				var colClass = colDef.colClass;
+			_makeColClassAttr: function(colDef, colNum, rowType) {
+				// Concatenate the colDef classes with generated aux classes.
+
+				var auxClasses = this._makeColAuxClasses(colDef, colNum, rowType);
+				return colDef.classes
+					? (colDef.classes + ' ' + auxClasses)
+					: auxClasses;
+			},
+
+			_makeColAuxClasses: function (colDef, colNum, rowType) {
+				// Generate aux classes for first and last columns
+
+				var colClass;
+				
 				if (colNum === 0) {
-					colClass = (colClass || '') + ' ' + this.firstColClass;
+					colClass = this.firstColClass;
 				}
+
 				if ('body' === rowType && colNum === this.colDefs.length - 1) {
-					colClass = (colClass || '') + ' ' + this.lastColClass;
+					colClass = colClass ? (colClass + ' ' + this.lastColClass) : this.lastColClass;
 				}
-				return colClass == undef ? '' : ' class="' + colClass + '"';
+
+				return colClass || '';
 			},
 
 			// strings.substitute transforms
