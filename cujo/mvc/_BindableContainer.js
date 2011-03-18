@@ -42,9 +42,9 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     boundViews: null,
 
     // hooks to catch item modifications
-    itemAdded: function (item, index) {},
-    itemUpdated: function (item) {},
-    itemDeleted: function (item, index) {},
+    itemAdded: function (item, index, view) {},
+    itemUpdated: function (item, index, view) {},
+    itemDeleted: function (item, index, view) {},
 
     constructor: function () {
         // create list of items
@@ -111,7 +111,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         //        this method accrue add/del operations.
         //      - or will transaction() handle this better than debounce?
         if (oldIndex == newIndex) {
-            this.itemUpdated(item);
+            this._itemUpdated(item);
         }
         else if (newIndex >= -1) {
             this._itemAdded(item, newIndex);
@@ -136,26 +136,31 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
             pos = index >= 0 ? index : views.length,
             widget = this._createBoundItem(item, pos);
         views.splice(pos, 0, widget);
-        this.itemAdded(widget);
+        this.itemAdded(item, index, widget);
         return widget;
     },
 
     _itemDeleted: function (item, index) {
         var removed = this.boundViews.splice(index, 1)[0];
         if (removed) {
-	        this.itemDeleted(removed);
-            removed.destroyRecursive();
+	        this.itemDeleted(item, index, removed);
+	        removed.destroyRecursive();
         }
     },
+
+	_itemUpdated: function (item, index) {
+		var view = this.boundViews[index];
+		this.itemUpdated(item, index, view);
+	},
 
 	_removeAllItems: function () {
 		for (var i = this.boundViews.length - 1; i >= 0; i--) {
 			var removed = this.boundViews[i];
 			this._itemDeleted(removed);
 			removed.destroyRecursive();
-        }
+		}
 		this.boundViews = [];
-    },
+	},
 
     _attachTemplateNodes: function (rootNode, getAttrFunc) {
         // snatch template out of html before it's constructed as a widget
