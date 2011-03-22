@@ -198,7 +198,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
             view = this._createBoundView(item, pos);
 	    this._associateViewAndDataItem(view, item);
         views.splice(pos, 0, view);
-        this.itemAdded(item, index, view);
+        this.itemAdded(item, pos, view);
         return view;
     },
 
@@ -222,6 +222,8 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 			var dataItem = this._getDataItemForView(removed);
 			this._itemDeleted(dataItem, i);
 		}
+		// dojo.destroy() fails if the dom node wasn't yet added to the document
+		this.containerNode.innerHTML = '';
 		this.boundViews = [];
 	},
 
@@ -270,8 +272,11 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 		model = new Derivable(new Stateful(dataItem), this.itemAttributeMap);
 		// mixin all dojoattachpoints
 		model.set('domNode', node);
-		dom.query('[dojoattachpoint]', node).forEach(function (node) {
-			model.set(node.getAttribute('dojoattachpoint'), node);
+		dom.query('[dojoattachpoint]', node).concat(node).forEach(function (node) {
+			// there could be more than one attachpoint in 
+			lang.forEach(node.getAttribute('dojoattachpoint').split(','), function (name) {
+				model.set(name.replace(/^\s|\s$/, ''), node);
+			});
 		});
 		// plug in values defined by itemAttributeMap
 		// this logic translated from dijit._Widget
@@ -286,7 +291,10 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 				value = model.get(attr);
 				// set the appropriate attribute of the node
 				type = command.type || 'attribute';
-				if (type == 'innerText') {
+				if (!mapNode) {
+					throw new Error(['Can not find node for binding:', command.node, type].join(' '));
+				}
+				else if (type == 'innerText') {
 					mapNode.innerHTML = '';
 					mapNode.appendChild(dom.doc.createTextNode(value));
 				}
