@@ -35,7 +35,7 @@ cujo.Derivable = function (/* Object */ object, /* Object */ derivedAttrDefs) {
         origSet = object.set;
 
     object.set = function (/* String */ attr, /* Any */ value) {
-        cdp._setAndCheckDerivables(attr, value, origSet, deriverSources, this);
+        cdp._setAndCheckDerivables(attr, value, origSet, deriverSources, this, cdp);
         return this;
     };
 
@@ -44,7 +44,9 @@ cujo.Derivable = function (/* Object */ object, /* Object */ derivedAttrDefs) {
         object._getDerivedValue = cdp._getDerivedValue;
     }
 
-    cdp._initDerivables(derivedAttrDefs, deriverSources, object);
+    cdp._initDerivables(derivedAttrDefs, deriverSources, object, cdp);
+
+	cdp._checkAllDerivables(deriverSources, object, cdp);
 
     return object;
 

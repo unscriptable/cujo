@@ -67,16 +67,16 @@ dojo.declare('cujo._Derivable', null, {
     constructor: function () {
         this._deriverSources = {};
         this._derivablesPending = true;
-        this._initDerivables(this.attributeMap, this._deriverSources, this);
+        this._initDerivables(this.attributeMap, this._deriverSources, this, this);
     },
 
     postscript: function () {
         this.inherited(arguments);
         // check if we need to initialize
         if (this._derivablesPending) {
-            this._checkAllDerivables(this._deriverSources, this);
+            this._checkAllDerivables(this._deriverSources, this, this);
         }
-//        if (this._derivablesPending) this._initDerivables(this.attributeMap, this._deriverSources, this);
+//        if (this._derivablesPending) this._initDerivables(this.attributeMap, this._deriverSources, this, this);
         delete this._derivablesPending;
     },
 
@@ -84,9 +84,9 @@ dojo.declare('cujo._Derivable', null, {
         this.inherited(arguments);
         // check if we need to initialize
         if (this._derivablesPending) {
-            this._checkAllDerivables(this._deriverSources, this);
+            this._checkAllDerivables(this._deriverSources, this, this);
         }
-//        if (this._derivablesPending) this._initDerivables(this.attributeMap, this._deriverSources, this);
+//        if (this._derivablesPending) this._initDerivables(this.attributeMap, this._deriverSources, this, this);
         delete this._derivablesPending;
     },
 
@@ -94,7 +94,7 @@ dojo.declare('cujo._Derivable', null, {
 
         var inherited = this.getInherited('set', arguments);
 
-        this._setAndCheckDerivables(attr, value, inherited, this._deriverSources[attr], this);
+        this._setAndCheckDerivables(attr, value, inherited, this._deriverSources[attr], this, this);
 
         return this;
 
@@ -102,7 +102,7 @@ dojo.declare('cujo._Derivable', null, {
 
     /* the following methods are context-free so they can be reused in the Derivable decorator version */
 
-    _initDerivables: function (map, allSources, context) {
+    _initDerivables: function (map, allSources, stateful, context) {
 
         function addSource (name, link) {
             allSources[name] = allSources[name] || [];
@@ -131,44 +131,44 @@ dojo.declare('cujo._Derivable', null, {
                     //context.set(name, context._getDerivedValue(name, command));
                 }
                 // process attributeMap pass-throughs
-                if (!command || command.node && context.attributeMap) {
-                    context.attributeMap[name] = command;
+                if (!command || command.node && map) {
+                    map[name] = command;
                 }
             });
         });
 
     },
 
-    _setAndCheckDerivables: function (attr, value, origSet, sources, context) {
+    _setAndCheckDerivables: function (attr, value, origSet, sources, stateful, context) {
 
-        var currValue = context[attr];
+        var currValue = stateful[attr];
 
-        origSet.call(context, attr, value);
+        origSet.call(stateful, attr, value);
 
         if (currValue !== value) {
-            context._checkDerivables(attr, sources, context);
+            context._checkDerivables(attr, sources, stateful, context);
         }
 
     },
 
-    _checkAllDerivables: function (allSources, context) {
+    _checkAllDerivables: function (allSources, stateful, context) {
         cujo.forIn(allSources, function (sources, source) {
-            context._checkDerivables(source, sources, context);
+            context._checkDerivables(source, sources, stateful, context);
         });
     },
 
-    _checkDerivables: function (attr, sources, context) {
+    _checkDerivables: function (attr, sources, stateful, context) {
         // handle derived properties (if this is a source attr)
         dojo.forEach(sources, function (dep) {
-            var val = context._getDerivedValue(dep.name, dep.command);
+            var val = context._getDerivedValue(dep.name, dep.command, stateful, context);
             //  Note: don't call the inherited set because there may be
             //  a superclass set() that needs to run, too.
-            context.set(dep.name, val);
+            stateful.set(dep.name, val);
         });
     },
 
-    _getDerivedValue: function (attr, command) {
-        var deriver = dojo.hitch(this, command.deriver);
+    _getDerivedValue: function (attr, command, stateful, context) {
+        var deriver = dojo.hitch(stateful, command.deriver);
         if (!dojo.isFunction(deriver)) {
             throw new Error(dojo.string.substitute(errTransformNotFound, {deriver: command.deriver, attr: attr}));
         }

@@ -13,8 +13,11 @@
         dojo.declare('myClass', cujo._BindableContainer, { ... }); // mixin
 
 */
-define(['dojo'], function(dojo) {
-// local scope
+define(['dojo',	'cujo/Stateful', 'cujo/Derivable'], function(dojo, Stateful, Derivable) {
+
+	var dom = dojo,
+		lang = dojo,
+		undef;
 
 dojo.declare('cujo.mvc._BindableContainer', null, {
 
@@ -49,9 +52,10 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     constructor: function () {
         // create list of items
         this.boundViews = [];
+	    this._dataIndexes = {};
     },
 
-    buildRendering: function () {
+    postCreate: function () {
         var result = this.inherited(arguments);
         if (this.resultSet) {
             this._initResultSet();
@@ -131,20 +135,79 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         // TODO
     },
 
+	_associateViewAndDataItem: function (view, dataItem) {
+		// associates a view with a data item
+
+		// first disassociate any existing data item
+		this._disassociateViewAndDataItem(view);
+
+		// get a possibly new pointer
+		var dataIndex = this._getDataPointerForView(view);
+
+		this._dataIndexes[dataIndex] = dataItem;
+		
+		// set it
+		if (view.set) {
+			// widget
+			view.set('_cujo_data_index', dataIndex);
+		}
+		else if (view.setAttribute) {
+			// node
+			view.setAttribute('data-cujo-dataindex', dataIndex);
+		}
+		else {
+			// something else
+			view._cujo_data_index = dataIndex;
+		}
+	},
+
+	_getDataPointerForView: function (view) {
+		// finds the pointer to the dataItem for a view
+		// if no data pointer exists, it creates one
+		var dataIndex;
+		if (view.get) {
+			// widget
+			dataIndex = view.get('_cujo_data_index');
+		}
+		else if (view.getAttribute) {
+			// node
+			dataIndex = view.getAttribute('data-cujo-dataindex');
+		}
+		else {
+			// something else
+			dataIndex = view._cujo_data_index;
+		}
+		if (dataIndex == undef) {
+			dataIndex = this._dataIndex = (this._dataIndex >= 0 ? this._dataIndex + 1 : 0);
+		}
+		return dataIndex;
+	},
+
+	_getDataItemForView: function (view) {
+		return this._dataIndexes[this._getDataPointerForView(view)];
+	},
+
+	_disassociateViewAndDataItem: function (view) {
+		var pointer = this._getDataPointerForView(view);
+		if (pointer != undef) delete this._dataIndex[pointer];
+	},
+
     _itemAdded: function (item, index) {
         var views = this.boundViews,
             pos = index >= 0 ? index : views.length,
-            widget = this._createBoundItem(item, pos);
-        views.splice(pos, 0, widget);
-        this.itemAdded(item, index, widget);
-        return widget;
+            view = this._createBoundView(item, pos);
+	    this._associateViewAndDataItem(view, item);
+        views.splice(pos, 0, view);
+        this.itemAdded(item, index, view);
+        return view;
     },
 
     _itemDeleted: function (item, index) {
         var removed = this.boundViews.splice(index, 1)[0];
         if (removed) {
+	        this._disassociateViewAndDataItem(removed);
 	        this.itemDeleted(item, index, removed);
-	        removed.destroyRecursive();
+	        this._destroyBoundView(removed);
         }
     },
 
@@ -156,8 +219,8 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 	_removeAllItems: function () {
 		for (var i = this.boundViews.length - 1; i >= 0; i--) {
 			var removed = this.boundViews[i];
-			this._itemDeleted(removed);
-			removed.destroyRecursive();
+			var dataItem = this._getDataItemForView(removed);
+			this._itemDeleted(dataItem, i);
 		}
 		this.boundViews = [];
 	},
@@ -170,7 +233,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         // remove data item template from DOM (it's still a node at this point)
         var tmplNode = this.itemTemplate;
         if (!tmplNode) {
-            // oops! dijit doesn't hook up anything with a dojotype attr, yet
+            // oops! dijit doesn't hook up anything with a data-dojo-type attr, yet
             var query = '[' + this._attrAttach + '=' + this.resultSetItem + ']';
             this.itemTemplate = tmplNode = dojo.query(query, this.domNode)[0];
         }
@@ -188,15 +251,76 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 		return dojoType && dojo.getObject(dojoType);
 	},
 
-    _createBoundItem: function (dataItem, index) {
+    _createBoundView: function (dataItem, index) {
+	    // Returns a node or a widget (if the node has a dojotype attr)
 	    // Note: for the auto-creation of a View from a node, you MUST have widgetsInTemplate:false
 	    // in the list view! Otherwise, this next line will fail because this.itemTemplate will
 	    // be a widget instead of a node.
         var node = this.itemTemplate.cloneNode(true),
             ctor = this._createBoundClass(node);
         dojo.place(node, this.containerNode, index >= 0 ? index : 'last');
-        return new ctor({dataItem: dataItem}, node);
-    }
+        return ctor ?
+	        new ctor({dataItem: dataItem}, node) :
+	        this._bindDomFragment(dataItem, node);
+    },
+
+	_bindDomFragment: function (dataItem, node) {
+		var model;
+		// create a model from the dataItem
+		model = new Derivable(new Stateful(dataItem), this.itemAttributeMap);
+		// mixin all dojoattachpoints
+		model.set('domNode', node);
+		dom.query('[dojoattachpoint]', node).forEach(function (node) {
+			model.set(node.getAttribute('dojoattachpoint'), node);
+		});
+		// plug in values defined by itemAttributeMap
+		// this logic translated from dijit._Widget
+		for (var attr in this.itemAttributeMap) {
+			// convert this.itemAttributeMap[attr] if it isn't already and
+			// iterate over each command
+			lang.forEach([].concat(this.itemAttributeMap[attr]), function (command) {
+				var mapNode, type, value;
+				// find the node
+				mapNode = model[command.node || 'domNode'];
+				// get the model attribute
+				value = model.get(attr);
+				// set the appropriate attribute of the node
+				type = command.type || 'attribute';
+				if (type == 'innerText') {
+					mapNode.innerHTML = '';
+					mapNode.appendChild(dom.doc.createTextNode(value));
+				}
+				else if (type == 'innerHTML') {
+					mapNode.innerHTML = value;
+				}
+				else if (type == 'class') {
+					mapNode.className = value;
+				}
+				else if (value != undef) {
+					dom.attr(mapNode, command.attribute || attr, value);
+				}
+				else {
+					dom.removeAttr(mapNode, command.attribute || attr);
+				}
+			});
+		}
+		return node;
+	},
+
+	_destroyBoundView: function (view) {
+		if (view.destroyRecursive) {
+			// compound widget
+			view.destroyRecursive();
+		}
+		else if (view.destroy) {
+			// simple widget
+			view.destroy();
+		}
+		else if (view.nodeType) {
+			// node
+			dojo.destroy(view);
+		}
+	}
 
 });
 

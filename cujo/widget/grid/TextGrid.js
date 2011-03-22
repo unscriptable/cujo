@@ -13,17 +13,18 @@ define(
 		'cssx/css!./TextGrid.css', // styles
 		'dijit/_Widget',
 		'dijit/_Templated',
+		'cujo/mvc/_BindableContainer',
 		'dojo/string',
 		'dojo'
 	],
 
-	function (template, styleSheet, Widget, Templated, strings, dojo) {
+	function (template, styleSheet, Widget, Templated, BindableContainer, strings, dojo) {
 
 		var lang = dojo, dom = dojo, array = dojo;
 
 		var undef;
 
-		return lang.declare('cujo.widget.grid.TextGrid', [Widget, Templated], {
+		return lang.declare('cujo.widget.grid.TextGrid', [Widget, Templated, BindableContainer], {
 
 			/**
 			 * colDefs is an array of objects whose properties have the following:
@@ -36,11 +37,6 @@ define(
 			 * transform - a function to transform the value before inserting into the bodyCellTemplate. e.g. function (val) { return val; }
 			 */
 			colDefs: null,
-
-			/**
-			 * An array of objects or the resultSet returned from a dojo.store query.
-			 */
-			resultSet: null,
 
 			headerCellTemplate: '<th class="${col.classes}">${value}</th>',
 
@@ -84,104 +80,14 @@ define(
 
 			templateString: template,
 
-			_isReady: false,
-
 			_rowTemplate: '<tr class="${rowClass}">${cells}</tr>',
 
-			_setResultSetAttr: function (data) {
-				// unsubscribe from any previous resultSet
-				if (this.resultSet) {
-				    this._unwatchResultSet();
-					this._removeAllRows();
-				}
-				// save result set and initialize
-				this.resultSet = data || null;
-				this._initResultSet();
+			_createBoundView: function (item, index) {
+				return this._makeBodyRow(item, index);
 			},
 
-			_getResultSetAttr: function () {
-				return this.resultSet;
-			},
-
-			_initResultSet: function () {
-				// subscribe to onAdd, onUpdate, and onRemove
-				if (this.resultSet) {
-					// TODO: cujo.Promise.when as a common.Promise.when
-				    lang.when(this.resultSet, lang.hitch(this, '_resultsLoaded'), lang.hitch(this, '_resultsError'), lang.hitch(this, '_itemAdded'));
-				    this._watchResultSet();
-				}
-			},
-
-			_watchResultSet: function () {
-				var data = this.resultSet;
-				if (data && data.observe) {
-				    var dismiss = data.observe(lang.hitch(this, '_handleResultSetEvent')).dismiss,
-				        handle = this.connect(this, '_unwatchResultSet', function () {
-				            if (dismiss) dismiss();
-				            this.disconnect(handle);
-				        });
-				}
-			},
-
-			_unwatchResultSet: function () {
-				//  summary: this gets called when the result set is unwatched but unwatching
-				//      happens in a callback within _watchResultSet
-			},
-
-			_handleResultSetEvent: function (item, oldIndex, newIndex) {
-				// summary: fires when an item in result set changes
-				// TODO: debounce these to catch moves instead of deleting/recreating
-				//      - create a new debounced method to do the adds/deletes/moves and make
-				//        this method accrue add/del operations.
-				//      - or will transaction() handle this better than debounce?
-				if (oldIndex == newIndex) {
-					this._itemUpdated(item, newIndex);
-				}
-				else if (newIndex >= -1) {
-					this._itemAdded(item, newIndex);
-				}
-				else {
-					this._itemDeleted(item, oldIndex);
-				}
-			},
-
-			_resultsLoaded: function (data) {
-				if (this._isReady) {
-					array.forEach(data, function (dataItem) {
-						this._itemAdded(dataItem);
-					}, this);
-				}
-			},
-
-			_resultsError: function (err) {
-				// TODO
-			},
-
-			_itemAdded: function (item, index) {
-				if (this._isReady) {
-					var node = this._makeBodyRow(item, index);
-					this.itemAdded(item , index, node);
-				}
-			},
-
-			_itemDeleted: function (item, index) {
-				if (this._isReady) {
-					var node = this._destroyBodyRow(index);
-					this.itemDeleted(item , index, node);
-				}
-			},
-
-			_itemUpdated: function (item, index) {
-				if (this._isReady) {
-					var node = this.bodyRowsContainer.rows[index];
-					this.itemUpdated(item , index, node);
-				}
-			},
-
-			_removeAllRows: function () {
-				if (this._isReady) {
-					dom.empty(this.bodyRowsContainer);
-				}
+			_destroyBoundView: function (view) {
+				this.inherited(arguments);
 			},
 
 			_setColDefsAttr: function (defs) {
@@ -193,8 +99,8 @@ define(
 				if (this.hasFooter) {
 					this._makeFooter();
 				}
-				if (this._isReady && this.resultSet) {
-					this._removeAllRows();
+				if (/*this._isReady && */this.resultSet) {
+					this._removeAllItems();
 					this._resultsLoaded(this.resultSet);
 				}
 			},
@@ -241,18 +147,7 @@ define(
 				return node;
 			},
 
-			_destroyBodyRow: function (index) {
-				var row = this.bodyRowsContainer.rows[index];
-				if (row) {
-					var dataIndex = row.getAttribute('data-cujo-dataindex');
-					delete this._dataIndexes[dataIndex];
-					dom.destroy(row);
-				}
-				return row;
-			},
-
 			postMixInProperties: function () {
-				this._dataIndexes = {};
 				this.inherited('postMixInProperties', arguments);
 				this._hasCustomHeader = !!this.headerRowTemplate;
 				this._hasCustomFooter = !!this.footerRowTemplate;
@@ -267,10 +162,6 @@ define(
 				dom.addClass(this.domNode, this.gridClass);
 				if (!this.hasFooter) {
 					dom.addClass(this.domNode, 'cujo-grid-nofooter');
-				}
-				this._isReady = true;
-				if (this.resultSet) {
-					this._resultsLoaded(this.resultSet);
 				}
 				this._setScrollbarWidth();
 				this.connect(this.bodyRowsContainer, 'click', '_handleRowClick')
@@ -308,11 +199,11 @@ define(
 							grid: this,
 							col: lang.delegate(def, { classes: classes }),
 							value: '${' + def.name + (def.transform && 'body' === rowType ? ':' + def.transform : '') + '}'
-                        };
+						};
 
 						cellTmpl = def[rowType + 'CellTemplate'] || colTmpl;
 						cells += strings.substitute(cellTmpl, info, this._passthruTransform, this);
-                    }
+					}
 				}
 
 				var map = {

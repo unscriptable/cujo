@@ -96,7 +96,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
         return this.inherited(arguments);
     },
 
-    postMixInProperties: function () {
+    postCreate: function () {
         if (this.dataItem) {
             this._bindDataItem(this.dataItem);
         }
@@ -124,9 +124,9 @@ dojo.declare('cujo.mvc._Bindable', null, {
                 this._unbindDataItem(currDataItem);
             }
             // bind
-                this._bindDataItem(item);
-                this.dataItem = item;
-            }
+			this._bindDataItem(item);
+			this.dataItem = item;
+        }
     },
 
     _bindDataItem: function (dataItem) {
