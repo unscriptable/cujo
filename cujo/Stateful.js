@@ -12,21 +12,55 @@
 define(/* cujo/Stateful, */ ['cujo'], function(cujo) {
 
 var op = Object.prototype,
-	wildcard = "*";
+	wildcard = "*",
+	undef;
+
+function getPropScope (obj, dottedProps, create) {
+	var level, prop, props, last;
+
+	level = obj;
+	prop = dottedProps;
+	props = dottedProps.split('.');
+	last = props.length - 1;
+
+	if (props.length >= 0) {
+		prop = props[0];
+		for (var i = 0; i < last; i++) {
+			// create this level if necessary
+			if (level[prop] == undef /* also true if == null */) {
+				if (create) {
+					level[prop] = {};
+				}
+				else {
+					return undef;
+				}
+			}
+			level = level[prop];
+			prop = props[i + 1];
+		}
+	}
+
+	return {obj: level, prop: prop};
+}
+
+function get (obj, prop) {
+	var scope = getPropScope(obj, prop, obj);
+	return scope && scope.obj[scope.prop];
+}
 
 function set (obj, cb, name, value) {
 
-	var old;
-
 	function _set (prop, val) {
-		var old = obj[prop];
-		obj[prop] = val;
+		var old, scope;
+		old = get(obj, prop);
+		scope = getPropScope(obj, prop, true);
+		scope.obj[scope.prop] = val;
 		for (var i = 0, len = cb && cb.length; i < len; i++) {
 			try {
 				cb[i](prop, old, val);
 			}
 			catch (ex) {
-				console && console.log && console.log(ex);
+				console && console.log && console.log('cujo.Stateful: ' + ex);
 			}
 		}
 	}
@@ -54,7 +88,7 @@ cujo.Stateful = function (obj, options) {
 		proto = {
 
 			get: function (name) {
-				return this[name];
+				return get(this, name);
 			},
 
 			set: function (name, value) {
