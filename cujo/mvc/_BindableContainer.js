@@ -49,6 +49,14 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     itemUpdated: function (item, index, view) {},
     itemDeleted: function (item, index, view) {},
 
+	findDataItem: function (view) {
+		return this._getDataItemForView(view);
+	},
+
+	findView: function (dataItem) {
+		return this._getViewForDataItem(dataItem);
+	},
+
     constructor: function () {
         // create list of items
         this.boundViews = [];
@@ -185,6 +193,16 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 
 	_getDataItemForView: function (view) {
 		return this._dataIndexes[this._getDataPointerForView(view)];
+	},
+
+	_getViewForDataItem: function (dataItem) {
+		var found;
+		for (var i = 0, view; !found && (view = this.boundViews[i]); i++) {
+			if (this._getDataItemForView(view) == dataItem) {
+				found = view;
+			}
+		}
+		return found;
 	},
 
 	_disassociateViewAndDataItem: function (view) {
