@@ -22,27 +22,45 @@ define(
 	],
 	function(dojo, View, binder, DataBoundView, BindableContainer) {
 
-dojo.declare('cujo.mvc.DataListView', [View, BindableContainer], {
+		dojo.declare('cujo.mvc.DataListView', [View, BindableContainer], {
 
 			// itemAttributeMap: specifies the data bindings for the bound items
 			// if they don't have a dojotype. If they do have a dojotype, they
 			// are assumed to be descendants of DataBoundView.
 			itemAttributeMap: null,
 
-    postCreate: function () {
-        this._refreshDataState();
-        return this.inherited(arguments);
-    },
+			postCreate: function () {
+				this._refreshDataState();
+				return this.inherited(arguments);
+			},
 
-    _setResultSetAttr: function (item) {
-        //  summary: overrides cujo.mvc._BindableContainer's _setResultSetAttr to toggle state
-        var result = this.inherited(arguments);
-        this._refreshDataState();
-        return result;
-    },
+			_setResultSetAttr: function (item) {
+				//  summary: overrides cujo.mvc._BindableContainer's _setResultSetAttr to toggle state
+				var result = this.inherited(arguments);
+				this._refreshDataState();
+				return result;
+			},
 
-    _refreshDataState: function () {
-        this.state({state: dataStateMapper(this.resultSet), set: dataStates});
+			_itemAdded: function () {
+				var result = this.inherited(arguments);
+				this._refreshDataState();
+				return result;
+			},
+
+			_itemDeleted: function () {
+				var result = this.inherited(arguments);
+				this._refreshDataState();
+				return result;
+			},
+
+			_resultsLoaded: function () {
+				var result = this.inherited(arguments);
+				this._refreshDataState();
+				return result;
+			},
+
+			_refreshDataState: function () {
+				this.state({state: dataStateMapper(this.resultSet), set: dataStates});
 			},
 
 			_createBoundClass: function (templateNode) {
@@ -52,7 +70,7 @@ dojo.declare('cujo.mvc.DataListView', [View, BindableContainer], {
 						prototype = { templateString: html };
 					if (this.itemAttributeMap) {
 						prototype.attributeMap = this.itemAttributeMap;
-    }
+					}
 					ctor = dojo.declare(DataBoundView, prototype);
 				}
 				return ctor;
@@ -67,24 +85,27 @@ dojo.declare('cujo.mvc.DataListView', [View, BindableContainer], {
 				}(node.cloneNode(true)));
 			}
 
-});
+		});
 
-var dataStates = cujo.mvc.DataListView.dataStates = {
-        unknown: 'cujo-list-unbound',
-        empty: 'cujo-list-empty',
-        bound: 'cujo-list-bound'
-        // TODO: add a state to indicate list is only partially loaded?
-    },
-    dataStateMapper = function (resultSet) {
-        return (
-            !resultSet ? dataStates.unknown :
-            resultSet.length == 0 ? dataStates.empty :
-            dataStates.bound
-        );
-    };
+		var dataStates = cujo.mvc.DataListView.dataStates = {
+				unknown: 'cujo-list-unbound',
+				empty: 'cujo-list-empty',
+				bound: 'cujo-list-bound'
+				// TODO: add a state to indicate list is only partially loaded?
+			},
+			dataStateMapper = function (resultSet) {
+				return (
+					// we have no list
+					!resultSet ? dataStates.unknown :
+					// empty list or promise
+					!resultSet.length ? dataStates.empty :
+					// we have model items
+					dataStates.bound
+				);
+			};
 
 
-return cujo.mvc.DataListView;
+		return cujo.mvc.DataListView;
 
 	}
 
