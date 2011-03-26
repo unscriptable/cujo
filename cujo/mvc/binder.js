@@ -4,7 +4,7 @@ define(
 		'cujo' // for hashMap functions
 	],
 	function (dojo, hashMap) {
-
+		
 		var lang = dojo,
 			array = dojo;
 
@@ -294,7 +294,7 @@ define(
 				var msg = 'cujo.mvc.binder: ',
 					func = console.error || console.log;
 				logError = function (message, attr) {
-					func.apply(console, msg + attr + '. ' + message);
+					func.call(console, msg + attr + '. ' + message);
 				};
 				logError(message, attr);
 			}
