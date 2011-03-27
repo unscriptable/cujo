@@ -34,35 +34,6 @@ define(
 				return this.inherited(arguments);
 			},
 
-			_setResultSetAttr: function (item) {
-				//  summary: overrides cujo.mvc._BindableContainer's _setResultSetAttr to toggle state
-				var result = this.inherited(arguments);
-				this._refreshDataState();
-				return result;
-			},
-
-			_itemAdded: function () {
-				var result = this.inherited(arguments);
-				this._refreshDataState();
-				return result;
-			},
-
-			_itemDeleted: function () {
-				var result = this.inherited(arguments);
-				this._refreshDataState();
-				return result;
-			},
-
-			_resultsLoaded: function () {
-				var result = this.inherited(arguments);
-				this._refreshDataState();
-				return result;
-			},
-
-			_refreshDataState: function () {
-				this.state({state: dataStateMapper(this.resultSet), set: dataStates});
-			},
-
 			_createBoundClass: function (templateNode) {
 				var ctor = this.inherited(arguments);
 				if (!ctor) {
@@ -86,23 +57,6 @@ define(
 			}
 
 		});
-
-		var dataStates = cujo.mvc.DataListView.dataStates = {
-				unknown: 'cujo-list-unbound',
-				empty: 'cujo-list-empty',
-				bound: 'cujo-list-bound'
-				// TODO: add a state to indicate list is only partially loaded?
-			},
-			dataStateMapper = function (resultSet) {
-				return (
-					// we have no list
-					!resultSet ? dataStates.unknown :
-					// empty list or promise
-					!resultSet.length ? dataStates.empty :
-					// we have model items
-					dataStates.bound
-				);
-			};
 
 
 		return cujo.mvc.DataListView;

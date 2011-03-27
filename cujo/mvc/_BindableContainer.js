@@ -49,12 +49,15 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     itemUpdated: function (item, index, view) {},
     itemDeleted: function (item, index, view) {},
 
-	findDataItem: function (view) {
-		return this._getDataItemForView(view);
+	findDataItem: function (node) {
+		var view = this._findViewNode(node);
+		return view && this._getDataItemForView(view);
 	},
 
-	findView: function (dataItem) {
-		return this._getViewForDataItem(dataItem);
+	findView: function (dataItemOrNode) {
+		return dataItemOrNode.nodeType ?
+			this._findViewNode(dataItemOrNode) :
+			this._getViewForDataItem(dataItemOrNode);
 	},
 
     constructor: function () {
@@ -86,6 +89,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
             this._unwatchResultSet();
 	        this._removeAllItems();
         }
+	    this._refreshDataState();
         // save result set and initialize
         this.resultSet = rs || null;
         this._initResultSet();
@@ -142,6 +146,19 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     _resultsError: function (err) {
         // TODO
     },
+
+	_findViewNode: function (node) {
+		// finds the root node of the view that contains the given node
+		// we know we've got it when our parentNode is the containerNode
+		var view;
+		while (node && node != this.containerNode) {
+			if (node.parentNode == this.containerNode) {
+				view = node;
+			}
+			node = node.parentNode;
+		}
+		return view;
+	},
 
 	_associateViewAndDataItem: function (view, dataItem) {
 		// associates a view with a data item
@@ -216,7 +233,8 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
             view = this._createBoundView(item, pos);
 	    this._associateViewAndDataItem(view, item);
         views.splice(pos, 0, view);
-        this.itemAdded(item, pos, view);
+	    this._refreshDataState();
+	    this.itemAdded(item, pos, view);
         return view;
     },
 
@@ -227,6 +245,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 	        this.itemDeleted(item, index, removed);
 	        this._destroyBoundView(removed);
         }
+	    this._refreshDataState();
     },
 
 	_itemUpdated: function (item, index) {
@@ -283,6 +302,10 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 	        new ctor({dataItem: dataItem}, node) :
 	        this._bindDomFragment(dataItem, node);
     },
+
+	_refreshDataState: function () {
+		this.state({state: dataStateMapper(this), set: dataStates});
+	},
 
 	_bindDomFragment: function (dataItem, node) {
 		var model;
@@ -349,6 +372,23 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 	}
 
 });
+
+	var dataStates = cujo.mvc._BindableContainer.dataStates = {
+			unknown: 'cujo-list-unbound',
+			empty: 'cujo-list-empty',
+			bound: 'cujo-list-bound'
+			// TODO: add a state to indicate list is only partially loaded?
+		},
+		dataStateMapper = function (list) {
+			return (
+				// we have no list
+				!list.resultSet ? dataStates.unknown :
+				// empty list or promise
+				!list.boundViews.length ? dataStates.empty :
+				// we have model items
+				dataStates.bound
+			);
+		};
 
 
 return cujo.mvc._BindableContainer;
