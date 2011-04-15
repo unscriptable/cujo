@@ -13,7 +13,7 @@
         dojo.declare('myClass', cujo._BindableContainer, { ... }); // mixin
 
 */
-define(['dojo',	'cujo/Stateful', 'cujo/Derivable'], function(dojo, Stateful, Derivable) {
+define(['dojo',	'cujo/Stateful', 'cujo/Derivable', 'cujo/_base/dom'], function(dojo, Stateful, Derivable, dom2) {
 
 	var dom = dojo,
 		lang = dojo,
@@ -68,9 +68,6 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 
     postCreate: function () {
         var result = this.inherited(arguments);
-        if (this.resultSet) {
-            this._initResultSet();
-        }
         return result;
     },
 
@@ -89,7 +86,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
             this._unwatchResultSet();
 	        this._removeAllItems();
         }
-	    this._refreshDataState();
+	    this._refreshState();
         // save result set and initialize
         this.resultSet = rs || null;
         this._initResultSet();
@@ -233,7 +230,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
             view = this._createBoundView(item, pos);
 	    this._associateViewAndDataItem(view, item);
         views.splice(pos, 0, view);
-	    this._refreshDataState();
+	    this._refreshState();
 	    this.itemAdded(item, pos, view);
         return view;
     },
@@ -245,7 +242,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 	        this.itemDeleted(item, index, removed);
 	        this._destroyBoundView(removed);
         }
-	    this._refreshDataState();
+	    this._refreshState();
     },
 
 	_itemUpdated: function (item, index) {
@@ -303,8 +300,10 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 	        this._bindDomFragment(dataItem, node);
     },
 
-	_refreshDataState: function () {
-		this.state({state: dataStateMapper(this), set: dataStates});
+	_refreshState: function () {
+		if (this.domNode) {
+			dom2.setDomState({scope: this.domNode, state: dataStateMapper(this), set: dataStates});
+		}
 	},
 
 	_bindDomFragment: function (dataItem, node) {

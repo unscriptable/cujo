@@ -30,6 +30,11 @@ function(dojo) {
 
 			if(this._selectables.length === 0) {
 				this._currentSelectable = selectable;
+			} else {
+				var val = this._currentSelectable.get('value');
+				if(val !== null) {
+					selectable.set('value', null);				
+				}
 			}
 
 			connection = this._connectSelectable(selectable);
@@ -41,7 +46,6 @@ function(dojo) {
 			})(selectables.length);
 
 			selectables.push({
-				// selectable: selectable,
 				remove: remove
 			});
 
@@ -55,17 +59,28 @@ function(dojo) {
 		},
 
 		_connectSelectable: function(selectable) {
-			// return events.connect(selectable, 'onChange', function(e) { console.log(e); });
 			return events.connect(selectable, 'onChange', this, '_handleSelectableEvent');
 		},
 
 		_handleSelectableEvent: function(e, viewOrWidget) {
 			if(viewOrWidget !== this._currentSelectable) {
-				this._currentSelectable.set('value', null);
-				this._currentSelectable = viewOrWidget;
+				this._setCurrent(viewOrWidget);
 			}
 
 			this.onChange(e, viewOrWidget);
+		},
+
+		_setCurrent: function(view) {
+			this._currentSelectable.set('value', null);
+
+			var prev = this._currentSelectable;
+			this._currentSelectable = view;
+			
+			return prev;	
+		},
+
+		getCurrentSelectable: function() {
+			return this._currentSelectable;
 		},
 
 		destroy: function() {
