@@ -104,9 +104,9 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     _watchResultSet: function () {
         var rs = this.resultSet;
         if (rs && rs.observe) {
-            var dismiss = rs.observe(dojo.hitch(this, '_handleResultSetEvent')).dismiss,
+            var cancel = rs.observe(dojo.hitch(this, '_handleResultSetEvent')).cancel,
                 handle = this.connect(this, '_unwatchResultSet', function () {
-                    if (dismiss) dismiss();
+                    if (cancel) cancel();
                     this.disconnect(handle);
                 });
         }
@@ -123,15 +123,38 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         //      - create a new debounced method to do the adds/deletes/moves and make 
         //        this method accrue add/del operations.
         //      - or will transaction() handle this better than debounce?
+        
+        // When oldIndex and newIndex both == -1, means that item is
+        // a new item (not already in the resultSet), but *does not*
+        // match the resultSet's query.
+        // In that case, we don't need to do anything with the item,
+        // so we can short-circuit.
+        if (oldIndex == -1 && newIndex == -1) return;
+
         if (oldIndex == newIndex) {
+        	// Item remained in the same position, but its data was updated
             this._itemUpdated(item);
         }
-        else if (newIndex >= -1) {
-            this._itemAdded(item, newIndex);
-        }
         else {
-            this._itemDeleted(item, oldIndex);
-        }
+        	// This branch handles oldIndex and newIndex separatly
+        	// to cover 3 cases:
+        	//
+        	// 1. oldIndex >= 0, newIndex == -1. The item was removed from the
+        	//    resultSet either forcibly, or was changed in a way that it no
+        	//    longer matches the query.  In that case, remove it.
+        	// 2. oldIndex == 0-1, newIndex >= 0. The item is new to this
+        	//    resultSet.  Add it.
+        	// 3. oldIndex >= 0 and newIndex >= 0.  The item was present, but
+        	//    was changed in such a way that it's position (due to sorting)
+        	//    is now different.  So, we remove it, then add it again in the
+        	//    new position.
+    	    if (oldIndex >= 0) {
+    	        this._itemDeleted(item, oldIndex);
+        	}
+	        if (newIndex >= 0) {
+            	this._itemAdded(item, newIndex);
+       		}
+       	}
     },
 
     _resultsLoaded: function (rs) {
@@ -226,12 +249,11 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 
     _itemAdded: function (item, index) {
         var views = this.boundViews,
-            pos = index >= 0 ? index : views.length,
-            view = this._createBoundView(item, pos);
+            view = this._createBoundView(item, index);
 	    this._associateViewAndDataItem(view, item);
-        views.splice(pos, 0, view);
+        views.splice(index, 0, view);
 	    this._refreshState();
-	    this.itemAdded(item, pos, view);
+	    this.itemAdded(item, index, view);
         return view;
     },
 
