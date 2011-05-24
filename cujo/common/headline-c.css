@@ -31,9 +31,6 @@
 	top: 4em;
 	bottom: 1.5em;
 	position: absolute;
-	/* IE 6 fixes */
-	_bottom: expression('1.5em');
-	_height: expression(cujo.cssx_ieLayout_checkBoxHeight(this));
 }
 
 .cujo-headline-c > .cujo-body {
@@ -42,9 +39,4 @@
 	top: 4em;
 	bottom: 1.5em;
 	position: absolute;
-	/* IE 6 fixes */
-	_bottom: expression('1.5em');
-	_right: expression('4em');
-	_height: expression(cujo.cssx_ieLayout_checkBoxHeight(this));
-	_width: expression(cujo.cssx_ieLayout_checkBoxWidth(this));
 }

@@ -1,9 +1,9 @@
 define(
 	[
 		'dojo', // for language and array functions
-		'cujo' // for hashMap functions
+		'cujo/_base/lang' // for hashMap functions
 	],
-	function (dojo, hashMap) {
+	function (dojo, langExt) {
 		
 		var lang = dojo,
 			array = dojo;
@@ -221,7 +221,7 @@ define(
 				}
 
 				// apply all attributes
-				hashMap.forIn(defs, function (attrDef, attr) {
+				langExt.forIn(defs, function (attrDef, attr) {
 
 					// only allow one data-binding definition
 					if (attrDef.data.length > 1) {
@@ -264,7 +264,7 @@ define(
 
 					// merge any definitions that are left
 					var max = 0;
-					hashMap.forIn(attrDef, function (def, op) {
+					langExt.forIn(attrDef, function (def, op) {
 						if (op != 'bidi') max = Math.max(max, def.length);
 					});
 					for (var i = 0; i < max; i++) {

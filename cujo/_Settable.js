@@ -13,7 +13,7 @@
         dojo.declare('myClass', cujo._Settable, { ... }); // mixin
 
 */
-define(['dojo', 'cujo', 'dojo/Stateful', 'dojo/string'], function(dojo, cujo, Stateful, string) {
+define(['dojo', 'dojo/Stateful', 'dojo/string'], function(dojo, Stateful, string) {
 // local scope
 
 var stfu = Stateful.prototype;

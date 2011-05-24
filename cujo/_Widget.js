@@ -21,7 +21,7 @@
 
 
 */
-define(['dojo', 'cujo', 'dijit/_Widget', 'dojo/Stateful'], function(dojo, cujo, Widget, Stateful) {
+define(['dojo', 'cujo/_base/lang', 'dijit/_Widget', 'dojo/Stateful'], function(dojo, langExt, Widget, Stateful) {
 
 // Local scope
 
@@ -167,7 +167,7 @@ dojo.declare('cujo._Widget', Widget, {
         //  initial value on the prototype or was supplied as a constructor param.
         //  We need the _attrToDom to run for anything with two-way binding, too!
         // TODO: add watch support when dijit supports it
-        cujo.forInAll(this.attributeMap, function (commands, attr) {
+        langExt.forInAll(this.attributeMap, function (commands, attr) {
             dojo.forEach(commands && [].concat(commands), function (command) {
 				if (command.watch === true) {
 					// TODO: handle watch() here

@@ -6,7 +6,7 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-define(['dojo', 'cujo'], function(dojo, cujo) {
+define(['dojo', 'cujo/_base/lang'], function(dojo, langExt) {
 // local scope
 
 dojo.declare('cujo._Derivable', null, {
@@ -110,7 +110,7 @@ dojo.declare('cujo._Derivable', null, {
         }
 
         // TODO should we do this once on the prototype instead of once per instance?
-        cujo.forInAll(map, function (commands, name) {
+        langExt.forInAll(map, function (commands, name) {
             dojo.forEach([].concat(commands), function (command) {
                 // process forward-defined derived attributes
                 if (command.derived) {
@@ -152,7 +152,7 @@ dojo.declare('cujo._Derivable', null, {
     },
 
     _checkAllDerivables: function (allSources, stateful, context) {
-        cujo.forIn(allSources, function (sources, source) {
+        langExt.forIn(allSources, function (sources, source) {
             context._checkDerivables(source, sources, stateful, context);
         });
     },

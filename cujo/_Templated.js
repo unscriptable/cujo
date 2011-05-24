@@ -13,9 +13,11 @@
     - remove data-cujoattrs or detect if they're different in the ancestors!!!
 
 */
-define(['dojo', 'cujo', 'dijit/_Templated'], function(dojo, cujo, Templated) {
+define(['dojo', 'cujo/_base/lang', 'dijit/_Templated'], function(dojo, langExt, Templated) {
 
-cujoConfig = cujoConfig || {};
+if (typeof cujoConfig == 'undefined') {
+	cujoConfig = {};
+}
 
 // default to html5-compatible custom attributes
 cujoConfig.attrAttach = cujoConfig.attrAttach || 'data-dojo-attach';
@@ -169,7 +171,7 @@ dojo.declare('cujo._Templated', Templated, {
                 defs = dojo.map(names, function (name) { return {node: node, name: name}; });
             ancDefs = ancDefs.concat(defs);
         }, this);
-        var ancNodeMap = cujo.keyMap(ancDefs, function (def) { return def.name; });
+        var ancNodeMap = langExt.keyMap(ancDefs, function (def) { return def.name; });
 
         // iterate over overrides and replace or mixin, as specified
         dojo.forEach(overrides, function (node) {

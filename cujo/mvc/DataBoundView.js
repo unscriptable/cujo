@@ -24,51 +24,19 @@ dojo.declare('cujo.mvc.DataBoundView', [View, Bindable, Derivable], {
         dataId: { data: 'id', type: 'cujoBind' }
     },
 
-    applyTemplate: function (args) {
-	    // TODO: move this to _Widget or View
-        //  summary: applies a template defined by propName to the current
-	    //      widget (this). The template uses dojo standard string formatting
-	    //      (see dojo.string.substitute). You'd typically use this to format
-	    //      a read-only derived property, but there are many other potential
-	    //      uses. Examples of typical templates:
-        //          displayName: '${lastName}, ${firstName}',
-        //          salutation: 'Hello ${firstName}!',
-        //          startDate: '${$value:_myFormatFunction}'
-        //      See the documentation for dojo.string.substitute for
-        //      a description of how to apply format functions in templates.
-        //      Note: if you need more complex formatting (e.g. branching or
-	    //      looping) on a derived property, write your own custom transform()
-	    //      function in the attributeMap definition.  This method is for the
-	    //      simple cases. :)
-	    //      If the args.transform function is missing, a "safe"
-	    //      function is used: a blank is inserted if the token
-	    //      is not found as a property in the current view.
-        var template = args.template || args.templateName &&
-	            dojo.getObject(args.templateName, false, this),
-            transform = args.transform && dojo.hitch(this, args.transform) ||
-	            function (v, p) { return v == null ? '' : v; };
-        return this.formatString(template, this, transform);
-    },
-
-    formatString: function (/* String */ template, /* Object? */ map, /* Function? */ transform) {
-        //  summary: formats a string using dojo.string.substitute, but inserts the current
-        //      view instance for the hash map (and source of format functions) for convenience.
-            return dojo.string.substitute(template, map || this, transform, this);
-    },
-
     postCreate: function () {
-        this._refreshDataState();
+        this._refreshState();
         return this.inherited(arguments);
     },
 
     _setDataItemAttr: function (item) {
         //  summary: overrides cujo.mvc._Bindable's _setDataItem to toggle state
         var result = this.inherited(arguments);
-        this._refreshDataState();
+	    this._refreshState();
 	    return result;
     },
 
-    _refreshDataState: function () {
+    _refreshState: function () {
         this.state({state: dataStateMapper(this.dataItem), set: dataStates});
     }
 

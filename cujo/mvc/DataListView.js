@@ -30,7 +30,7 @@ define(
 			itemAttributeMap: null,
 
 			postCreate: function () {
-				this._refreshDataState();
+				this._refreshState();
 				return this.inherited(arguments);
 			},
 

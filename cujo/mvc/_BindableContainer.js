@@ -307,18 +307,22 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 	},
 
 	_bindDomFragment: function (dataItem, node) {
-		var model;
+		var model, attachpoints;
+
 		// create a model from the dataItem
 		model = new Derivable(new Stateful(dataItem), this.itemAttributeMap);
+
 		// mixin all dojoattachpoints
 		model.set('domNode', node);
-		dom.query('[dojoattachpoint]', node).concat(node).forEach(function (node) {
+		// dojo's NodeList.concat seems to choke in IE6 so we're converting to an array :(
+		attachpoints = lang._toArray(dom.query('[dojoattachpoint]', node).slice(0));
+		lang.forEach(attachpoints.concat(node), function (node) {
 			// there could be more than one attachpoint in 
 			lang.forEach(node.getAttribute('dojoattachpoint').split(','), function (name) {
 				model.set(name.replace(/^\s|\s$/, ''), node);
 			});
 		});
-		// plug in values defined by itemAttributeMap
+
 		// this logic translated from dijit._Widget
 		for (var attr in this.itemAttributeMap) {
 			// convert this.itemAttributeMap[attr] if it isn't already and
@@ -352,6 +356,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 				}
 			});
 		}
+
 		return node;
 	},
 

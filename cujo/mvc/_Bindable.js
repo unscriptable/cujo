@@ -9,7 +9,7 @@
     TODO: create a decorator version of this mixin?
 
 */
-define(['dojo', 'cujo'], function(dojo, cujo) {
+define(['dojo', 'cujo/_base/lang'], function(dojo, langExt) {
 // local scope
 
 dojo.declare('cujo.mvc._Bindable', null, {
@@ -67,7 +67,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
         // expand shortcut attributeMap definitions
 
         var reverse = this._reverseBindings = {};
-        cujo.forInAll(this.attributeMap, function (defs, propName, map) {
+        langExt.forInAll(this.attributeMap, function (defs, propName, map) {
             if (dojo.isString(defs)) {
                 // fill-in shortcut attributeMap definitions
                 // Note: we have to auto-populate node since once we've constructed a
@@ -131,7 +131,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
 
     _bindDataItem: function (dataItem) {
         // update dom
-        cujo.forIn(dataItem, this._bindDataProp, this);
+        langExt.forIn(dataItem, this._bindDataProp, this);
         // watch for all property changes
         if (dataItem && dataItem.watch) {
             this._dataItemWatchHandle = dataItem.watch('*', dojo.hitch(this, '_dataPropUpdated')) || dataItem;
@@ -143,7 +143,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
         if (this._dataItemWatchHandle && this._dataItemWatchHandle.unwatch) {
             this._dataItemWatchHandle.unwatch();
         }
-        cujo.forIn(dataItem, this._unbindDataProp, this);
+        langExt.forIn(dataItem, this._unbindDataProp, this);
     },
 
     _bindDataProp: function (value, dataAttr, dataItem) {
