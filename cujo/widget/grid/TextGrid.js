@@ -170,14 +170,32 @@ define(
 			_makeRow: function (template, rowData, rowNum) {
 				if (rowData) {
 					var rowClasses = [ this.evenRowClass, this.oddRowClass ],
-						map = {
+						classMap = {
 							rowAuxClasses: rowNum  == undef ? '' : ' ' + rowClasses[rowNum % 2],
 							rowNum: rowNum
 						};
-					rowData = lang.delegate(rowData, map);
+					rowData = lang.delegate(rowData, classMap);
 					template = strings.substitute(template, rowData, this._squelchTransform, this);
 				}
 				return template;
+			},
+
+			_findColDef: function (colName) {
+				var i, len;
+				for (i = 0, len = this.colDefs.length; i < len; i++) {
+					if (this.colDefs[i].name == colName) {
+						return this.colDefs[i];
+					}
+				}
+				return;
+			},
+
+			_transformValue: function (value, colName) {
+				var colDef = this._findColDef(colName);
+				if (!colDef || !colDef.transform) {
+					throw new Error('Could not find transform function for column ' + colName);
+				}
+				return lang.hitch(this, colDef.transform)(value, colName);
 			},
 
 			_makeTemplate: function (rowType) {
@@ -198,7 +216,7 @@ define(
 						info = {
 							grid: this,
 							col: lang.delegate(def, { classes: classes }),
-							value: '${' + def.name + (def.transform && 'body' === rowType ? ':' + def.transform : '') + '}'
+							value: '${' + def.name + (def.transform && 'body' === rowType ? ':_transformValue' : '') + '}'
 						};
 
 						cellTmpl = def[rowType + 'CellTemplate'] || colTmpl;
