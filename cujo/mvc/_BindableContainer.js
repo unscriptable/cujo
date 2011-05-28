@@ -249,11 +249,12 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 
     _itemAdded: function (item, index) {
         var views = this.boundViews,
+            pos = index >= 0 ? index : views.length,
             view = this._createBoundView(item, index);
 	    this._associateViewAndDataItem(view, item);
-        views.splice(index, 0, view);
+        views.splice(pos, 0, view);
 	    this._refreshState();
-	    this.itemAdded(item, index, view);
+	    this.itemAdded(item, pos, view);
         return view;
     },
 
