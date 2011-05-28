@@ -157,6 +157,19 @@ define(
 				}
 			},
 
+			buildRendering: function () {
+				this.inherited(arguments);
+				// IE7 devs, you should be ashamed of yourselves. What a P O S.
+				// For some strange reason, IE7 inserts another TBODY into the
+				// existing TBODY, which causes the table not to render at all.
+				// Note: setting innerHTML on a table element crashes IE.
+				var brc = this.bodyRowsContainer, bogus;
+				while ((bogus = this.bodyRowsContainer.firstChild)) {
+					this.bodyRowsContainer.removeChild(bogus);
+				}
+
+			},
+
 			postCreate: function () {
 				this.inherited('postCreate', arguments);
 				dom.addClass(this.domNode, this.gridClass);
