@@ -45,8 +45,13 @@ function(dojo) {
 				};
 			})(selectables.length);
 
+			// Hold onto the remove function so we can use it in destroy(),
+			// and hold onto the selectable itself, so we can use it below
+			// in _setCurrent() to "deselect" items from all the non current
+			// views.
 			selectables.push({
-				remove: remove
+				remove: remove,
+				view: selectable
 			});
 
 			return remove;
@@ -63,19 +68,30 @@ function(dojo) {
 		},
 
 		_handleSelectableEvent: function(e, viewOrWidget) {
-			if(viewOrWidget !== this._currentSelectable) {
-				this._setCurrent(viewOrWidget);
+			if(this._setCurrent(viewOrWidget)) {
+				// If the current view did change, fire onChange.
+				this.onChange(e, viewOrWidget);
 			}
-
-			this.onChange(e, viewOrWidget);
 		},
 
 		_setCurrent: function(view) {
-			this._currentSelectable.set('value', null);
+			// Only need to do this if view is actually different.
+			if(view === this._currentSelectable) return false;
 
-			var prev = this._currentSelectable;
+			var prev, selectables, i, s;
+						
+			selectables = this._selectables;
+
+			for (i = selectables.length - 1; i >= 0; i--) {
+				s = selectables[i].view;
+				if(s !== view) {
+					s.set('value', null);
+				}
+			}
+
+			prev = this._currentSelectable;
 			this._currentSelectable = view;
-			
+
 			return prev;	
 		},
 
@@ -84,7 +100,10 @@ function(dojo) {
 		},
 
 		destroy: function() {
-			for (var i = 0; i < this._selectables.length; i++) {
+			if(!this._selectables) return;
+
+			for (var i = this._selectables.length - 1; i >= 0; i--) {
+				console.log('removing', this._selectables[i]);
 				this._selectables[i].remove();
 			}
 
