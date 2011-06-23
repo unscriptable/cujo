@@ -44,6 +44,12 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     //      automatically.
     boundViews: null,
 
+    //	_observeObjectUpdates: Boolean
+    //		If true, _BindableContainer will handle in-place updates to existing items
+    //		in the resultSet it is observing.  If false, it will ignore updates, and only
+    //		handle new items and removed items.
+    _observeObjectUpdates: true,
+
     // hooks to catch item modifications
     itemAdded: function (item, index, view) {},
     itemUpdated: function (item, index, view) {},
@@ -104,7 +110,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     _watchResultSet: function () {
         var rs = this.resultSet;
         if (rs && rs.observe) {
-            var cancel = rs.observe(dojo.hitch(this, '_handleResultSetEvent')).cancel,
+            var cancel = rs.observe(dojo.hitch(this, '_handleResultSetEvent'), this._observeObjectUpdates).cancel,
                 handle = this.connect(this, '_unwatchResultSet', function () {
                     if (cancel) cancel();
                     this.disconnect(handle);
@@ -133,7 +139,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 
         if (oldIndex == newIndex) {
         	// Item remained in the same position, but its data was updated
-            this._itemUpdated(item);
+            this._itemUpdated(item, oldIndex);
         }
         else {
         	// This branch handles oldIndex and newIndex separatly
