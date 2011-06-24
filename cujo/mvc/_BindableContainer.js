@@ -13,7 +13,14 @@
         dojo.declare('myClass', cujo._BindableContainer, { ... }); // mixin
 
 */
-define(['dojo',	'cujo/Stateful', 'cujo/Derivable', 'cujo/_base/dom'], function(dojo, Stateful, Derivable, dom2) {
+define([
+	'dojo',
+	'dijit',
+	'cujo/Stateful',
+	'cujo/Derivable',
+	'cujo/_base/dom'
+],
+function(dojo, dijit, Stateful, Derivable, dom2) {
 
 	var dom = dojo,
 		lang = dojo,
@@ -55,15 +62,32 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     itemUpdated: function (item, index, view) {},
     itemDeleted: function (item, index, view) {},
 
-	findDataItem: function (node) {
-		var view = this._findViewNode(node);
+	findDataItem: function (nodeOrWidget) {
+		var view;
+		// if it's not a node, it's a widget.
+		// if it's a widget, it's assumed to be the view.
+		// is this a safe assumption?
+		if (nodeOrWidget.nodeType) {
+			view = this._findViewNode(nodeOrWidget);
+		}
+		else {
+			view = nodeOrWidget;
+		}
 		return view && this._getDataItemForView(view);
 	},
 
 	findView: function (dataItemOrNode) {
-		return dataItemOrNode.nodeType ?
-			this._findViewNode(dataItemOrNode) :
-			this._getViewForDataItem(dataItemOrNode);
+		// find by node or data item?
+		if (dataItemOrNode.nodeType) {
+			// check if this a widget view or a simple node view
+			var node, widget;
+			node = this._findViewNode(dataItemOrNode);
+			widget = dijit.byNode(node); // TODO: is this a perf bottleneck?
+			return widget || node;
+		}
+		else {
+			return this._getViewForDataItem(dataItemOrNode);
+		}
 	},
 
     constructor: function () {
