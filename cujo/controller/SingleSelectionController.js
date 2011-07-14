@@ -16,6 +16,8 @@ function(dojo) {
 
 	var events = dojo;
 
+	function noop() {}
+
 	function SingleSelectionController() {
 		this._selectables = [];
 	}
@@ -29,7 +31,7 @@ function(dojo) {
 			selectables = this._selectables;
 
 			if(this._selectables.length === 0) {
-				this._currentSelectable = selectable;
+				this._setCurrent(selectable);
 			} else {
 				var val = this._currentSelectable.get('value');
 				if(val !== null) {
@@ -68,31 +70,43 @@ function(dojo) {
 		},
 
 		_handleSelectableEvent: function(e, viewOrWidget) {
-			if(this._setCurrent(viewOrWidget)) {
-				// If the current view did change, fire onChange.
+			this._setCurrent(viewOrWidget);
 				this.onChange(e, viewOrWidget);
-			}
 		},
 
 		_setCurrent: function(view) {
-			// Only need to do this if view is actually different.
-			if(view === this._currentSelectable) return false;
+			var prev;
 
-			var prev, selectables, i, s;
+			this._unsetNonCurrentValues(view);
 						
-			selectables = this._selectables;
-
-			for (i = selectables.length - 1; i >= 0; i--) {
-				s = selectables[i].view;
-				if(s !== view) {
-					s.set('value', null);
-				}
-			}
-
 			prev = this._currentSelectable;
 			this._currentSelectable = view;
 
 			return prev;	
+		},
+
+		_unsetNonCurrentValues: function(allExceptThis) {
+			var selectables, i, s, origHandle;
+
+			// Pause event handling because we need to force all non-current
+			// selectables to have a null value without triggering lots of
+			// onChange events, which may cause _setCurrent to be called again
+			// incorrectly, which could in turn cause _unsetNonCurrentValues
+			// to be called incorrectly.
+			origHandle = this._handleSelectableEvent;
+			this._handleSelectableEvent = noop;
+
+			selectables = this._selectables;
+
+			for (i = selectables.length - 1; i >= 0; i--) {
+				s = selectables[i].view;
+				if(s !== allExceptThis) {
+					s.set('value', null);
+				}
+			}
+
+			// Resume event handling
+			this._handleSelectableEvent = origHandle;
 		},
 
 		getCurrentSelectable: function() {
@@ -103,7 +117,6 @@ function(dojo) {
 			if(!this._selectables) return;
 
 			for (var i = this._selectables.length - 1; i >= 0; i--) {
-				console.log('removing', this._selectables[i]);
 				this._selectables[i].remove();
 			}
 

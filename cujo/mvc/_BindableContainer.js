@@ -120,6 +120,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         // save result set and initialize
         this.resultSet = rs || null;
         this._initResultSet();
+        
     },
 
     _initResultSet: function () {
@@ -304,14 +305,20 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 	},
 
 	_removeAllItems: function () {
+	    var removed, dataItem, childNode;
 		for (var i = this.boundViews.length - 1; i >= 0; i--) {
-			var removed = this.boundViews[i];
-			var dataItem = this._getDataItemForView(removed);
+			removed = this.boundViews[i];
+			dataItem = this._getDataItemForView(removed);
 			this._itemDeleted(dataItem, i);
 		}
 		// dojo.destroy() fails if the dom node wasn't yet added to the document
-		this.containerNode.innerHTML = '';
+	    while(this.containerNode 
+	        && this.containerNode.firstChild 
+	        &&(childNode = this.containerNode.firstChild)){
+	            this.containerNode.removeChild(childNode);
+	    }
 		this.boundViews = [];
+		
 	},
 
     _attachTemplateNodes: function (rootNode, getAttrFunc) {
