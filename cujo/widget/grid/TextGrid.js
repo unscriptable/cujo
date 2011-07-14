@@ -10,7 +10,7 @@
 define(
 	[
 		'text!./TextGrid.html', // template
-		'cssx/css!./TextGrid.css', // styles
+		'css!./TextGrid.css', // styles
 		'dijit/_Widget',
 		'dijit/_Templated',
 		'cujo/mvc/_BindableContainer',
