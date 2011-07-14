@@ -6,10 +6,10 @@
     LICENSE: see the LICENSE.txt file. If file is missing, this file is subject to the AFL 3.0
     license at the following url: http://www.opensource.org/licenses/afl-3.0.php.
 */
-// dojo.provide('cujo');
+(function (global) {
 
 if (typeof cujo == 'undefined') {
-	var cujo = {};
+		cujo = {};
 }
 
 //  cujoConfig params
@@ -17,8 +17,11 @@ if (typeof cujo == 'undefined') {
 //      ieHtml5Tags: the list of html5 tags to pre-define for IE
 
 if (typeof cujoConfig == 'undefined') {
-	var cujoConfig = {};
+		cujoConfig = {};
 }
+
+}(this));
+
 
 // TODO: find out why this fails if dojo is not in teh dependency list
 	
