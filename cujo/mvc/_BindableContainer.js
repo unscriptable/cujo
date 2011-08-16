@@ -57,6 +57,12 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     //		handle new items and removed items.
     _observeObjectUpdates: true,
 
+	// removeItemsEagerly: Boolean
+	//      If true, all bound views will be removed immediately when set('resultSet',...) is
+	//      called with a new result set, even if that result set is a promise.  If false,
+	//      bound views will only be removed when the result set is resolved.
+	removeAllItemsEagerly: true,
+
     // hooks to catch item modifications
     itemAdded: function (item, index, view) {},
     itemUpdated: function (item, index, view) {},
@@ -111,12 +117,15 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     },
 
     _setResultSetAttr: function (rs) {
+	    var eager = this.removeAllItemsEagerly;
+
         // unsubscribe from any previous resultSet
         if (this.resultSet) {
             this._unwatchResultSet();
-	        this._removeAllItems(); 
+	        if(eager) this._removeAllItems();
         }
-        this._refreshState();
+
+	    if(eager) this._refreshState();
         // save result set and initialize
         this.resultSet = rs || null;
         this._initResultSet();
@@ -194,6 +203,8 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     },
 
     _resultsLoaded: function (rs) {
+	    if(!this.removeAllItemsEagerly) this._removeAllItems();
+
         dojo.forEach(rs, function (dataItem) {
             this._itemAdded(dataItem);
         }, this);
