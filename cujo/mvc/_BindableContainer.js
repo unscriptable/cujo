@@ -114,9 +114,9 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
         // unsubscribe from any previous resultSet
         if (this.resultSet) {
             this._unwatchResultSet();
-	        this._removeAllItems();
+	        this._removeAllItems(); 
         }
-	    this._refreshState();
+        this._refreshState();
         // save result set and initialize
         this.resultSet = rs || null;
         this._initResultSet();
@@ -125,6 +125,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 
     _initResultSet: function () {
         // subscribe to onAdd, onUpdate, and onRemove
+        //
         if (this.resultSet) {
             // TODO: will the progress handler ever fire?
             dojo.when(this.resultSet, dojo.hitch(this, '_resultsLoaded'), dojo.hitch(this, '_resultsError'), dojo.hitch(this, '_itemAdded'));
@@ -167,24 +168,28 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
             this._itemUpdated(item, oldIndex);
         }
         else {
-        	// This branch handles oldIndex and newIndex separatly
-        	// to cover 3 cases:
+        	// This branch handles oldIndex and newIndex separately
+        	// to cover 4 cases:
         	//
         	// 1. oldIndex >= 0, newIndex == -1. The item was removed from the
         	//    resultSet either forcibly, or was changed in a way that it no
         	//    longer matches the query.  In that case, remove it.
-        	// 2. oldIndex == 0-1, newIndex >= 0. The item is new to this
+        	// 2. oldIndex == -1, newIndex >= 0. The item is new to this
         	//    resultSet.  Add it.
-        	// 3. oldIndex >= 0 and newIndex >= 0.  The item was present, but
-        	//    was changed in such a way that it's position (due to sorting)
-        	//    is now different.  So, we remove it, then add it again in the
-        	//    new position.
-    	    if (oldIndex >= 0) {
-    	        this._itemDeleted(item, oldIndex);
-        	}
+        	// 3. oldIndex >= 0 and newIndex >= 0.
+        	//    a. The item was present, but was changed in such a way that it's
+        	//       position (due to sorting) is now different.  So, we remove it,
+        	//       then add it again in the new position.
+	        //    b. An item was added, and it caused the result set to be larger
+	        //       than the original query options (e.g. options.start & options.count)
+	        //       allowed, so another item must be removed to maintain the
+	        //       correct result set size.
 	        if (newIndex >= 0) {
             	this._itemAdded(item, newIndex);
        		}
+    	    if (oldIndex >= 0) {
+    	        this._itemDeleted(item, oldIndex);
+        	}
        	}
     },
 
