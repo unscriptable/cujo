@@ -136,6 +136,11 @@ cujo.Stateful = function (obj, options) {
 
 };
 
+	cujo.Stateful.isStateful = function (object) {
+		// check that object has a non-native watch function
+		return typeof object.watch == 'function' && object.watch != op.watch;
+	};
+
 return cujo.Stateful;
 
 });
