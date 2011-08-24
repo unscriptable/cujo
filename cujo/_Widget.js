@@ -133,8 +133,34 @@ dojo.declare('cujo._Widget', Widget, {
         return this;
     },
 
-    // TODO: remove for dojo 1.6 which will have watch() already
-    watch: Stateful.prototype.watch,
+	syncDomAttrs: function () {
+		//  summary:
+		//      Browsers are screwy. Case in point: onChange events happen
+		//      after button clicks, which could be submit buttons, which
+		//      means that the submit could happen before a view is notified
+		//      that an input's value has changed.  This method may be used to
+		//      force the values from the dom back to the dataItem
+		//      and local attributes.
+		var self = this;
+
+		for (var p in this.attributeMap) (function (defs, propName) {
+			dojo.forEach([].concat(defs), function (def) {
+				// if this is a bidirectional attr
+				if (typeof (def.event || def.watch) == 'string') {
+					var attr, node, value;
+					attr = def.attribute || propName;
+					node = def.node && self[def.node]; // node is the name of an attach point
+					// if we found the node/widget
+					if (node) {
+						// `node` could actually be a widget, which will have a get() method
+						value = dojo.isFunction(node.get) ? node.get(attr) : dojo.attr(node, attr);
+						self.set(propName, value);
+					}
+				}
+			});
+		}(this.attributeMap[p], p));
+
+	},
 
     _attrToDom: function (/*String*/ attr, /*String*/ value) {
         // handles child widgets that dijit._Widget does not and hooks up bi-directional bindings

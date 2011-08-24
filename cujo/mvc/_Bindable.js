@@ -96,31 +96,6 @@ dojo.declare('cujo.mvc._Bindable', null, {
         return this.inherited(arguments);
     },
 
-	syncDomAttrs: function () {
-		//  summary:
-		//      Browsers are screwy. Case in point: onChange events happen
-		//      after button clicks, which could be submit buttons, which
-		//      means that the submit could happen before a view is notified
-		//      that an input's value has changed.  This method may be used to
-		//      force the values from the dom back to the dataItem
-		//      and local attributes.
-		var self = this;
-
-		for (var p in this.attributeMap) (function (defs, propName) {
-			dojo.forEach([].concat(defs), function (def) {
-				var attr, node, value;
-				attr = def.attribute || propName;
-				node = def.node && self[def.node]; // node is the name of an attach point
-				if (node) {
-					// `node` could actually be a widget, which will have a get() method
-					value = dojo.isFunction(node.get) ? node.get(attr) : dojo.attr(node, attr);
-					self.set(propName, value);
-				}
-			});
-		}(this.attributeMap[p], p));
-
-	},
-
     postCreate: function () {
         if (this.dataItem) {
             this._bindDataItem(this.dataItem);
