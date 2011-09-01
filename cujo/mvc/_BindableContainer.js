@@ -18,9 +18,10 @@ define([
 	'dijit',
 	'cujo/Stateful',
 	'cujo/Derivable',
+	'cujo/mvc/_Bindable',
 	'cujo/_base/dom'
 ],
-function(dojo, dijit, Stateful, Derivable, dom2) {
+function(dojo, dijit, Stateful, Derivable, _Bindable, dom2) {
 
 	var dom = dojo,
 		lang = dojo,
@@ -51,11 +52,11 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     //      automatically.
     boundViews: null,
 
-    //	_observeObjectUpdates: Boolean
+    //	observeItemUpdates: Boolean
     //		If true, _BindableContainer will handle in-place updates to existing items
     //		in the resultSet it is observing.  If false, it will ignore updates, and only
     //		handle new items and removed items.
-    _observeObjectUpdates: true,
+    observeItemUpdates: true,
 
 	// removeItemsEagerly: Boolean
 	//      If true, all bound views will be removed immediately when set('resultSet',...) is
@@ -145,7 +146,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     _watchResultSet: function () {
         var rs = this.resultSet;
         if (rs && rs.observe) {
-            var cancel = rs.observe(dojo.hitch(this, '_handleResultSetEvent'), this._observeObjectUpdates).cancel,
+            var cancel = rs.observe(dojo.hitch(this, '_handleResultSetEvent'), this.observeItemUpdates).cancel,
                 handle = this.connect(this, '_unwatchResultSet', function () {
                     if (cancel) cancel();
                     this.disconnect(handle);
@@ -294,6 +295,18 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 		if (pointer != undef) delete this._dataIndex[pointer];
 	},
 
+	_reassociateViewAndDataItem: function (view, newItem) {
+		// _associateViewAndDataItem will already do the work to disassociate
+		this._associateViewAndDataItem(view, newItem);
+	},
+
+	_makeStateful: function (item) {
+		if (item && !Stateful.isStateful(item)) {
+			item = new Stateful(item);
+		}
+		return item;
+	},
+
     _itemAdded: function (item, index) {
         var views = this.boundViews,
             pos = index >= 0 ? index : views.length,
@@ -316,22 +329,31 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
     },
 
 	_itemUpdated: function (item, index) {
-		var view = this.boundViews[index];
-		this.itemUpdated(item, index, view);
+		var currItem, currView, newView;
+		currView = this.boundViews[index];
+		currItem = this._getDataItemForView(currView);
+		newView = this._updateBoundView(item, index, currView);
+		if (newView != currView) {
+			this.boundViews[index] = newView;
+		}
+		if (currItem != item || newView != currView) {
+			this._disassociateViewAndDataItem(currView, currItem);
+			this._associateViewAndDataItem(newView, item);
+		}
+		this.itemUpdated(item, index, newView);
 	},
 
 	_removeAllItems: function () {
-	    var removed, dataItem, childNode;
-		for (var i = this.boundViews.length - 1; i >= 0; i--) {
+	    var removed, dataItem, childNode, containerNode, i;
+		for (i = this.boundViews.length - 1; i >= 0; i--) {
 			removed = this.boundViews[i];
 			dataItem = this._getDataItemForView(removed);
 			this._itemDeleted(dataItem, i);
 		}
 		// dojo.destroy() fails if the dom node wasn't yet added to the document
-	    while(this.containerNode 
-	        && this.containerNode.firstChild 
-	        &&(childNode = this.containerNode.firstChild)){
-	            this.containerNode.removeChild(childNode);
+		containerNode = this.containerNode;
+	    while (containerNode && (childNode = containerNode.firstChild)) {
+			containerNode.removeChild(childNode);
 	    }
 		this.boundViews = [];
 		
@@ -376,6 +398,24 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 	        this._bindDomFragment(dataItem, node);
     },
 
+	_updateBoundView: function (item, index, view) {
+		// Subclasses should override this method if they have a custom
+		// way of updating bound views when its associated data item
+		// changes. BE SURE TO RETURN THE VIEW!
+		// if this method replaces the view, be sure to update this.boundViews[index]
+		var currItem;
+		// if this is a _Bindable view
+		if (view.isInstanceOf && view.isInstanceOf(_Bindable)) {
+			// inject new data item, _Bindable will take care of updating itself
+			view.set('dataItem', item);
+		}
+		else {
+			this._destroyBoundView(view);
+			view = this._createBoundView(item, index);
+		}
+		return view;
+	},
+
 	_refreshState: function () {
 		if (this.domNode) {
 			dom2.setDomState({scope: this.domNode, state: dataStateMapper(this), set: dataStates});
@@ -386,7 +426,7 @@ dojo.declare('cujo.mvc._BindableContainer', null, {
 		var model, attachpoints;
 
 		// create a model from the dataItem
-		model = new Derivable(new Stateful(dataItem), this.itemAttributeMap);
+		model = new Derivable(this._makeStateful(dataItem), this.itemAttributeMap);
 
 		// mixin all dojoattachpoints
 		model.set('domNode', node);
