@@ -10,15 +10,16 @@
 define(
 	[
 		'text!./TextGrid.html', // template
-		'css!./TextGrid.css', // styles
 		'dijit/_Widget',
 		'dijit/_Templated',
 		'cujo/mvc/_BindableContainer',
 		'dojo/string',
-		'dojo'
+		'dojo',
+		'css!./TextGrid.css', // styles
+		'css!./Grid.css' // style
 	],
 
-	function (template, styleSheet, Widget, Templated, BindableContainer, strings, dojo) {
+	function (template, Widget, Templated, BindableContainer, strings, dojo) {
 
 		var lang = dojo, dom = dojo, array = dojo;
 
@@ -73,10 +74,11 @@ define(
 			//          clicked in e.target
 			onRowClick: function (row, dataItem, e) {},
 
-			// hooks to catch item modifications
-			itemAdded: function (item, index, row) {},
-			itemUpdated: function (item, index, row) {},
-			itemDeleted: function (item, index, row) {},
+//			// hooks to catch item modifications
+//			// removed: these are redundant with _BindableContainer
+//			itemAdded: function (item, index, row) {},
+//			itemUpdated: function (item, index, row) {},
+//			itemDeleted: function (item, index, row) {},
 
 			templateString: template,
 
@@ -88,6 +90,11 @@ define(
 
 			_destroyBoundView: function (view) {
 				this.inherited(arguments);
+			},
+
+			_updateBoundView: function (item, index, view) {
+				this._destroyBoundView(view);
+				return this._createBoundView(item, index);
 			},
 
 			_setColDefsAttr: function (defs) {
