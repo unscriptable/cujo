@@ -9,7 +9,7 @@
     TODO: create a decorator version of this mixin?
 
 */
-define(['dojo', 'cujo/_base/lang'], function(dojo, langExt) {
+define(['dojo', 'cujo/_base/lang', 'cujo/Stateful'], function(dojo, langExt, Stateful) {
 // local scope
 
 dojo.declare('cujo.mvc._Bindable', null, {
@@ -133,7 +133,7 @@ dojo.declare('cujo.mvc._Bindable', null, {
         // update dom
         langExt.forIn(dataItem, this._bindDataProp, this);
         // watch for all property changes
-        if (dataItem && dataItem.watch) {
+        if (Stateful.isStateful(dataItem)) {
             this._dataItemWatchHandle = dataItem.watch('*', dojo.hitch(this, '_dataPropUpdated')) || dataItem;
         }
     },
